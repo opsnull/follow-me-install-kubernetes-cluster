@@ -1,6 +1,6 @@
 # 配置和安装 dashboard
 
-官方源码文件目录：`kubernetes/cluster/addons/dashboard`
+官方文件目录：`kubernetes/cluster/addons/dashboard`
 
 使用的文件
 

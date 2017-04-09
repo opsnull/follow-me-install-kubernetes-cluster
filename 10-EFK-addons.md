@@ -1,6 +1,6 @@
 # 配置和安装 EFK
 
-官方源码文件目录：`cluster/addons/fluentd-elasticsearch`
+官方文件目录：`cluster/addons/fluentd-elasticsearch`
 
 ``` bash
 $ ls *.yaml

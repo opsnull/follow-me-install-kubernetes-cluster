@@ -19,7 +19,7 @@
 + kube-apiserver：使用 ca.pem、kubernetes-key.pem、kubernetes.pem；
 + kubelet：使用 ca.pem；
 + kube-proxy：使用 ca.pem、kube-proxy-key.pem、kube-proxy.pem；
-+ kubelet：使用 ca.pem、admin-key.pem、admin.pem；
++ kubectl：使用 ca.pem、admin-key.pem、admin.pem；
 
 `kube-controller`、`kube-scheduler` 当前需要和 `kube-apiserver` 部署在同一台机器上且使用非安全端口通信，故不需要证书；
 

@@ -36,7 +36,7 @@ $
 $ radosgw-admin key create --subuser=demo:swift --key-type=swift --gen-secret
 {
     "user_id": "demo",
-    "display_name": "ceph sgw demo user",
+    "display_name": "ceph rgw demo user",
     "email": "",
     "suspended": 0,
     "max_buckets": 1000,
@@ -324,7 +324,7 @@ $ curl -X DELETE  --cacert /etc/docker/certs.d/10.64.3.7\:8000/ca.crt https://10
 $
 ```
 
-### 删除layer
+### 删除 layer
 
 向 `/v2/<name>/blobs/<digest>`发送 DELETE 请求，其中 digest 是上一步返回的 `fsLayers.blobSum` 字段内容：
 

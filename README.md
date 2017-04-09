@@ -32,4 +32,4 @@
 1. [Dashboard 插件](08-dashboard-addon.md)
 1. [Heapster 插件](09-heapster-addon.md)
 1. [EFK 插件](10-EFK-addons.md)
-1. [创建使用 docker registry](11-创建私有docker-registry.md)
+1. [创建私有 docker registry](11-创建私有docker-registry.md)

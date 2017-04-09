@@ -1,11 +1,14 @@
 # 配置和安装 EFK
 
-文件目录：`cluster/addons/fluentd-elasticsearch`
+官方源码文件目录：`cluster/addons/fluentd-elasticsearch`
 
 ``` bash
 $ ls *.yaml
 es-controller.yaml  es-service.yaml  fluentd-es-ds.yaml  kibana-controller.yaml  kibana-service.yaml
 ```
+
+已经修改好的 yaml 文件见：[EFK](./manifests/EFK)
+
 
 ## 配置 es-controller.yaml
 
@@ -65,7 +68,6 @@ deployment "kibana-logging" created
 service "kibana-logging" created
 ```
 
-涉及的 yaml 文件见：[EFK](./manifests/EFK)
 
 ## 检查执行结果
 

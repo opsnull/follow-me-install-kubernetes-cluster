@@ -1,6 +1,6 @@
 # 安装和配置 kubedns 插件
 
-文件目录：`kubernetes/cluster/addons/dns`
+官方文件目录：`kubernetes/cluster/addons/dns`
 
 使用的文件
 
@@ -8,6 +8,8 @@
 $ ls *.yaml *.base
 kubedns-cm.yaml  kubedns-sa.yaml  kubedns-controller.yaml.base  kubedns-svc.yaml.base
 ```
+
+已经修改好的 yaml 文件见：[dns](./manifests/kubedns)
 
 ## 系统预定义的 RoleBinding
 
@@ -103,7 +105,7 @@ kubedns-cm.yaml  kubedns-controller.yaml  kubedns-sa.yaml  kubedns-svc.yaml
 $ kubectl create -f .
 ```
 
-涉及的 yaml 文件见：[dns](./manifests/kubedns)
+
 
 ## 检查 kubedns 功能
 

@@ -17,6 +17,9 @@ $ ls *.yaml
 grafana-deployment.yaml  grafana-service.yaml  heapster-deployment.yaml  heapster-service.yaml  influxdb-deployment.yaml  influxdb-service.yaml
 ```
 
+已经修改好的 yaml 文件见：[heapster](./manifests/heapster)
+
+
 ## 配置 grafana-deployment
 
 ``` bash
@@ -72,7 +75,6 @@ deployment "monitoring-influxdb" created
 service "monitoring-influxdb" created
 ```
 
-涉及的 yaml 文件见：[heapster](./manifests/heapster)
 
 ## 检查执行结果
 

@@ -1,6 +1,6 @@
 # 配置和安装 dashboard
 
-文件目录：`kubernetes/cluster/addons/dashboard`
+官方源码文件目录：`kubernetes/cluster/addons/dashboard`
 
 使用的文件
 
@@ -8,6 +8,8 @@
 $ ls *.yaml
 dashboard-controller.yaml  dashboard-service.yaml
 ```
+
+已经修改好的 yaml 文件见：[dashboard](./manifests/dashboard)
 
 ## 配置dashboard-service
 
@@ -41,7 +43,7 @@ service "kubernetes-dashboard" created
 deployment "kubernetes-dashboard" created
 ```
 
-涉及的 yaml 文件见：[dashboard](./manifests/dashboard)
+
 
 ## 检查执行结果
 

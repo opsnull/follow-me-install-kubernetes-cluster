@@ -2,10 +2,10 @@
 
 kubernetes node 节点包含如下组件：
 
-+ flanneld：
-+ docker：
-+ kubelet：
-+ kube-proxy：
++ flanneld
++ docker
++ kubelet
++ kube-proxy
 
 ## 目录和文件
 

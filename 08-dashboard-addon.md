@@ -41,7 +41,7 @@ service "kubernetes-dashboard" created
 deployment "kubernetes-dashboard" created
 ```
 
-涉及的 yaml 文件见：[dns](./manifests/dashboard)
+涉及的 yaml 文件见：[dashboard](./manifests/dashboard)
 
 ## 检查执行结果
 

@@ -98,7 +98,7 @@ $
 在任一 kubernetes master 机器上执行如下命令：
 
 ``` bash
-/root/local/bin/etcdctl \
+$ /root/local/bin/etcdctl \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
@@ -109,4 +109,4 @@ member 602ea91645c798fd is healthy: got healthy result from https://10.64.3.8:23
 cluster is healthy
 ```
 
-结果最后一行为 `cluster is healthy` 时表示集群服务正常：
+结果最后一行为 `cluster is healthy` 时表示集群服务正常。

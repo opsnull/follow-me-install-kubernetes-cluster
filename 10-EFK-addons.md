@@ -65,7 +65,7 @@ deployment "kibana-logging" created
 service "kibana-logging" created
 ```
 
-涉及的 yaml 文件见：[dns](./manifests/EFK)
+涉及的 yaml 文件见：[EFK](./manifests/EFK)
 
 ## 检查执行结果
 

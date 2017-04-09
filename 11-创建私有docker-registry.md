@@ -99,7 +99,7 @@ $ cat registry-csr.json
       "C": "CN",
       "ST": "BeiJing",
       "L": "BeiJing",
-      "O": "Ksyun",
+      "O": "k8s",
       "OU": "System"
     }
   ]

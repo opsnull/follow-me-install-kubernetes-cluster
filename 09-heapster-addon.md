@@ -72,7 +72,7 @@ deployment "monitoring-influxdb" created
 service "monitoring-influxdb" created
 ```
 
-涉及的 yaml 文件见：[dns](./manifests/heapster)
+涉及的 yaml 文件见：[heapster](./manifests/heapster)
 
 ## 检查执行结果
 

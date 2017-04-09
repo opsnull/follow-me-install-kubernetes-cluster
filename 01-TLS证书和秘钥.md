@@ -72,8 +72,8 @@ $ cat ca-config.json
 }
 ```
 
-+ `ca-config.json`：可以定义多个 profiles，分别指定不同的超时时间、usage 等参数；后续在签名证书时使用某个 profile；
-+ `signing`：表示该证书可用于签名其它证书；生成的 ca.perm 中 `CA=TRUE`；
++ `ca-config.json`：可以定义多个 profiles，分别指定不同的过期时间、使用场景等参数；后续在签名证书时使用某个 profile；
++ `signing`：表示该证书可用于签名其它证书；生成的 ca.pem 证书中 `CA=TRUE`；
 + `server auth`：表示 client 可以用该 CA 对 server 提供的证书进行验证；
 + `client auth`：表示 server 可以用该 CA 对 client 提供的证书进行验证；
 
@@ -92,14 +92,14 @@ $ cat ca-csr.json
       "C": "CN",
       "ST": "BeiJing",
       "L": "BeiJing",
-      "O": "Ksyun",
+      "O": "k8s",
       "OU": "System"
     }
   ]
 }
 ```
 
-+ "CN"：`Command Name`，kube-apiserver 从证书中提取该字段作为请求的用户名 (User Name)；浏览器使用该字段验证网站是否合法；
++ "CN"：`Common Name`，kube-apiserver 从证书中提取该字段作为请求的用户名 (User Name)；浏览器使用该字段验证网站是否合法；
 + "O"：`Organization`，kube-apiserver 从证书中提取该字段作为请求用户所属的组 (Group)；
 
 生成 CA 证书和私钥
@@ -110,8 +110,6 @@ $ ls ca*
 ca-config.json  ca.csr  ca-csr.json  ca-key.pem  ca.pem
 $
 ```
-
-生成证书和私钥后可以删除不再使用的 json 文件(ca-config.json、ca-csr.json)。
 
 ## 创建 kubernetes 证书
 
@@ -142,14 +140,14 @@ $ cat kubernetes-csr.json
       "C": "CN",
       "ST": "BeiJing",
       "L": "BeiJing",
-      "O": "Ksyun",
+      "O": "k8s",
       "OU": "System"
     }
   ]
 }
 ```
 
-+ 如果 hosts 字段不为空则需要指定授权使用该证书的 **IP 或域名列表**，由于该证书后续被 `etcd` 和 `kubernetes master` 使用，所以上面分别指定了 `etcd` 集群的主机 IPs、`kubernetes master` 集群的主机 IPs 和 **`kubernetes` 服务的服务 IP（一般是 `kue-apiserver` 指定的 `service-cluster-ip-range` 网段的第一个IP，如 10.254.0.1）**；
++ 如果 hosts 字段不为空则需要指定授权使用该证书的 **IP 或域名列表**，由于该证书后续被 `etcd` 集群和 `kubernetes master` 集群使用，所以上面分别指定了 `etcd` 集群、`kubernetes master` 集群的主机 IP 和 **`kubernetes` 服务的服务 IP**（一般是 `kue-apiserver` 指定的 `service-cluster-ip-range` 网段的第一个IP，如 10.254.0.1）；
 
 生成 kubernetes 证书和私钥
 
@@ -192,7 +190,7 @@ $ cat admin-csr.json
 ```
 
 + 后续 `kube-apiserver` 使用 `RBAC` 对客户端(如 `kubelet`、`kube-proxy`、`Pod`)请求进行授权；
-+ `kube-apiserver` 预定义了一些 `RBAC` 使用的 `RoleBindings`，如 `cluster-admin` 将 Group `system:masters` 与 Role `cluster-admin` 绑定，该 Role 授予了调用`kube-apiserver` 的**所有 API **的权限；
++ `kube-apiserver` 预定义了一些 `RBAC` 使用的 `RoleBindings`，如 `cluster-admin` 将 Group `system:masters` 与 Role `cluster-admin` 绑定，该 Role 授予了调用`kube-apiserver` 的**所有 API**的权限；
 + OU 指定该证书的 Group 为 `system:masters`，`kubelet` 使用该证书访问 `kube-apiserver` 时 ，由于证书被 CA 签名，所以认证通过，同时由于证书用户组为经过预授权的 `system:masters`，所以被授予访问所有 API 的权限；
 
 生成 admin 证书和私钥
@@ -221,7 +219,7 @@ $ cat kube-proxy-csr.json
       "C": "CN",
       "ST": "BeiJing",
       "L": "BeiJing",
-      "O": "Ksyun",
+      "O": "k8s",
       "OU": "System"
     }
   ]
@@ -249,11 +247,11 @@ kube-proxy.csr  kube-proxy-csr.json  kube-proxy-key.pem  kube-proxy.pem
 $ openssl x509  -noout -text -in  kubernetes.pem
 ...
     Signature Algorithm: sha256WithRSAEncryption
-        Issuer: C=CN, ST=BeiJing, L=BeiJing, O=Ksyun, OU=System, CN=Kubernetes
+        Issuer: C=CN, ST=BeiJing, L=BeiJing, O=k8s, OU=System, CN=Kubernetes
         Validity
             Not Before: Apr  5 05:36:00 2017 GMT
             Not After : Apr  5 05:36:00 2018 GMT
-        Subject: C=CN, ST=BeiJing, L=BeiJing, O=Ksyun, OU=System, CN=kubernetes
+        Subject: C=CN, ST=BeiJing, L=BeiJing, O=k8s, OU=System, CN=kubernetes
 ...
         X509v3 extensions:
             X509v3 Key Usage: critical
@@ -286,7 +284,7 @@ $ cfssl-certinfo -cert kubernetes.pem
   "subject": {
     "common_name": "kubernetes",
     "country": "CN",
-    "organization": "Ksyun",
+    "organization": "k8s",
     "organizational_unit": "System",
     "locality": "BeiJing",
     "province": "BeiJing",
@@ -294,7 +292,7 @@ $ cfssl-certinfo -cert kubernetes.pem
       "CN",
       "BeiJing",
       "BeiJing",
-      "Ksyun",
+      "k8s",
       "System",
       "kubernetes"
     ]
@@ -302,7 +300,7 @@ $ cfssl-certinfo -cert kubernetes.pem
   "issuer": {
     "common_name": "Kubernetes",
     "country": "CN",
-    "organization": "Ksyun",
+    "organization": "k8s",
     "organizational_unit": "System",
     "locality": "BeiJing",
     "province": "BeiJing",
@@ -310,7 +308,7 @@ $ cfssl-certinfo -cert kubernetes.pem
       "CN",
       "BeiJing",
       "BeiJing",
-      "Ksyun",
+      "k8s",
       "System",
       "Kubernetes"
     ]
@@ -334,7 +332,7 @@ $ cfssl-certinfo -cert kubernetes.pem
 
 ## 分发证书
 
-将生成的所有证书和秘钥文件（后缀名为`.pem`）拷贝到所有机器的 `/etc/kubernetes/ssl` 目录下备用；
+将生成的证书和秘钥文件（后缀名为`.pem`）拷贝到所有机器的 `/etc/kubernetes/ssl` 目录下备用；
 
 ``` bash
 $ sudo mkdir -p /etc/kubernetes/ssl

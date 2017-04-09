@@ -2,9 +2,9 @@
 
 `kubelet`、`kube-proxy` 等 Node 机器上的进程与 Master 机器的 `kube-apiserver` 进程通信时需要认证和授权；
 
-kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 `TLS Bootstrap` 功能，这样就不需要为每个客户端生成证书了；该功能**当前仅支持为 `kubelet`** 生成证书；
+kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 `TLS Bootstrapping` 功能，这样就不需要为每个客户端生成证书了；该功能**当前仅支持为 `kubelet`** 生成证书；
 
-## 创建 TLS Bootstrap Token
+## 创建 TLS Bootstrapping Token
 
 ``` bash
 $ export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
@@ -20,7 +20,7 @@ $ sudo cp token.csv /etc/kubernetes/
 $
 ```
 
-## 创建 kubelet bootstrap kubeconfig 文件
+## 创建 kubelet bootstrapping kubeconfig 文件
 
 ``` bash
 $ export KUBE_APISERVER="https://10.64.3.7:6443"

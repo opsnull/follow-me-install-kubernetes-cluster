@@ -1,0 +1,19 @@
+[Unit]
+Description=Docker Application Container Engine
+Documentation=http://docs.docker.io
+
+[Service]
+Environment="PATH=/root/local/bin:/usr/bin:/bin:/usr/sbin:/usr/bin"
+EnvironmentFile=-/run/flannel/docker
+ExecStart=/root/local/bin/dockerd  $DOCKER_NETWORK_OPTIONS --log-level=error
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+Delegate=yes
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

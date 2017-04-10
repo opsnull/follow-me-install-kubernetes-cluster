@@ -98,15 +98,20 @@ $
 在任一 kubernetes master 机器上执行如下命令：
 
 ``` bash
-$ /root/local/bin/etcdctl \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  cluster-health
-member 3ff8f8a608b2aa8c is healthy: got healthy result from https://10.64.3.7:2379
-member 4e4b4114a5fa227e is healthy: got healthy result from https://10.66.3.86:2379
-member 602ea91645c798fd is healthy: got healthy result from https://10.64.3.8:2379
-cluster is healthy
+$ export ETCDCTL_API=3
+$ for ip in {10.64.3.7,10.64.3.8,10.66.3.86}; do
+  /root/local/bin/etcdctl \
+  --endpoints=https://${ip}:2379  \
+  --cacert=/etc/kubernetes/ssl/ca.pem \
+  --cert=/etc/kubernetes/ssl/kubernetes.pem \
+  --key=/etc/kubernetes/ssl/kubernetes-key.pem \
+  endpoint health; done
+2017-04-10 14:50:50.011317 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+https://10.64.3.7:2379 is healthy: successfully committed proposal: took = 1.687897ms
+2017-04-10 14:50:50.061577 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+https://10.64.3.8:2379 is healthy: successfully committed proposal: took = 1.246915ms
+2017-04-10 14:50:50.104718 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+https://10.66.3.86:2379 is healthy: successfully committed proposal: took = 1.509229ms
 ```
 
-结果最后一行为 `cluster is healthy` 时表示集群服务正常。
+三台 etcd 的输出均为 healthy 时表示集群服务正常。

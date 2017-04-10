@@ -110,6 +110,7 @@ WantedBy=multi-user.target
 EOF
 ```
 
++ kube-apiserver 1.6 版本开始使用 etcd v3 API 和存储格式；
 + `--authorization-mode=RBAC` 指定在安全端口使用 RBAC 授权模式，拒绝未通过授权的请求；
 + kube-scheduler、kube-controller-manager 一般和 kube-apiserver 部署在同一台机器上，它们使用**非安全端口**和 kube-apiserver通信;
 + kubelet、kube-proxy、kubectl 部署在其它 Node 节点上，如果通过**安全端口**访问 kube-apiserver，则必须先通过 TLS 证书认证，再通过 RBAC 授权；

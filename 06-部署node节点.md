@@ -21,15 +21,18 @@ $
 ### 向 etcd 写入 flanneld 使用的 Pod 网络段信息
 
 ``` bash
+$ export ETCDCTL_API=3
 $ export FLANNEL_ETCD_PREFIX="/kubernetes/network"
 $ /root/local/bin/etcdctl \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  set ${FLANNEL_ETCD_PREFIX} '{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
+  --endpoints=http://127.0.0.1:2379  \
+  --cacert=/etc/kubernetes/ssl/ca.pem \
+  --cert=/etc/kubernetes/ssl/kubernetes.pem \
+  --key=/etc/kubernetes/ssl/kubernetes-key.pem \
+  put ${FLANNEL_ETCD_PREFIX} '{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
 $
 ```
 
++ 使用 etcd v3 API 和存储格式；
 + 写入的网段(172.30.0.0/16) 必须与 kube-controller-manager 的 `--cluster-cidr` 选项值一致；
 
 ### 下载 flanneld
@@ -74,6 +77,7 @@ RequiredBy=docker.service
 EOF
 ```
 
++ flanneld 兼容 etcd v2 和 etcd v3 版本；
 + etcd 集群启用了双向 TLS 认证，所以需要为 flanneld 指定与 etcd 集群通信的 CA 和秘钥；
 + mk-docker-opts.sh 脚本将分配给 flanneld 的 Pod 子网网段信息写入到 `/run/flannel/docker` 文件中，后续 docker 启动时使用这个文件中参数值设置 docker0 网桥；
 + `-iface` 选项值指定 flanneld 和其它 Node 通信的接口，如果机器有内、外网，则最好指定为内网接口；
@@ -91,7 +95,25 @@ $ systemctl status flanneld
 $
 ```
 
-### 检查 flanneld
+### 检查分配给本 node 的 Pod IP 段
+
+``` bash
+$ export ETCDCTL_API=3
+$ /root/local/bin/etcdctl \
+  --endpoints=http://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/ssl/ca.pem \
+  --cert=/etc/kubernetes/ssl/kubernetes.pem \
+  --key=/etc/kubernetes/ssl/kubernetes-key.pem \
+  get --prefix /kubernetes/
+/kubernetes/network
+{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}
+/kubernetes/network/config
+{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}
+/kubernetes/network/subnets/172.30.15.0-24
+{"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"86:4b:9c:65:f2:12"}}
+```
+
+### 检查 flanneld 服务
 
 ``` bash
 $ journalctl  -u flanneld |grep 'Lease acquired'
@@ -253,7 +275,7 @@ EOF
 
 完整 unit 见 [kubelet.service](./systemd/kubelet.service)
 
-### 启动kublet
+### 启动 kublet
 
 ``` bash
 $ sudo cp kubelet.service /etc/systemd/system/kubelet.service

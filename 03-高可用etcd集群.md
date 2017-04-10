@@ -98,9 +98,8 @@ $
 在任一 kubernetes master 机器上执行如下命令：
 
 ``` bash
-$ export ETCDCTL_API=3
 $ for ip in {10.64.3.7,10.64.3.8,10.66.3.86}; do
-  /root/local/bin/etcdctl \
+  ETCDCTL_API=3 /root/local/bin/etcdctl \
   --endpoints=https://${ip}:2379  \
   --cacert=/etc/kubernetes/ssl/ca.pem \
   --cert=/etc/kubernetes/ssl/kubernetes.pem \

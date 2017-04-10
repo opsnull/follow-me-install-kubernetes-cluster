@@ -21,9 +21,8 @@ $
 ### 向 etcd 写入 flanneld 使用的 Pod 网络段信息
 
 ``` bash
-$ export ETCDCTL_API=3
 $ export FLANNEL_ETCD_PREFIX="/kubernetes/network"
-$ /root/local/bin/etcdctl \
+$ ETCDCTL_API=3 /root/local/bin/etcdctl \
   --endpoints=http://127.0.0.1:2379  \
   --cacert=/etc/kubernetes/ssl/ca.pem \
   --cert=/etc/kubernetes/ssl/kubernetes.pem \

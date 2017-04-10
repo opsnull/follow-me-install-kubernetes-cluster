@@ -1,5 +1,7 @@
 # 和我一步步部署 kubernetes 集群
 
+![dashboard](./images/dashboard.png)
+
 本系列文档介绍使用二进制部署 `kubernetes` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群；
 
 在部署的过程中，将详细列出各组件的启动参数，它们的含义和可能遇到的问题。
@@ -33,3 +35,5 @@
 1. [Heapster 插件](09-heapster-addon.md)
 1. [EFK 插件](10-EFK-addons.md)
 1. [创建私有 docker registry](11-创建私有docker-registry.md)
+
+希望对你有帮助！

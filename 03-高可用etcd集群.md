@@ -35,7 +35,7 @@ $
 ``` bash
 $ export ETCD_NAME=etcd-host0
 $ export INTERNAL_IP=10.64.3.7
-$ sudo mkdir -p /var/lib/etcd /var/lib/etcd
+$ sudo mkdir -p /var/lib/etcd
 $ cat > etcd.service <<EOF
 [Unit]
 Description=Etcd Server
@@ -73,7 +73,7 @@ WantedBy=multi-user.target
 EOF
 ```
 
-+ 指定 `etcd` 的工作目录为 `/var/lib/etcd`，数据目录为 `/var/lib/etcd`，需在启动服务前创建这两个目录；
++ 指定 `etcd` 的工作目录和数据目录为 `/var/lib/etcd`，需在启动服务前创建这个目录；
 + 为了保证通信安全，需要指定 etcd 的公私钥(cert-file和key-file)、Peers 通信的公私钥和 CA 证书(peer-cert-file、peer-key-file、peer-trusted-ca-file)、客户端的CA证书（trusted-ca-file）；
 + 创建 `kubernetes.pem` 证书时使用的 `kubernetes-csr.json` 文件的 `hosts` 字段**包含所有 etcd 节点的 INTERNAL_IP**，否则证书校验会出错；
 + `--initial-cluster-state` 值为 `new` 时，`--name` 的参数值必须位于 `--initial-cluster` 列表中；

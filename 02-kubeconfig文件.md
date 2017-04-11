@@ -2,28 +2,34 @@
 
 `kubelet`、`kube-proxy` 等 Node 机器上的进程与 Master 机器的 `kube-apiserver` 进程通信时需要认证和授权；
 
-kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 `TLS Bootstrapping` 功能，这样就不需要为每个客户端生成证书了；该功能**当前仅支持为 `kubelet`** 生成证书；
+kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 [TLS Bootstrapping](https://kubernetes.io/docs/admin/kubelet-tls-bootstrapping/) 功能，这样就不需要为每个客户端生成证书了；该功能**当前仅支持为 `kubelet`** 生成证书；
 
 ## 创建 TLS Bootstrapping Token
 
+**Token auth file**
+
+Token可以是任意的包涵128 bit的字符串，可以使用安全的随机数发生器生成。
+
 ``` bash
-$ export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
-$ cat > token.csv <<EOF
+export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
+cat > token.csv <<EOF
 ${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"
 EOF
 ```
 
-将 token 文件分发到所有机器（Master 和 Node）的 `/etc/kubernetes/` 目录
+> 后三行是一句，直接复制上面的脚本运行即可。
+
+将token.csv发到所有机器（Master 和 Node）的 `/etc/kubernetes/` 目录。
 
 ``` bash
-$ sudo cp token.csv /etc/kubernetes/
-$
+$cp token.csv /etc/kubernetes/
 ```
 
 ## 创建 kubelet bootstrapping kubeconfig 文件
 
 ``` bash
-$ export KUBE_APISERVER="https://10.64.3.7:6443"
+$ cd /etc/kubernetes
+$ export KUBE_APISERVER="https://172.20.0.113:6443"
 $ # 设置集群参数
 $ kubectl config set-cluster kubernetes \
   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
@@ -50,12 +56,12 @@ $ kubectl config use-context default --kubeconfig=bootstrap.kubeconfig
 ## 创建 kube-proxy kubeconfig 文件
 
 ``` bash
-$ export KUBE_APISERVER="https://10.64.3.7:6443"
+$ export KUBE_APISERVER="https://172.20.0.113:6443"
 $ # 设置集群参数
 $ kubectl config set-cluster kubernetes \
   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
   --embed-certs=true \
-  --server=https://10.64.3.7:6443 \
+  --server=${KUBE_APISERVER} \
   --kubeconfig=kube-proxy.kubeconfig
 $ # 设置客户端认证参数
 $ kubectl config set-credentials kube-proxy \
@@ -81,6 +87,5 @@ $ kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
 将两个 kubeconfig 文件分发到所有 Node 机器的 `/etc/kubernetes/` 目录
 
 ``` bash
-$ sudo cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
-$
+$ cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
 ```

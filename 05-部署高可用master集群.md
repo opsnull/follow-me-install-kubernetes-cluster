@@ -58,11 +58,11 @@ $ cp -r server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubect
 
 ## 配置和启动 kube-apiserver
 
-### 创建 kube-apiserver的service配置文件
+**创建 kube-apiserver的service配置文件**
 
 serivce配置文件`/usr/lib/systemd/system/kube-apiserver.service`内容：
 
-```
+```ini
 [Unit]
 Description=Kubernetes API Service
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
@@ -93,7 +93,7 @@ WantedBy=multi-user.target
 
 apiserver配置文件`/etc/kubernetes/apiserver`内容为：
 
-``` bash
+``` Ini
 ###
 ## kubernetes system config
 ##
@@ -120,7 +120,7 @@ KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.254.0.0/16"
 KUBE_ADMISSION_CONTROL="--admission-control=ServiceAccount,NamespaceLifecycle,NamespaceExists,LimitRanger,ResourceQuota"
 #
 ## Add your own!
-KUBE_API_ARGS="--authorization-mode=RBAC --runtime-config=rbac.authorization.k8s.io/v1alpha1 --kubelet-https=true --experimental-bootstrap-token-auth --token-auth-file=/etc/kubernetes/token.csv --service-node-port-range=30000-32767 --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem --client-ca-file=/etc/kubernetes/ssl/ca.pem --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem --etcd-cafile=/etc/kubernetes/ssl/ca.pem --etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem --etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem --enable-swagger-ui=true --allow-privileged=true --apiserver-count=3 --audit-log-maxage=30 --audit-log-maxbackup=3 --audit-log-maxsize=100 --audit-log-path=/var/lib/audit.log --event-ttl=1h --v=2"
+KUBE_API_ARGS="--authorization-mode=RBAC --runtime-config=rbac.authorization.k8s.io/v1beta1 --kubelet-https=true --experimental-bootstrap-token-auth --token-auth-file=/etc/kubernetes/token.csv --service-node-port-range=30000-32767 --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem --client-ca-file=/etc/kubernetes/ssl/ca.pem --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem --etcd-cafile=/etc/kubernetes/ssl/ca.pem --etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem --etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem --enable-swagger-ui=true --apiserver-count=3 --audit-log-maxage=30 --audit-log-maxbackup=3 --audit-log-maxsize=100 --audit-log-path=/var/lib/audit.log --event-ttl=1h"
 ```
 
 + `--authorization-mode=RBAC` 指定在安全端口使用 RBAC 授权模式，拒绝未通过授权的请求；
@@ -130,12 +130,13 @@ KUBE_API_ARGS="--authorization-mode=RBAC --runtime-config=rbac.authorization.k8s
 + 如果使用了 kubelet TLS Boostrap 机制，则不能再指定 `--kubelet-certificate-authority`、`--kubelet-client-certificate` 和 `--kubelet-client-key` 选项，否则后续 kube-apiserver 校验 kubelet 证书时出现 ”x509: certificate signed by unknown authority“ 错误；
 + `--admission-control` 值必须包含 `ServiceAccount`；
 + `--bind-address` 不能为 `127.0.0.1`；
++ `runtime-config`配置为`rbac.authorization.k8s.io/v1beta1`，表示运行时的apiVersion；
 + `--service-cluster-ip-range` 指定 Service Cluster IP 地址段，该地址段不能路由可达；
 + 缺省情况下 kubernetes 对象保存在 etcd `/registry` 路径下，可以通过 `--etcd-prefix` 参数进行调整；
 
 完整 unit 见 [kube-apiserver.service](./systemd/kube-apiserver.service)
 
-### 启动 kube-apiserver
+**启动kube-apiserver**
 
 ``` bash
 $ systemctl daemon-reload
@@ -146,40 +147,42 @@ $ systemctl status kube-apiserver
 
 ## 配置和启动 kube-controller-manager
 
-### 创建 kube-controller-manager 的 systemd unit 文件
+**创建 kube-controller-manager的serivce配置文件**
 
-``` bash
-$ export INTERNAL_IP=10.64.3.7 # 部署时需要修改该环境变量值
-$ cat > kube-controller-manager.service <<EOF
-[Unit]
+文件路径`/usr/lib/systemd/system/kube-controller-manager.service`
+
+```ini
 Description=Kubernetes Controller Manager
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-ExecStart=/usr/bin/kube-controller-manager \\
-  --address=127.0.0.1 \\
-  --master=http://${INTERNAL_IP}:8080 \\
-  --allocate-node-cidrs=true \\
-  --service-cluster-ip-range=10.254.0.0/16 \\
-  --cluster-cidr=172.30.0.0/16 \\
-  --cluster-name=kubernetes \\
-  --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem \\
-  --cluster-signing-key-file=/etc/kubernetes/ssl/ca-key.pem \\
-  --service-account-private-key-file=/etc/kubernetes/ssl/ca-key.pem \\
-  --root-ca-file=/etc/kubernetes/ssl/ca.pem \\
-  --leader-elect=true \\
-  --v=2
+EnvironmentFile=-/etc/kubernetes/config
+EnvironmentFile=-/etc/kubernetes/controller-manager
+ExecStart=/usr/bin/kube-controller-manager \
+	    $KUBE_LOGTOSTDERR \
+	    $KUBE_LOG_LEVEL \
+	    $KUBE_MASTER \
+	    $KUBE_CONTROLLER_MANAGER_ARGS
 Restart=on-failure
-RestartSec=5
+LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
-EOF
 ```
 
-+ `--cluster-cidr` 指定 Cluster 中 Pod 的 CIDR 范围，该网段在各 Node 间必须路由可达(flanneld保证)；
+配置文件`/etc/kubernetes/controller-manager`。
+
+``` ini
+###
+# The following values are used to configure the kubernetes controller-manager
+
+# defaults from config and apiserver should be adequate
+
+# Add your own!
+KUBE_CONTROLLER_MANAGER_ARGS="--address=127.0.0.1 --service-cluster-ip-range=10.254.0.0/16 --cluster-name=kubernetes --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem --cluster-signing-key-file=/etc/kubernetes/ssl/ca-key.pem  --service-account-private-key-file=/etc/kubernetes/ssl/ca-key.pem --root-ca-file=/etc/kubernetes/ssl/ca.pem --leader-elect=true"
+```
+
 + `--service-cluster-ip-range` 参数指定 Cluster 中 Service 的CIDR范围，该网络在各 Node 间必须路由不可达，必须和 kube-apiserver 中的参数一致；
-+ `--master=http://${INTERNAL_IP}:8080`：使用非安全 8080 端口与 kube-apiserver 通信；
 + `--cluster-signing-*` 指定的证书和私钥文件用来签名为 TLS BootStrap 创建的证书和私钥；
 + `--root-ca-file` 用来对 kube-apiserver 证书进行校验，**指定该参数后，才会在Pod 容器的 ServiceAccount 中放置该 CA 证书文件**；
 + `--address` 值必须为 `127.0.0.1`，因为当前 kube-apiserver 期望 scheduler 和 controller-manager 在同一台机器，否则：
@@ -187,8 +190,11 @@ EOF
     ``` bash
     $ kubectl get componentstatuses
     NAME                 STATUS      MESSAGE                                                                                        ERROR
-    controller-manager   Unhealthy   Get http://127.0.0.1:10252/healthz: dial tcp 127.0.0.1:10252: getsockopt: connection refused
-    scheduler            Unhealthy   Get http://127.0.0.1:10251/healthz: dial tcp 127.0.0.1:10251: getsockopt: connection refused
+    scheduler            Unhealthy   Get http://127.0.0.1:10251/healthz: dial tcp 127.0.0.1:10251: getsockopt: connection refused   
+    controller-manager   Healthy     ok                                                                                             
+    etcd-2               Unhealthy   Get http://172.20.0.113:2379/health: malformed HTTP response "\x15\x03\x01\x00\x02\x02"        
+    etcd-0               Healthy     {"health": "true"}                                                                             
+    etcd-1               Healthy     {"health": "true"}  
     ```
 
     参考：https://github.com/kubernetes-incubator/bootkube/issues/64
@@ -198,7 +204,6 @@ EOF
 ### 启动 kube-controller-manager
 
 ``` bash
-$ cp kube-controller-manager.service /etc/systemd/system/
 $ systemctl daemon-reload
 $ systemctl enable kube-controller-manager
 $ systemctl start kube-controller-manager
@@ -206,52 +211,128 @@ $ systemctl start kube-controller-manager
 
 ## 配置和启动 kube-scheduler
 
-### 创建 kube-controller-manager 的 systemd unit 文件
+**创建 kube-scheduler的serivce配置文件**
 
-``` bash
-$ export INTERNAL_IP=172.20.0.113 # 部署时需要修改该环境变量值
-$ cat > kube-scheduler.service <<EOF
+文件路径`/usr/lib/systemd/system/kube-scheduler.serivce`。
+
+```ini
 [Unit]
-Description=Kubernetes Scheduler
+Description=Kubernetes Scheduler Plugin
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-ExecStart=/root/local/bin/kube-scheduler \\
-  --leader-elect=true \\
-  --master=http://${INTERNAL_IP}:8080 \\
-  --address=127.0.0.1 \\
-  --v=2
+EnvironmentFile=-/etc/kubernetes/config
+EnvironmentFile=-/etc/kubernetes/scheduler
+ExecStart=/usr/bin/kube-scheduler \
+            $KUBE_LOGTOSTDERR \
+            $KUBE_LOG_LEVEL \
+            $KUBE_MASTER \
+            $KUBE_SCHEDULER_ARGS
 Restart=on-failure
-RestartSec=5
+LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
-EOF
+```
+
+配置文件`/etc/kubernetes/scheduler`。
+
+``` Ini
+###
+# kubernetes scheduler config
+
+# default config should be adequate
+
+# Add your own!
+KUBE_SCHEDULER_ARGS="--leader-elect=true --address=127.0.0.1"
 ```
 
 + `--address` 值必须为 `127.0.0.1`，因为当前 kube-apiserver 期望 scheduler 和 controller-manager 在同一台机器；
-+ `--master=http://${INTERNAL_IP}:8080`：使用非安全 8080 端口与 kube-apiserver 通信；
 
 完整 unit 见 [kube-scheduler.service](./systemd/kube-scheduler.service)
 
 ### 启动 kube-scheduler
 
 ``` bash
-$ sudo cp kube-scheduler.service /etc/systemd/system/
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable kube-scheduler
-$ sudo systemctl start kube-scheduler
-$
+$ systemctl daemon-reload
+$ systemctl enable kube-scheduler
+$ systemctl start kube-scheduler
 ```
 
 ## 验证 master 节点功能
 
 ``` bash
 $ kubectl get componentstatuses
-NAME                 STATUS    MESSAGE              ERROR
-controller-manager   Healthy   ok
-scheduler            Healthy   ok
-etcd-0               Healthy   {"health": "true"}
-etcd-1               Healthy   {"health": "true"}
-etcd-2               Healthy   {"health": "true"}
+NAME                 STATUS      MESSAGE                                                                                   ERROR
+etcd-2               Unhealthy   Get http://172.20.0.113:2379/health: malformed HTTP response "\x15\x03\x01\x00\x02\x02"   
+scheduler            Healthy     ok                                                                                        
+controller-manager   Healthy     ok                                                                                        
+etcd-0               Healthy     {"health": "true"}                                                                        
+etcd-1               Healthy     {"health": "true"}  
 ```
+## 问题
+
+**问题一**
+
+`kubectl get componentstatuses`时有有如下报错信息：
+
+```
+etcd-2               Unhealthy   Get http://172.20.0.113:2379/health: malformed HTTP response "\x15\x03\x01\x00\x02\x02" 
+```
+
+与TLS认证有关。
+
+**问题二**
+
+kube-apiserver启动时有报错信息；
+
+```
+Apr 11 18:06:25 sz-pg-oam-docker-test-001.tendcloud.com kube-apiserver[25718]: E0411 18:06:25.522715   25718 reflector.go:201] k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion/factory.go:70: Failed to list *api.ResourceQuota: the server cannot complete the requested operation at this time, try again later (get resourcequotas)
+Apr 11 18:06:25 sz-pg-oam-docker-test-001.tendcloud.com kube-apiserver[25718]: E0411 18:06:25.951292   25718 storage_rbac.go:140] unable to initialize clusterroles: the server cannot complete the requested operation at this time, try again later (get clusterroles.rbac.authorization.k8s.io)
+```
+
+这个错误是否影响kubernentes运行？
+
+**问题三**
+
+kubectl get命令无法正常使用。
+
+```
+$kubectl --kubeconfig ~/.kube/config get all
+Unable to connect to the server: unexpected EOF
+The connection to the server 172.20.0.113:6443 was refused - did you specify the right host or port?
+The connection to the server 172.20.0.113:6443 was refused - did you specify the right host or port?
+```
+
+查看config。
+
+```Yaml
+apiVersion: v1
+clusters:
+- cluster:
+    server: http://sz-pg-oam-docker-test-001:8080
+  name: default-cluster
+- cluster:
+    certificate-authority-data: REDACTED
+    server: https://172.20.0.113:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: default-cluster
+    user: default-admin
+  name: default-context
+- context:
+    cluster: kubernetes
+    user: admin
+  name: kubernetes
+current-context: kubernetes
+kind: Config
+preferences: {}
+users:
+- name: admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+```
+
+而`~/.kube/config`文件也存在，6443端口也在，为什么无法访问？

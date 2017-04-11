@@ -18,7 +18,7 @@ $
 
 ## 安装和配置 flanneld
 
-### 向 etcd 写入集群 Pod 网络段信息
+### 向 etcd 写入集群 Pod 网段信息
 
 ``` bash
 $ export FLANNEL_ETCD_PREFIX="/kubernetes/network"
@@ -220,16 +220,14 @@ $
 
 ## 安装和配置 kubelet
 
-kubelet 启动时向 kube-apiserver 发送 TLS bootstrapping 请求，需要先将 bootstrap token 文件中的 kubelet-bootstrap 用户赋予 system:node-bootstrapper cluster 角色(role)，
-然后 kublet 才能有权限创建认证请求(certificatesigningrequests)：
+kubelet 启动时向 kube-apiserver 发送 TLS bootstrapping 请求，需要先将 bootstrap token 文件中的 kubelet-bootstrap 用户赋予 system:node-bootstrapper 角色，然后 kublet 才有权限创建认证请求(certificatesigningrequests)：
 
 ``` bash
-$ kubectl create clusterrolebinding kubelet-bootstrap \
-  --clusterrole=system:node-bootstrapper \
-  --user=kubelet-bootstrap
+$ kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --user=kubelet-bootstrap
+$
 ```
 
-+ `--user=kubelet-bootstrap` 是在 `/etc/kubernetes/token.csv` 文件中指定的用户名，同时也写入了 `/etc/kubernetes/bootstrap.kubeconfig` 文件；
++ `--user=kubelet-bootstrap` 是文件 `/etc/kubernetes/token.csv` 中指定的用户名，同时也写入了文件 `/etc/kubernetes/bootstrap.kubeconfig`；
 
 ### 下载最新的 kubelet 和 kube-proxy 二进制文件
 

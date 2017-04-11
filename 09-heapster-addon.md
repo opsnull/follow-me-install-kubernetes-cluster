@@ -19,7 +19,6 @@ grafana-deployment.yaml  grafana-service.yaml  heapster-deployment.yaml  heapste
 
 已经修改好的 yaml 文件见：[heapster](./manifests/heapster)
 
-
 ## 配置 grafana-deployment
 
 ``` bash
@@ -43,21 +42,65 @@ $ diff grafana-deployment.yaml.orig grafana-deployment.yaml
 
 ``` bash
 $ diff heapster-deployment.yaml.orig heapster-deployment.yaml
-16c16
+13a14
+>       serviceAccountName: heapster
+16c17
 <         image: gcr.io/google_containers/heapster-amd64:v1.3.0-beta.1
 ---
 >         image: lvanneo/heapster-amd64:v1.3.0-beta.1
 ```
 
++ 使用的是自定义的、名为 heapster 的 ServiceAccount；
+
 ## 配置 influxdb-deployment
 
+官方镜像中的 influxdb 配置文件**没有启用 admin 接口**，导致后续无法在浏览器中打开 inflxudb 的 admin UI 界面来执行 inflxdb 语句；
+
+解决办法是：先导出镜像中的 influxdb 配置文件，修改后再写入 ConfigMap，最后挂载到镜像中，达到覆盖原始配置的目的：
+
 ``` bash
+$ # 导出镜像中的 inflxudb 配置文件
+$ docker run --rm --entrypoint 'cat'  -ti lvanneo/heapster-influxdb-amd64:v1.1.1 /etc/config.toml >config.toml.orig
+$ cp config.toml.orig config.toml
+$ # 修改：启用 admin 接口
+$ vim config.toml
+$ diff config.toml.orig config.toml
+35c35
+<   enabled = false
+---
+>   enabled = true
+$ # 将修改后的配置写入到 ConfigMap 对象中
+$ kubectl create configmap influxdb-config --from-file=config.toml  -n kube-system
+configmap "influxdb-config" created
+$ # 将 ConfigMap 中的配置文件挂载到 Pod 中，达到覆盖原始配置的目的
 $ diff influxdb-deployment.yaml.orig influxdb-deployment.yaml
 16c16
 <         image: gcr.io/google_containers/heapster-influxdb-amd64:v1.1.1
 ---
 >         image: lvanneo/heapster-influxdb-amd64:v1.1.1
+19a20,21
+>         - mountPath: /etc/
+>           name: influxdb-config
+22a25,27
+>       - name: influxdb-config
+>         configMap:
+>           name: influxdb-config
 ```
+
+## 配置 monitoring-influxdb Service
+
+``` bash
+$ diff influxdb-service.yaml.orig influxdb-service.yaml
+12a13
+>   type: NodePort
+15a17,20
+>     name: http
+>   - port: 8083
+>     targetPort: 8083
+>     name: admin
+```
+
++ 定义端口类型为 NodePort，额外增加了 admin 端口映射，用于后续浏览器访问 influxdb 的 admin UI 界面；
 
 ## 执行所有定义文件
 
@@ -73,8 +116,8 @@ deployment "heapster" created
 service "heapster" created
 deployment "monitoring-influxdb" created
 service "monitoring-influxdb" created
+configmap "influxdb-config" created
 ```
-
 
 ## 检查执行结果
 
@@ -131,3 +174,19 @@ monitoring-influxdb-884893134-3vb6n     1/1       Running   0          11m
     浏览器访问 URL：`http://10.64.3.7:8086/api/v1/proxy/namespaces/kube-system/services/monitoring-grafana`
 
 ![grafana](./images/grafana.png)
+
+## 访问 influxdb
+
+获取 influxdb 8086 映射的 NodePort
+
+``` bash
+$ kubectl get svc -n kube-system|grep influxdb
+monitoring-influxdb    10.254.90.236   <nodes>       8086:30171/TCP,8083:30056/TCP   54m
+```
+
+浏览器访问 influxdb 的 admin UI 界面：
+`http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/monitoring-influxdb:8083/`
+
+在页面的 “Connection Settings” 的 Host 中输入 node IP， Port 中输入 8086 映射的 nodePort 如上面的 30171，点击 “Save” 即可：
+
+![influxdb](./images/influxdb.png)

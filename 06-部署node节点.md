@@ -1,55 +1,32 @@
-# 部署 kubernetes node 节点
+# 部署kubernetes node节点
 
 kubernetes node 节点包含如下组件：
 
-+ flanneld
-+ docker
++ Flanneld：参考我之前写的文章[Kubernetes基于Flannel的网络配置](http://rootsongjc.github.io/blogs/kubernetes-network-config/)，之前没有配置TLS，现在需要在serivce配置文件中增加TLS配置。
++ Docker1.12.5：docker的安装很简单，这里也不说了。
 + kubelet
 + kube-proxy
 
+下面着重讲`kubelet`和`kube-proxy`的安装，同时还要将之前安装的flannel集成TLS验证。
+
 ## 目录和文件
 
-我们再检查一下前几步中，
+我们再检查一下三个节点上，经过前几步操作生成的配置文件。
 
 ``` bash
-$ mkdir -p /etc/kubernetes/ssl
-$ cp ca.pem kubernetes.pem kubernetes-key.pem /etc/kubernetes/ssl
-$ cp bootstrap.kubeconfig kube-proxy.kubeconfig token.csv /etc/kubernetes
-$
+$ ls /etc/kubernetes/ssl
+admin-key.pem  admin.pem  ca-key.pem  ca.pem  kube-proxy-key.pem  kube-proxy.pem  kubernetes-key.pem  kubernetes.pem
+$ ls /etc/kubernetes/
+apiserver  bootstrap.kubeconfig  config  controller-manager  kubelet  kube-proxy.kubeconfig  proxy  scheduler  ssl  token.csv
 ```
 
-## 安装和配置 flanneld
+## 配置Flanneld
 
-### 向 etcd 写入 flanneld 使用的 Pod 网络段信息
+参考我之前写的文章[Kubernetes基于Flannel的网络配置](http://rootsongjc.github.io/blogs/kubernetes-network-config/)，之前没有配置TLS，现在需要在serivce配置文件中增加TLS配置。
 
-``` bash
-$ export FLANNEL_ETCD_PREFIX="/kubernetes/network"
-$ /root/local/bin/etcdctl \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  set ${FLANNEL_ETCD_PREFIX} '{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
-$
-```
+service配置文件`/usr/lib/systemd/system/flanneld.service`。
 
-+ 写入的网段(172.30.0.0/16) 必须与 kube-controller-manager 的 `--cluster-cidr` 选项值一致；
-
-### 下载 flanneld
-
-``` bash
-$ mkdir flannel
-$ wget https://github.com/coreos/flannel/releases/download/v0.7.0/flannel-v0.7.0-linux-amd64.tar.gz
-$ tar -xzvf flannel-v0.7.0-linux-amd64.tar.gz -C flannel
-$ sudo cp flannel/{flanneld,mk-docker-opts.sh} /root/local/bin
-$
-```
-
-### 创建 flanneld 的 systemd unit 文件
-
-``` bash
-$ export FLANNEL_ETCD_ENDPOINTS="https://10.64.3.7:2379,https://10.64.3.8:2379,https://10.66.3.86:2379"
-$ export FLANNEL_OPTIONS="-iface=eth0"
-$ cat > flanneld.service << EOF
+```ini
 [Unit]
 Description=Flanneld overlay address etcd agent
 After=network.target
@@ -60,136 +37,42 @@ Before=docker.service
 
 [Service]
 Type=notify
-ExecStart=/root/local/bin/flanneld \\
-  -etcd-cafile=/etc/kubernetes/ssl/ca.pem \\
-  -etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem \\
-  -etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem \\
-  -etcd-endpoints=${FLANNEL_ETCD_ENDPOINTS} \\
-  -etcd-prefix=${FLANNEL_ETCD_PREFIX} \\
-  $FLANNEL_OPTIONS
-ExecStartPost=/root/local/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
+EnvironmentFile=/etc/sysconfig/flanneld
+EnvironmentFile=-/etc/sysconfig/docker-network
+ExecStart=/usr/bin/flanneld-start $FLANNEL_OPTIONS
+ExecStartPost=/usr/libexec/flannel/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
 RequiredBy=docker.service
-EOF
 ```
 
-+ etcd 集群启用了双向 TLS 认证，所以需要为 flanneld 指定与 etcd 集群通信的 CA 和秘钥；
-+ mk-docker-opts.sh 脚本将分配给 flanneld 的 Pod 子网网段信息写入到 `/run/flannel/docker` 文件中，后续 docker 启动时使用这个文件中参数值设置 docker0 网桥；
-+ `-iface` 选项值指定 flanneld 和其它 Node 通信的接口，如果机器有内、外网，则最好指定为内网接口；
+`/etc/sysconfig/flanneld`配置文件。
 
-完整 unit 见 [flanneld.service](./systemd/flanneld.service)
+```ini
+# Flanneld configuration options  
 
-### 启动 flanneld
+# etcd url location.  Point this to the server where etcd runs
+FLANNEL_ETCD_ENDPOINTS="https://172.20.0.113:2379,https://172.20.0.114:2379,https://172.20.0.115:2379"
 
-``` bash
-$ sudo cp flanneld.service /etc/systemd/system/
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable flanneld
-$ sudo systemctl start flanneld
-$ systemctl status flanneld
-$
+# etcd config key.  This is the configuration key that flannel queries
+# For address range assignment
+FLANNEL_ETCD_PREFIX="/kube-centos/network"
+
+# Any additional options that you want to pass
+FLANNEL_OPTIONS="-etcd-cafile=/etc/kubernetes/ssl/ca.pem -etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem -etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem"
 ```
 
-### 检查 flanneld
-
-``` bash
-$ journalctl  -u flanneld |grep 'Lease acquired'
-$ ifconfig flannel.1
-$
-```
-
-## 安装和配置 docker
-
-### 下载最新的 docker 二进制文件
-
-``` bash
-$ wget https://get.docker.com/builds/Linux/x86_64/docker-17.04.0-ce.tgz
-$ tar -xvf docker-17.04.0-ce.tgz
-$ cp docker/docker* /root/local/bin
-$ cp completion/bash/docker /etc/bash_completion.d/
-$
-```
-
-### 创建 docker 的 systemd unit 文件
-
-``` bash
-$ cat docker.service
-[Unit]
-Description=Docker Application Container Engine
-Documentation=http://docs.docker.io
-
-[Service]
-Environment="PATH=/root/local/bin:/usr/bin:/bin:/usr/sbin:/usr/bin"
-EnvironmentFile=-/run/flannel/docker
-ExecStart=/root/local/bin/dockerd --log-level=error $DOCKER_NETWORK_OPTIONS
-ExecReload=/bin/kill -s HUP $MAINPID
-Restart=on-failure
-RestartSec=5
-LimitNOFILE=infinity
-LimitNPROC=infinity
-LimitCORE=infinity
-Delegate=yes
-KillMode=process
-
-[Install]
-WantedBy=multi-user.target
-```
-
-+ dockerd 运行时会调用其它 docker 命令，如 docker-proxy，所以需要将 docker 命令所在的目录加到 PATH 环境变量中；
-+ flanneld 启动时将网络配置写入到 `/run/flannel/docker` 文件中的变量 `DOCKER_NETWORK_OPTIONS`，dockerd 命令行上指定该变量值来设置 docker0 网桥参数；
-+ 不能关闭默认开启的 `--iptables` 和 `--ip-masq` 选项；
-+ 如果内核版本比较新，建议使用 `overlay` 存储驱动；
-+ docker 从 1.13 版本开始，可能将 **iptables FORWARD chain的默认策略设置为DROP**，从而导致 ping 其它 Node 上的 Pod IP 失败，遇到这种情况时，需要手动设置策略为 `ACCEPT`：
-
-  ``` bash
-  $ sudo iptables -P FORWARD ACCEPT
-  $
-  ```
-
-+ 为了加快 pull image 的速度，可以使用国内的仓库镜像服务器，同时增加下载的并发数。(如果 dockerd 已经运行，则需要重启 dockerd 生效。)
-
-    ``` bash
-    $ cat /etc/docker/daemon.json
-    {
-      "registry-mirrors": ["https://docker.mirrors.ustc.edu.cn", "hub-mirror.c.163.com"],
-      "max-concurrent-downloads": 10
-    }
-    ```
-
-完整 unit 见 [docker.service](./systemd/docker.service)
-
-### 启动 dockerd
-
-``` bash
-$ sudo cp docker.service /etc/systemd/system/docker.service
-$ sudo systemctl daemon-reload
-$ sudo systemctl stop firewalld
-$ sudo iptables -F && sudo iptables -X && sudo iptables -F -t nat && sudo iptables -X -t nat
-$ sudo systemctl enable docker
-$ sudo systemctl start docker
-$
-```
-
-+ 需要关闭 firewalld，否则可能会重复创建的 iptables 规则；
-+ 最好清理旧的 iptables rules 和 chains 规则；
-
-
-### 检查 docker 服务
-
-``` bash
-$ docker version
-$
-```
+在FLANNEL_OPTIONS中增加TLS的配置。
 
 ## 安装和配置 kubelet
 
 kubelet 启动时向 kube-apiserver 发送 TLS bootstrapping 请求，需要先将 bootstrap token 文件中的 kubelet-bootstrap 用户赋予 system:node-bootstrapper cluster 角色(role)，
-然后 kublet 才能有权限创建认证请求(certificatesigningrequests)：
+然后 kubelet 才能有权限创建认证请求(certificate signing requests)：
 
 ``` bash
+$ cd /etc/kubernetes
 $ kubectl create clusterrolebinding kubelet-bootstrap \
   --clusterrole=system:node-bootstrapper \
   --user=kubelet-bootstrap
@@ -200,57 +83,74 @@ $ kubectl create clusterrolebinding kubelet-bootstrap \
 ### 下载最新的 kubelet 和 kube-proxy 二进制文件
 
 ``` bash
-$ wget https://dl.k8s.io/v1.6.1/kubernetes-server-linux-amd64.tar.gz
+$ wget https://dl.k8s.io/v1.6.0/kubernetes-server-linux-amd64.tar.gz
 $ tar -xzvf kubernetes-server-linux-amd64.tar.gz
 $ cd kubernetes
 $ tar -xzvf  kubernetes-src.tar.gz
-$ sudo cp -r ./server/bin/{kube-proxy,kubelet} /root/local/bin/
-$
+$ cp -r ./server/bin/{kube-proxy,kubelet} /usr/bin/
 ```
 
-### 创建 kubelet 的 systemd unit 文件
+### 创建 kubelet 的service配置文件
 
-``` bash
-$ mkdir /var/lib/kublet
-$ export ADDRESS=10.64.3.7
-$ export CLUSTER_DNS=10.254.0.2
-$ cat > kubelet.service <<EOF
+文件位置`/usr/lib/systemd/system/kubelet.serivce`。
+
+```ini
 [Unit]
-Description=Kubernetes Kubelet
+Description=Kubernetes Kubelet Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=docker.service
 Requires=docker.service
 
 [Service]
 WorkingDirectory=/var/lib/kubelet
-ExecStart=/root/local/bin/kubelet \\
-  --address=${ADDRESS} \\
-  --hostname-override=${ADDRESS} \\
-  --pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest \\
-  --experimental-bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \\
-  --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \\
-  --require-kubeconfig \\
-  --cert-dir=/etc/kubernetes/ssl \\
-  --cluster_dns=${CLUSTER_DNS} \\
-  --cluster_domain=cluster.local. \\
-  --hairpin-mode promiscuous-bridge \\
-  --allow-privileged=true \\
-  --serialize-image-pulls=false \\
-  --logtostderr=true \\
-  --v=2
+EnvironmentFile=-/etc/kubernetes/config
+EnvironmentFile=-/etc/kubernetes/kubelet
+ExecStart=/usr/bin/kubelet \
+            $KUBE_LOGTOSTDERR \
+            $KUBE_LOG_LEVEL \
+            $KUBELET_API_SERVER \
+            $KUBELET_ADDRESS \
+            $KUBELET_PORT \
+            $KUBELET_HOSTNAME \
+            $KUBE_ALLOW_PRIV \
+            $KUBELET_POD_INFRA_CONTAINER \
+            $KUBELET_ARGS
 Restart=on-failure
-RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-EOF
+```
+
+kubelet的配置文件`/etc/kubernetes/kubelet`。其中的IP地址更改为你的每台node节点的IP地址。
+
+``` bash
+###
+## kubernetes kubelet (minion) config
+#
+## The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
+KUBELET_ADDRESS="--address=172.20.0.113"
+#
+## The port for the info server to serve on
+#KUBELET_PORT="--port=10250"
+#
+## You may leave this blank to use the actual hostname
+KUBELET_HOSTNAME="--hostname-override=172.20.0.113"
+#
+## location of the api-server
+KUBELET_API_SERVER="--api-servers=http://172.20.0.113:8080"
+#
+## pod infrastructure container
+KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=sz-pg-oam-docker-hub-001.tendcloud.com/library/pod-infrastructure:rhel7"
+#
+## Add your own!
+KUBELET_ARGS="--cgroup-driver=systemd --cluster_dns=10.254.0.2 --experimental-bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig --kubeconfig=/etc/kubernetes/kubelet.kubeconfig --require-kubeconfig --cert-dir=/etc/kubernetes/ssl --cluster_domain=cluster.local. --hairpin-mode promiscuous-bridge --serialize-image-pulls=false"
 ```
 
 + `--address` 不能设置为 `127.0.0.1`，否则后续 Pods 访问 kubelet 的 API 接口时会失败，因为 Pods 访问的 `127.0.0.1` 指向自己而不是 kubelet；
 + 如果设置了 `--hostname-override` 选项，则 `kube-proxy` 也需要设置该选项，否则会出现找不到 Node 的情况；
 + `--experimental-bootstrap-kubeconfig` 指向 bootstrap kubeconfig 文件，kubelet 使用该文件中的用户名和 token 向 kube-apiserver 发送 TLS Bootstrapping 请求；
 + 管理员通过了 CSR 请求后，kubelet 自动在 `--cert-dir` 目录创建证书和私钥文件(`kubelet-client.crt` 和 `kubelet-client.key`)，然后写入 `--kubeconfig` 文件；
-+ 建议在 `--kubeconfig` 配置文件中指定 `kube-apiserver` 地址，如果未指定 `--api-servers` 选项，则必须指定 `--require-kubeconfig` 选项后才从配置文件中读取 kue-apiserver 的地址，否则 kubelet 启动后将找不到 kube-apiserver (日志中提示未找到 API Server），`kubectl get nodes` 不会返回对应的 Node 信息;
++ 建议在 `--kubeconfig` 配置文件中指定 `kube-apiserver` 地址，如果未指定 `--api-servers` 选项，则必须指定 `--require-kubeconfig` 选项后才从配置文件中读取 kube-apiserver 的地址，否则 kubelet 启动后将找不到 kube-apiserver (日志中提示未找到 API Server），`kubectl get nodes` 不会返回对应的 Node 信息;
 + `--cluster_dns` 指定 kubedns 的 Service IP(可以先分配，后续创建 kubedns 服务时指定该 IP)，`--cluster_domain` 指定域名后缀，这两个参数同时指定后才会生效；
 
 完整 unit 见 [kubelet.service](./systemd/kubelet.service)
@@ -258,12 +158,10 @@ EOF
 ### 启动kublet
 
 ``` bash
-$ sudo cp kubelet.service /etc/systemd/system/kubelet.service
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable kubelet
-$ sudo systemctl start kubelet
+$ systemctl daemon-reload
+$ systemctl enable kubelet
+$ systemctl start kubelet
 $ systemctl status kubelet
-$
 ```
 
 ### 通过 kublet 的 TLS 证书请求
@@ -304,34 +202,41 @@ $ ls -l /etc/kubernetes/ssl/kubelet*
 
 ## 配置 kube-proxy
 
-### 创建 kube-proxy 的 systemd unit 文件
+**创建 kube-proxy 的service配置文件**
 
-``` bash
-$ sudo mkdir -p /var/lib/kube-proxy
-$ export ADDRESS=10.64.3.7
-$ export CLUSTER_CIDR=10.254.0.0/16
-$ cat > kube-proxy.service <<EOF
+文件路径`/usr/lib/systemd/system/kube-proxy.service`。
+
+```ini
 [Unit]
 Description=Kubernetes Kube-Proxy Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
 
 [Service]
-WorkingDirectory=/var/lib/kube-proxy
-ExecStart=/root/local/bin/kube-proxy \\
-  --bind-address=${ADDRESS} \\
-  --hostname-override=${ADDRESS} \\
-  --cluster-cidr=${CLUSTER_CIDR} \\
-  --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig \\
-  --logtostderr=true \\
-  --v=2
+EnvironmentFile=-/etc/kubernetes/config
+EnvironmentFile=-/etc/kubernetes/proxy
+ExecStart=/usr/bin/kube-proxy \
+	    $KUBE_LOGTOSTDERR \
+	    $KUBE_LOG_LEVEL \
+	    $KUBE_MASTER \
+	    $KUBE_PROXY_ARGS
 Restart=on-failure
-RestartSec=5
 LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
-EOF
+```
+
+kube-proxy配置文件`/etc/kubernetes/proxy`。
+
+``` bash
+###
+# kubernetes proxy config
+
+# default config should be adequate
+
+# Add your own!
+KUBE_PROXY_ARGS="--bind-address=172.20.0.113 --hostname-override=172.20.0.113 --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig --cluster-cidr=10.254.0.0/16"
 ```
 
 + `--hostname-override` 参数值必须与 kubelet 的值一致，否则 kube-proxy 启动后会找不到该 Node，从而不会创建任何 iptables 规则；
@@ -344,10 +249,61 @@ EOF
 ### 启动 kube-proxy
 
 ``` bash
-$ sudo cp kube-proxy.service /etc/systemd/system/
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable kube-proxy
-$ sudo systemctl start kube-proxy
+$ systemctl daemon-reload
+$ systemctl enable kube-proxy
+$ systemctl start kube-proxy
 $ systemctl status kube-proxy
-$
 ```
+## 验证测试
+
+我们创建一个niginx的service试一下集群是否可用。
+
+```bash
+$ kubectl run nginx --replicas=2 --labels="run=load-balancer-example" --image=sz-pg-oam-docker-hub-001.tendcloud.com/library/nginx:1.9  --port=80
+deployment "nginx" created
+$ kubectl expose deployment nginx --type=NodePort --name=example-service
+service "example-service" exposed
+$ kubectl describe svc example-service
+Name:			example-service
+Namespace:		default
+Labels:			run=load-balancer-example
+Annotations:		<none>
+Selector:		run=load-balancer-example
+Type:			NodePort
+IP:			10.254.62.207
+Port:			<unset>	80/TCP
+NodePort:		<unset>	32724/TCP
+Endpoints:		172.30.60.2:80,172.30.94.2:80
+Session Affinity:	None
+Events:			<none>
+$ curl "10.254.62.207:80"
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
+访问`172.20.0.113:32724`或`172.20.0.114:32724`或者`172.20.0.115:32724`都可以得到nginx的页面。
+
+![welcome-nginx](http://olz1di9xf.bkt.clouddn.com/kubernetes-installation-test-nginx.png)

@@ -1,18 +1,17 @@
 # 创建高可用 etcd 集群
 
-kuberntes 系统使用 etcd 存储所有数据，本文档介绍部署一个三节点高可用 etcd 集群的步骤，这三个节点复用 kubernetes master 机器，分别命名为`etcd-host0`、`etcd-host1`、`etcd-host2`：
+kuberntes 系统使用 etcd 存储所有数据，本文档介绍部署一个三节点高可用 etcd 集群的步骤，这三个节点复用 kubernetes master 机器，分别命名为`sz-pg-oam-docker-test-001.tendcloud.com`、`sz-pg-oam-docker-test-002.tendcloud.com`、`sz-pg-oam-docker-test-003.tendcloud.com`：
 
-+ etcd-host0：10.64.3.7
-+ etcd-host1：10.64.3.8
-+ etcd-host2：10.66.3.86
++ sz-pg-oam-docker-test-001.tendcloud.com：172.20.0.113
++ sz-pg-oam-docker-test-002.tendcloud.com：172.20.0.114
++ sz-pg-oam-docker-test-003.tendcloud.com：172.20.0.115
 
 ## TLS 认证文件
 
 需要为 etcd 集群创建加密通信的 TLS 证书，这里复用以前创建的 kubernetes 证书
 
 ``` bash
-$ sudo cp ca.pem kubernetes-key.pem kubernetes.pem /etc/kubernetes/ssl
-$
+$ cp ca.pem kubernetes-key.pem kubernetes.pem /etc/kubernetes/ssl
 ```
 
 + kubernetes 证书的 `hosts` 字段列表中包含上面三台机器的 IP，否则后续证书校验会失败；
@@ -25,7 +24,6 @@ $
 $ https://github.com/coreos/etcd/releases/download/v3.1.5/etcd-v3.1.5-linux-amd64.tar.gz
 $ tar -xvf etcd-v3.1.4-linux-amd64.tar.gz
 $ sudo mv etcd-v3.1.4-linux-amd64/etcd* /root/local/bin
-$
 ```
 
 ## 创建 etcd 的 systemd unit 文件
@@ -33,8 +31,8 @@ $
 注意替换 `ETCD_NAME` 和 `INTERNAL_IP` 变量的值；
 
 ``` bash
-$ export ETCD_NAME=etcd-host0
-$ export INTERNAL_IP=10.64.3.7
+$ export ETCD_NAME=sz-pg-oam-docker-test-001.tendcloud.com
+$ export INTERNAL_IP=172.20.0.113
 $ sudo mkdir -p /var/lib/etcd /var/lib/etcd
 $ cat > etcd.service <<EOF
 [Unit]
@@ -61,7 +59,7 @@ ExecStart=/root/local/bin/etcd \\
   --listen-client-urls https://${INTERNAL_IP}:2379,https://127.0.0.1:2379 \\
   --advertise-client-urls https://${INTERNAL_IP}:2379 \\
   --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster etcd-host0=https://10.64.3.7:2380,etcd-host1=https://10.64.3.8:2380,etcd-host2=https://10.66.3.86:2380 \\
+  --initial-cluster sz-pg-oam-docker-test-001.tendcloud.com=https://172.20.0.113:2380,sz-pg-oam-docker-test-002.tendcloud.com=https://172.20.0.114:2380,sz-pg-oam-docker-test-003.tendcloud.com=https://172.20.0.115:2380 \\
   --initial-cluster-state new \\
   --data-dir=/var/lib/etcd
 Restart=on-failure
@@ -88,24 +86,23 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl enable etcd
 $ sudo systemctl start etcd
 $ systemctl status etcd
-$
 ```
 
-在所有的 kubernetes master 节点重复上面的步骤，直到所有机器的 etcd 服务都已启动；
+在所有的 kubernetes master 节点重复上面的步骤，直到所有机器的 etcd 服务都已启动。
 
 ## 验证服务
 
 在任一 kubernetes master 机器上执行如下命令：
 
 ``` bash
-$ /root/local/bin/etcdctl \
+$ etcdctl \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
   cluster-health
-member 3ff8f8a608b2aa8c is healthy: got healthy result from https://10.64.3.7:2379
-member 4e4b4114a5fa227e is healthy: got healthy result from https://10.66.3.86:2379
-member 602ea91645c798fd is healthy: got healthy result from https://10.64.3.8:2379
+member 3ff8f8a608b2aa8c is healthy: got healthy result from https://172.20.0.113:2379
+member 4e4b4114a5fa227e is healthy: got healthy result from https://172.20.0.115:2379
+member 602ea91645c798fd is healthy: got healthy result from https://172.20.0.114:2379
 cluster is healthy
 ```
 

@@ -9,6 +9,8 @@ kubernetes node 节点包含如下组件：
 
 ## 目录和文件
 
+我们再检查一下前几步中，
+
 ``` bash
 $ mkdir -p /etc/kubernetes/ssl
 $ cp ca.pem kubernetes.pem kubernetes-key.pem /etc/kubernetes/ssl

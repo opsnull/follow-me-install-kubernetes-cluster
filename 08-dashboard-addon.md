@@ -13,7 +13,7 @@ dashboard-controller.yaml  dashboard-service.yaml
 
 ![dashboard-403.png](./images/dashboard-403.png)
 
-解决办法是：定义 dashboard 专用的 Role、ServiceAccount，然后定义 RoleBinding 将 Role 和 ServiceAccount 绑定，具体参考 [dashboard-rbac.yaml文件](./manifests/dashboard/dashboard-rbac.yaml)
+解决办法是：定义一个名为 dashboard 的 ServiceAccount，然后将它和 Cluster Role view 绑定，具体参考 [dashboard-rbac.yaml文件](./manifests/dashboard/dashboard-rbac.yaml)
 
 已经修改好的 yaml 文件见：[dashboard](./manifests/dashboard)
 

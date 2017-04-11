@@ -9,6 +9,12 @@ $ ls *.yaml
 dashboard-controller.yaml  dashboard-service.yaml
 ```
 
+由于 `kube-apiserver` 启用了 `RBAC` 授权，而官方源码目录的 `dashboard-controller.yaml` 没有定义授权的 ServiceAccount，所以后续访问 `kube-apiserver` 的 API 时会被拒绝，前端界面提示：
+
+![dashboard-403.png](./images/dashboard-403.png)
+
+解决办法是：定义 dashboard 专用的 Role、ServiceAccount，然后定义 RoleBinding 将 Role 和 ServiceAccount 绑定，具体参考 [dashboard-rbac.yaml文件](./manifests/dashboard/dashboard-rbac.yaml)
+
 已经修改好的 yaml 文件见：[dashboard](./manifests/dashboard)
 
 ## 配置dashboard-service
@@ -24,12 +30,15 @@ $ diff dashboard-service.yaml.orig dashboard-service.yaml
 ## 配置dashboard-controller
 
 ``` bash
-$ diff dashboard-controller.yaml.orig dashboard-controller.yaml
-23c23
+20a21
+>       serviceAccountName: dashboard
+23c24
 <         image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.0
 ---
 >         image: cokabug/kubernetes-dashboard-amd64:v1.6.0
 ```
+
++ 使用名为 dashboard 的自定义 ServiceAccount；
 
 ## 执行所有定义文件
 
@@ -41,9 +50,11 @@ dashboard-controller.yaml  dashboard-service.yaml
 $ kubectl create -f  .
 service "kubernetes-dashboard" created
 deployment "kubernetes-dashboard" created
+serviceaccount "dashboard" created
+clusterrole "dashboard" created
+clusterrolebinding "dashboard-extended" created
+rolebinding "dashboard-default" created
 ```
-
-
 
 ## 检查执行结果
 

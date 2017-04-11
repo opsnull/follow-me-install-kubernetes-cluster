@@ -18,6 +18,7 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      serviceAccountName: dashboard
       containers:
       - name: kubernetes-dashboard
         image: cokabug/kubernetes-dashboard-amd64:v1.6.0

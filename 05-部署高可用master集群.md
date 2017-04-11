@@ -141,7 +141,7 @@ KUBE_API_ADDRESS="--advertise-address=172.20.0.113 --bind-address=172.20.0.113 -
 #KUBELET_PORT="--kubelet-port=10250"
 #
 ## Comma separated list of nodes in the etcd cluster
-KUBE_ETCD_SERVERS="--etcd-servers=http://172.20.0.113:2379,172.20.0.114:2379,172.20.0.115:2379"
+KUBE_ETCD_SERVERS="--etcd-servers=https://172.20.0.113:2379,172.20.0.114:2379,172.20.0.115:2379"
 #
 ## Address range to use for services
 KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.254.0.0/16"
@@ -293,76 +293,10 @@ $ systemctl start kube-scheduler
 
 ``` bash
 $ kubectl get componentstatuses
-NAME                 STATUS      MESSAGE                                                                                   ERROR
-etcd-2               Unhealthy   Get http://172.20.0.113:2379/health: malformed HTTP response "\x15\x03\x01\x00\x02\x02"   
-scheduler            Healthy     ok                                                                                        
-controller-manager   Healthy     ok                                                                                        
-etcd-0               Healthy     {"health": "true"}                                                                        
-etcd-1               Healthy     {"health": "true"}  
+NAME                 STATUS    MESSAGE              ERROR
+scheduler            Healthy   ok                   
+controller-manager   Healthy   ok                   
+etcd-0               Healthy   {"health": "true"}   
+etcd-1               Healthy   {"health": "true"}   
+etcd-2               Healthy   {"health": "true"}   
 ```
-## 问题
-
-**问题一**
-
-`kubectl get componentstatuses`时有有如下报错信息：
-
-```
-etcd-2               Unhealthy   Get http://172.20.0.113:2379/health: malformed HTTP response "\x15\x03\x01\x00\x02\x02" 
-```
-
-与TLS认证有关。
-
-**问题二**
-
-kube-apiserver启动时有报错信息；
-
-```
-Apr 11 18:06:25 sz-pg-oam-docker-test-001.tendcloud.com kube-apiserver[25718]: E0411 18:06:25.522715   25718 reflector.go:201] k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion/factory.go:70: Failed to list *api.ResourceQuota: the server cannot complete the requested operation at this time, try again later (get resourcequotas)
-Apr 11 18:06:25 sz-pg-oam-docker-test-001.tendcloud.com kube-apiserver[25718]: E0411 18:06:25.951292   25718 storage_rbac.go:140] unable to initialize clusterroles: the server cannot complete the requested operation at this time, try again later (get clusterroles.rbac.authorization.k8s.io)
-```
-
-这个错误是否影响kubernentes运行？
-
-**问题三**
-
-kubectl get命令无法正常使用。
-
-```
-$kubectl --kubeconfig ~/.kube/config get all
-Unable to connect to the server: unexpected EOF
-The connection to the server 172.20.0.113:6443 was refused - did you specify the right host or port?
-The connection to the server 172.20.0.113:6443 was refused - did you specify the right host or port?
-```
-
-查看config。
-
-```Yaml
-apiVersion: v1
-clusters:
-- cluster:
-    server: http://sz-pg-oam-docker-test-001:8080
-  name: default-cluster
-- cluster:
-    certificate-authority-data: REDACTED
-    server: https://172.20.0.113:6443
-  name: kubernetes
-contexts:
-- context:
-    cluster: default-cluster
-    user: default-admin
-  name: default-context
-- context:
-    cluster: kubernetes
-    user: admin
-  name: kubernetes
-current-context: kubernetes
-kind: Config
-preferences: {}
-users:
-- name: admin
-  user:
-    client-certificate-data: REDACTED
-    client-key-data: REDACTED
-```
-
-而`~/.kube/config`文件也存在，6443端口也在，为什么无法访问？

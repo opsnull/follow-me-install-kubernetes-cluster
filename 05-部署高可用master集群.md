@@ -6,21 +6,20 @@ kubernetes master 节点包含的组件：
 + kube-scheduler
 + kube-controller-manager
 
-目前这三个组件需要部署在同一台机器上：
+目前这三个组件需要部署在同一台机器上。
 
 + `kube-scheduler`、`kube-controller-manager` 和 `kube-apiserver` 三者的功能紧密相关；
 + 同时只能有一个 `kube-scheduler`、`kube-controller-manager` 进程处于工作状态，如果运行多个，则需要通过选举产生一个 leader；
 
 本文档记录部署一个三个节点的高可用 kubernetes master 集群步骤。（后续创建一个 load balancer 来代理访问 kube-apiserver 的请求）
 
-
 ## TLS 证书文件
 
+pem和token.csv证书文件我们在[TLS证书和秘钥](./01-TLS证书和秘钥.md)这一步中已经创建过了。我们再检查一下。
+
 ``` bash
-$ sudo mkdir -p /etc/kubernetes/ssl
-$ sudo cp token.csv /etc/kubernetes/ssl
-$ sudo cp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem /etc/kubernetes/ssl
-$
+$ ls /etc/kubernetes/ssl
+admin-key.pem  admin.pem  ca-key.pem  ca.pem  kube-proxy-key.pem  kube-proxy.pem  kubernetes-key.pem  kubernetes.pem
 ```
 
 ## 下载最新版本的二进制文件
@@ -30,7 +29,7 @@ $
 1. 从 [github release 页面](https://github.com/kubernetes/kubernetes/releases) 下载发布版 tarball，解压后再执行下载脚本
 
     ``` shell
-    $ wget https://github.com/kubernetes/kubernetes/releases/download/v1.6.1/kubernetes.tar.gz
+    $ wget https://github.com/kubernetes/kubernetes/releases/download/v1.6.0/kubernetes.tar.gz
     $ tar -xzvf kubernetes.tar.gz
     ...
     $ cd kubernetes
@@ -38,13 +37,13 @@ $
     ...
     ```
 
-1. 从 [`CHANGELOG`页面](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md) 下载 `client` 或 `server` tarball 文件
+2. 从 [`CHANGELOG`页面](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md) 下载 `client` 或 `server` tarball 文件
 
     `server` 的 tarball `kubernetes-server-linux-amd64.tar.gz` 已经包含了 `client`(`kubectl`) 二进制文件，所以不用单独下载`kubernetes-client-linux-amd64.tar.gz`文件；
 
     ``` shell
-    $ # wget https://dl.k8s.io/v1.6.1/kubernetes-client-linux-amd64.tar.gz
-    $ wget https://dl.k8s.io/v1.6.1/kubernetes-server-linux-amd64.tar.gz
+    $ # wget https://dl.k8s.io/v1.6.0/kubernetes-client-linux-amd64.tar.gz
+    $ wget https://dl.k8s.io/v1.6.0/kubernetes-server-linux-amd64.tar.gz
     $ tar -xzvf kubernetes-server-linux-amd64.tar.gz
     ...
     $ cd kubernetes
@@ -54,60 +53,74 @@ $
 将二进制文件拷贝到指定路径
 
 ``` bash
-$ sudo cp -r server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /root/local/bin/
-$
+$ cp -r server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /root/local/bin/
 ```
 
 ## 配置和启动 kube-apiserver
 
-### 创建 kube-apiserver 的 systemd unit 文件
+### 创建 kube-apiserver的service配置文件
 
-``` bash
-$ export INTERNAL_IP=10.64.3.7  # 部署时需要修改该环境变量值
-$ cat  > kube-apiserver.service <<EOF
+serivce配置文件`/usr/lib/systemd/system/kube-apiserver.service`内容：
+
+```
 [Unit]
-Description=Kubernetes API Server
+Description=Kubernetes API Service
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
+After=etcd.service
 
 [Service]
-ExecStart=/root/local/bin/kube-apiserver \\
-  --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
-  --advertise-address=${INTERNAL_IP} \\
-  --bind-address=${INTERNAL_IP} \\
-  --insecure-bind-address=${INTERNAL_IP} \\
-  --authorization-mode=RBAC \\
-  --runtime-config=rbac.authorization.k8s.io/v1alpha1 \\
-  --kubelet-https=true \\
-  --experimental-bootstrap-token-auth \\
-  --token-auth-file=/etc/kubernetes/token.csv \\
-  --service-cluster-ip-range=10.254.0.0/16 \\
-  --service-node-port-range=30000-32767 \\
-  --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem \\
-  --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem \\
-  --client-ca-file=/etc/kubernetes/ssl/ca.pem \\
-  --service-account-key-file=/etc/kubernetes/ca-key.pem \\
-  --etcd-cafile=/etc/kubernetes/ssl/ca.pem \\
-  --etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem \\
-  --etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem \\
-  --etcd-servers=https://10.64.3.7:2379,https://10.64.3.8:2379,https://10.66.3.86:2379 \\
-  --enable-swagger-ui=true \\
-  --allow-privileged=true \\
-  --apiserver-count=3 \\
-  --audit-log-maxage=30 \\
-  --audit-log-maxbackup=3 \\
-  --audit-log-maxsize=100 \\
-  --audit-log-path=/var/lib/audit.log \\
-  --event-ttl=1h \\
-  --v=2
+EnvironmentFile=-/etc/kubernetes/config
+EnvironmentFile=-/etc/kubernetes/apiserver
+ExecStart=/usr/bin/kube-apiserver \
+	    $KUBE_LOGTOSTDERR \
+	    $KUBE_LOG_LEVEL \
+	    $KUBE_ETCD_SERVERS \
+	    $KUBE_API_ADDRESS \
+	    $KUBE_API_PORT \
+	    $KUBELET_PORT \
+	    $KUBE_ALLOW_PRIV \
+	    $KUBE_SERVICE_ADDRESSES \
+	    $KUBE_ADMISSION_CONTROL \
+	    $KUBE_API_ARGS
 Restart=on-failure
-RestartSec=5
 Type=notify
 LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
-EOF
+```
+
+apiserver配置文件`/etc/kubernetes/apiserver`内容为：
+
+``` bash
+###
+## kubernetes system config
+##
+## The following values are used to configure the kube-apiserver
+##
+#
+## The address on the local server to listen to.
+#KUBE_API_ADDRESS="--insecure-bind-address=sz-pg-oam-docker-test-001.tendcloud.com"
+KUBE_API_ADDRESS="--advertise-address=172.20.0.113 --bind-address=172.20.0.113 --insecure-bind-address=172.20.0.113"
+#
+## The port on the local server to listen on.
+#KUBE_API_PORT="--port=8080"
+#
+## Port minions listen on
+#KUBELET_PORT="--kubelet-port=10250"
+#
+## Comma separated list of nodes in the etcd cluster
+KUBE_ETCD_SERVERS="--etcd-servers=http://172.20.0.113:2379,172.20.0.114:2379,172.20.0.115:2379"
+#
+## Address range to use for services
+KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.254.0.0/16"
+#
+## default admission control policies
+KUBE_ADMISSION_CONTROL="--admission-control=ServiceAccount,NamespaceLifecycle,NamespaceExists,LimitRanger,ResourceQuota"
+#
+## Add your own!
+KUBE_API_ARGS="--authorization-mode=RBAC --runtime-config=rbac.authorization.k8s.io/v1alpha1 --kubelet-https=true --experimental-bootstrap-token-auth --token-auth-file=/etc/kubernetes/token.csv --service-node-port-range=30000-32767 --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem --client-ca-file=/etc/kubernetes/ssl/ca.pem --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem --etcd-cafile=/etc/kubernetes/ssl/ca.pem --etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem --etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem --enable-swagger-ui=true --allow-privileged=true --apiserver-count=3 --audit-log-maxage=30 --audit-log-maxbackup=3 --audit-log-maxsize=100 --audit-log-path=/var/lib/audit.log --event-ttl=1h --v=2"
 ```
 
 + `--authorization-mode=RBAC` 指定在安全端口使用 RBAC 授权模式，拒绝未通过授权的请求；
@@ -125,12 +138,10 @@ EOF
 ### 启动 kube-apiserver
 
 ``` bash
-$ sudo cp kube-apiserver.service /etc/systemd/system/
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable kube-apiserver
-$ sudo systemctl start kube-apiserver
-$ sudo systemctl status kube-apiserver
-$
+$ systemctl daemon-reload
+$ systemctl enable kube-apiserver
+$ systemctl start kube-apiserver
+$ systemctl status kube-apiserver
 ```
 
 ## 配置和启动 kube-controller-manager
@@ -187,11 +198,10 @@ EOF
 ### 启动 kube-controller-manager
 
 ``` bash
-$ sudo cp kube-controller-manager.service /etc/systemd/system/
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable kube-controller-manager
-$ sudo systemctl start kube-controller-manager
-$
+$ cp kube-controller-manager.service /etc/systemd/system/
+$ systemctl daemon-reload
+$ systemctl enable kube-controller-manager
+$ systemctl start kube-controller-manager
 ```
 
 ## 配置和启动 kube-scheduler
@@ -199,7 +209,7 @@ $
 ### 创建 kube-controller-manager 的 systemd unit 文件
 
 ``` bash
-$ export INTERNAL_IP=10.64.3.7 # 部署时需要修改该环境变量值
+$ export INTERNAL_IP=172.20.0.113 # 部署时需要修改该环境变量值
 $ cat > kube-scheduler.service <<EOF
 [Unit]
 Description=Kubernetes Scheduler

@@ -1,19 +1,38 @@
 [Unit]
 Description=Docker Application Container Engine
-Documentation=http://docs.docker.io
+Documentation=http://docs.docker.com
+After=network.target
+Wants=docker-storage-setup.service
+Requires=docker-cleanup.timer
 
 [Service]
-Environment="PATH=/root/local/bin:/usr/bin:/bin:/usr/sbin:/usr/bin"
-EnvironmentFile=-/run/flannel/docker
-ExecStart=/root/local/bin/dockerd  $DOCKER_NETWORK_OPTIONS --log-level=error
+Type=notify
+NotifyAccess=all
+EnvironmentFile=-/etc/sysconfig/docker
+EnvironmentFile=-/etc/sysconfig/docker-storage
+EnvironmentFile=-/etc/sysconfig/docker-network
+Environment=GOTRACEBACK=crash
+Environment=DOCKER_HTTP_HOST_COMPAT=1
+Environment=PATH=/usr/libexec/docker:/usr/bin:/usr/sbin
+ExecStart=/usr/bin/dockerd-current \
+          --add-runtime docker-runc=/usr/libexec/docker/docker-runc-current \
+          --default-runtime=docker-runc \
+          --exec-opt native.cgroupdriver=systemd \
+          --userland-proxy-path=/usr/libexec/docker/docker-proxy-current \
+          $OPTIONS \
+          $DOCKER_STORAGE_OPTIONS \
+          $DOCKER_NETWORK_OPTIONS \
+          $ADD_REGISTRY \
+          $BLOCK_REGISTRY \
+          $INSECURE_REGISTRY \
+          --insecure-registry=sz-pg-oam-docker-hub-001.tendcloud.com
 ExecReload=/bin/kill -s HUP $MAINPID
-Restart=on-failure
-RestartSec=5
-LimitNOFILE=infinity
-LimitNPROC=infinity
+LimitNOFILE=1048576
+LimitNPROC=1048576
 LimitCORE=infinity
-Delegate=yes
-KillMode=process
+TimeoutStartSec=0
+Restart=on-abnormal
+MountFlags=slave
 
 [Install]
 WantedBy=multi-user.target

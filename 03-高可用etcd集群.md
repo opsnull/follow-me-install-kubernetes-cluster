@@ -100,9 +100,11 @@ $ etcdctl \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
   cluster-health
-member 3ff8f8a608b2aa8c is healthy: got healthy result from https://172.20.0.113:2379
-member 4e4b4114a5fa227e is healthy: got healthy result from https://172.20.0.115:2379
-member 602ea91645c798fd is healthy: got healthy result from https://172.20.0.114:2379
+2017-04-11 15:17:09.082250 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+2017-04-11 15:17:09.083681 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+member 9a2ec640d25672e5 is healthy: got healthy result from https://172.20.0.115:2379
+member bc6f27ae3be34308 is healthy: got healthy result from https://172.20.0.114:2379
+member e5c92ea26c4edba0 is healthy: got healthy result from https://172.20.0.113:2379
 cluster is healthy
 ```
 

@@ -18,7 +18,7 @@ $
 
 ## 安装和配置 flanneld
 
-### 向 etcd 写入 flanneld 使用的 Pod 网络段信息
+### 向 etcd 写入集群 Pod 网络段信息
 
 ``` bash
 $ export FLANNEL_ETCD_PREFIX="/kubernetes/network"

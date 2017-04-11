@@ -10,8 +10,8 @@
 
 ## 集群详情
 
-+ Kubernetes 1.6.1
-+ Docker  17.04.0-ce
++ Kubernetes 1.6.0
++ Docker  1.12.5
 + Etcd 3.1.5
 + Flanneld 0.7 vxlan 网络
 + TLS 认证通信 (所有组件，如 etcd、kubernetes master 和 node)
@@ -23,13 +23,13 @@
 ## 步骤介绍
 
 1. [创建 TLS 通信所需的证书和秘钥](01-TLS证书和秘钥.md)
-1. [创建 kubeconfig 文件](02-kubeconfig文件.md)
-1. [创建三节点的高可用 etcd 集群](03-高可用etcd集群.md)
-1. [kubectl命令行工具](04-kubectl命令行工具.md)
-1. [部署高可用 master 集群](05-部署高可用master集群.md)
-1. [部署 node 节点](06-部署node节点.md)
-1. [DNS 插件](07-dns-addon.md)
-1. [Dashboard 插件](08-dashboard-addon.md)
-1. [Heapster 插件](09-heapster-addon.md)
-1. [EFK 插件](10-EFK-addons.md)
-1. [创建私有 docker registry](11-创建私有docker-registry.md)
+2. [创建 kubeconfig 文件](02-kubeconfig文件.md)
+3. [创建三节点的高可用 etcd 集群](03-高可用etcd集群.md)
+4. [kubectl命令行工具](04-kubectl命令行工具.md)
+5. [部署高可用 master 集群](05-部署高可用master集群.md)
+6. [部署 node 节点](06-部署node节点.md)
+7. [DNS 插件](07-dns-addon.md)
+8. [Dashboard 插件](08-dashboard-addon.md)
+9. [Heapster 插件](09-heapster-addon.md)
+10. [EFK 插件](10-EFK-addons.md)
+11. [创建私有 docker registry](11-创建私有docker-registry.md)

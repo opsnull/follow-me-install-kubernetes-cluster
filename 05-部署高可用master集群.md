@@ -91,6 +91,36 @@ LimitNOFILE=65536
 WantedBy=multi-user.target
 ```
 
+`/etc/kubernetes/config`文件的内容为：
+
+```ini
+###
+# kubernetes system config
+#
+# The following values are used to configure various aspects of all
+# kubernetes services, including
+#
+#   kube-apiserver.service
+#   kube-controller-manager.service
+#   kube-scheduler.service
+#   kubelet.service
+#   kube-proxy.service
+# logging to stderr means we get it in the systemd journal
+KUBE_LOGTOSTDERR="--logtostderr=true"
+
+# journal message level, 0 is debug
+KUBE_LOG_LEVEL="--v=0"
+
+# Should this cluster be allowed to run privileged docker containers
+KUBE_ALLOW_PRIV="--allow-privileged=true"
+
+# How the controller-manager, scheduler, and proxy find the apiserver
+#KUBE_MASTER="--master=http://sz-pg-oam-docker-test-001.tendcloud.com:8080"
+KUBE_MASTER="--master=http://172.20.0.113:8080"
+```
+
+该配置文件同时被kube-apiserver、kube-controller-manager、kube-scheduler、kubelet、kube-proxy使用。
+
 apiserver配置文件`/etc/kubernetes/apiserver`内容为：
 
 ``` Ini

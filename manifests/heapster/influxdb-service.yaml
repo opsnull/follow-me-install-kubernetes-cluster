@@ -10,8 +10,13 @@ metadata:
   name: monitoring-influxdb
   namespace: kube-system
 spec:
+  type: NodePort
   ports:
   - port: 8086
     targetPort: 8086
+    name: http
+  - port: 8083
+    targetPort: 8083
+    name: admin
   selector:
     k8s-app: influxdb

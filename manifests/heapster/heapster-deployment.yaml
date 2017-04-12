@@ -11,9 +11,10 @@ spec:
         task: monitoring
         k8s-app: heapster
     spec:
+      serviceAccountName: heapster
       containers:
       - name: heapster
-        image: lvanneo/heapster-amd64:v1.3.0-beta.1
+        image: sz-pg-oam-docker-hub-001.tendcloud.com/library/heapster-amd64:v1.3.0-beta.1
         imagePullPolicy: IfNotPresent
         command:
         - /heapster

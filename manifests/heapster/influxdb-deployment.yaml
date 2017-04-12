@@ -13,10 +13,15 @@ spec:
     spec:
       containers:
       - name: influxdb
-        image: lvanneo/heapster-influxdb-amd64:v1.1.1
+        image: sz-pg-oam-docker-hub-001.tendcloud.com/library/heapster-influxdb-amd64:v1.1.1
         volumeMounts:
         - mountPath: /data
           name: influxdb-storage
+        - mountPath: /etc/
+          name: influxdb-config
       volumes:
       - name: influxdb-storage
         emptyDir: {}
+      - name: influxdb-config
+        configMap:
+          name: influxdb-config

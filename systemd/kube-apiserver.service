@@ -28,7 +28,7 @@ ExecStart=/root/local/bin/kube-apiserver \
   --runtime-config=rbac.authorization.k8s.io/v1alpha1 \
   --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem \
   --service-cluster-ip-range=10.254.0.0/16 \
-  --service-node-port-range=30000-32767 \
+  --service-node-port-range=8400-9000 \
   --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
   --experimental-bootstrap-token-auth \

@@ -2,14 +2,24 @@
 
 官方文件目录：`kubernetes/cluster/addons/dashboard`
 
-使用的文件
+我们使用的文件
 
 ``` bash
 $ ls *.yaml
-dashboard-controller.yaml  dashboard-service.yaml
+dashboard-controller.yaml  dashboard-service.yaml dashboard-rbac.yaml
 ```
 
 已经修改好的 yaml 文件见：[dashboard](./manifests/dashboard)
+
+由于 `kube-apiserver` 启用了 `RBAC` 授权，而官方源码目录的 `dashboard-controller.yaml` 没有定义授权的 ServiceAccount，所以后续访问 `kube-apiserver` 的 API 时会被拒绝，web中提示：
+
+```
+Forbidden (403)
+
+User "system:serviceaccount:kube-system:default" cannot list jobs.batch in the namespace "default". (get jobs.batch)
+```
+
+增加了一个`dashboard-rbac.yaml`文件，定义一个名为 dashboard 的 ServiceAccount，然后将它和 Cluster Role view 绑定。
 
 ## 配置dashboard-service
 
@@ -70,7 +80,7 @@ kubernetes-dashboard-1339745653-pmn6z   1/1       Running   0          4m
 有以下三种方式：
 
 - kubernetes-dashboard 服务暴露了 NodePort，可以使用 `http://NodeIP:nodePort` 地址访问 dashboard；
-- 通过 kube-apiserver 访问 dashboard；
+- 通过 kube-apiserver 访问 dashboard（https 6443端口和http 8080端口方式）；
 - 通过 kubectl proxy 访问 dashboard：
 
 ### 通过 kubectl proxy 访问 dashboard
@@ -98,8 +108,20 @@ KubeDNS is running at https://172.20.0.113:6443/api/v1/proxy/namespaces/kube-sys
 kubernetes-dashboard is running at https://172.20.0.113:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
 ```
 
-浏览器访问 URL：`https://172.20.0.113:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`
+浏览器访问 URL：`https://172.20.0.113:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`（浏览器会提示证书验证，因为通过加密通道，以改方式访问的话，需要提前导入证书到你的计算机中）。这是我当时在这遇到的坑：[通过 kube-apiserver 访问dashboard，提示User "system:anonymous" cannot proxy services in the namespace "kube-system". #5](https://github.com/opsnull/follow-me-install-kubernetes-cluster/issues/5)，已经解决。
 
-![kubernetes-dashboard](./images/dashboard.png)
+**导入证书**
 
-由于缺少 Heapster 插件，当前 dashboard 不能展示 Pod、Nodes 的 CPU、内存等 metric 图形；
+将生成的admin.pem证书转换格式
+
+```
+openssl pkcs12 -export -in admin.pem  -out admin.p12 -inkey admin-key.pem
+```
+
+将生成的`admin.p12`证书导入的你的电脑，导出的时候记住你设置的密码，导入的时候还要用到。
+
+如果你不想使用**https**的话，可以直接访问insecure port 8080端口:`http://172.20.0.113:8080/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`
+
+![kubernetes-dashboard](http://olz1di9xf.bkt.clouddn.com/kubernetes-dashboard-raw.jpg)
+
+由于缺少 Heapster 插件，当前 dashboard 不能展示 Pod、Nodes 的 CPU、内存等 metric 图形。

@@ -78,7 +78,7 @@ $ diff kubedns-svc.yaml.base kubedns-svc.yaml
 >   clusterIP: 10.254.0.2
 ```
 
-+ spec.clusterIP = 10.254.0.2，即明确指定了 kube-dns Service IP，这个 IP 需要和 kubelet 的 `—cluster-dns` 参数值一致；
++ spec.clusterIP = 10.254.0.2，即明确指定了 kube-dns Service IP，这个 IP 需要和 kubelet 的 `--cluster-dns` 参数值一致；
 
 ## 配置 `kube-dns` Deployment
 
@@ -158,10 +158,10 @@ Export 该 Deployment, 生成 `my-nginx` 服务
 ``` bash
 $ kubectl expose deploy my-nginx
 $ kubectl get services --all-namespaces |grep my-nginx
-default       my-nginx     10.254.140.36   <none>        80/TCP          6s
+default       my-nginx     10.254.179.239   <none>        80/TCP          42m
 ```
 
-创建另一个 Pod，查看 `/etc/resolv.conf` 是否包含 `kubelet` 配置的 `--cluster_dns` 和 `--cluster_domain`，是否能够将服务 `my-nginx` 解析到 Cluster IP `10.254.140.36`
+创建另一个 Pod，查看 `/etc/resolv.conf` 是否包含 `kubelet` 配置的 `--cluster-dns` 和 `--cluster-domain`，是否能够将服务 `my-nginx` 解析到 Cluster IP `10.254.179.239`。
 
 ``` bash
 $ kubectl create -f nginx-pod.yaml
@@ -172,17 +172,18 @@ search default.svc.cluster.local. svc.cluster.local. cluster.local. tendcloud.co
 options ndots:5
 
 root@nginx:/# ping my-nginx
-PING my-nginx.default.svc.cluster.local (10.254.86.48): 48 data bytes
+PING my-nginx.default.svc.cluster.local (10.254.179.239): 56 data bytes
+76 bytes from 119.147.223.109: Destination Net Unreachable
 ^C--- my-nginx.default.svc.cluster.local ping statistics ---
-2 packets transmitted, 0 packets received, 100% packet loss
 
 root@nginx:/# ping kubernetes
-PING kubernetes.default.svc.cluster.local (10.254.0.1): 48 data bytes
+PING kubernetes.default.svc.cluster.local (10.254.0.1): 56 data bytes
 ^C--- kubernetes.default.svc.cluster.local ping statistics ---
-1 packets transmitted, 0 packets received, 100% packet loss
+11 packets transmitted, 0 packets received, 100% packet loss
 
 root@nginx:/# ping kube-dns.kube-system.svc.cluster.local
-PING kube-dns.kube-system.svc.cluster.local (10.254.0.2): 48 data bytes
+PING kube-dns.kube-system.svc.cluster.local (10.254.0.2): 56 data bytes
 ^C--- kube-dns.kube-system.svc.cluster.local ping statistics ---
-1 packets transmitted, 0 packets received, 100% packet loss
+6 packets transmitted, 0 packets received, 100% packet loss
 ```
+从结果来看，service名称可以正常解析。

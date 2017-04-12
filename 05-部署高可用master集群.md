@@ -11,7 +11,9 @@ kubernetes master 节点包含的组件：
 + `kube-scheduler`、`kube-controller-manager` 和 `kube-apiserver` 三者的功能紧密相关；
 + 同时只能有一个 `kube-scheduler`、`kube-controller-manager` 进程处于工作状态，如果运行多个，则需要通过选举产生一个 leader；
 
-本文档记录部署一个三个节点的高可用 kubernetes master 集群步骤。（后续创建一个 load balancer 来代理访问 kube-apiserver 的请求）
+本文档介绍部署一个三个节点 kubernetes master 集群的步骤，**但是并没有实现 master 集群的高可用**。
+
+计划后续再介绍部署 LB 的步骤，客户端 (kubectl、kubelet、kube-proxy) 使用 LB 的 VIP 来访问 kube-apiserver，从而实现 master 集群高可用；
 
 
 ## TLS 证书文件
@@ -82,7 +84,7 @@ ExecStart=/root/local/bin/kube-apiserver \\
   --experimental-bootstrap-token-auth \\
   --token-auth-file=/etc/kubernetes/token.csv \\
   --service-cluster-ip-range=10.254.0.0/16 \\
-  --service-node-port-range=30000-32767 \\
+  --service-node-port-range=8400-9000 \\
   --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem \\
   --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem \\
   --client-ca-file=/etc/kubernetes/ssl/ca.pem \\
@@ -119,6 +121,7 @@ EOF
 + `--admission-control` 值必须包含 `ServiceAccount`；
 + `--bind-address` 不能为 `127.0.0.1`；
 + `--service-cluster-ip-range` 指定 Service Cluster IP 地址段，该地址段不能路由可达；
++ `--service-node-port-range=8400-9000` 指定 NodePort 的端口范围；
 + 缺省情况下 kubernetes 对象保存在 etcd `/registry` 路径下，可以通过 `--etcd-prefix` 参数进行调整；
 
 完整 unit 见 [kube-apiserver.service](./systemd/kube-apiserver.service)

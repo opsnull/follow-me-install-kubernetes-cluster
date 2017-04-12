@@ -41,4 +41,10 @@
 1. 由于启用了 TLS 双向认证、RBAC 授权等严格的安全机制，建议**从头开始部署**，而不要从中间开始，否则可能会认证、授权等失败！
 1. 本文档将**随着各组件的更新而更新**，有任何问题欢迎提 issue！
 
+## License (版权)
+
+Copyright 2017 zhangjun(geekard@qq.com)
+
+Apache License 2.0，详情见 [LICENSE](LICENSE) 文件。
+
 希望对你有帮助！

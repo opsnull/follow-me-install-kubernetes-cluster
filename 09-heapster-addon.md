@@ -61,7 +61,7 @@ influxdb 官方建议使用命令行或 HTTP API 接口来查询数据库，从 
 注意：manifests 目录已经提供了 [修改后的 ConfigMap 定义文件](./manifests/heapster/influxdb-cm.yaml)
 
 ``` bash
-$ # 导出镜像中的 inflxudb 配置文件
+$ # 导出镜像中的 influxdb 配置文件
 $ docker run --rm --entrypoint 'cat'  -ti lvanneo/heapster-influxdb-amd64:v1.1.1 /etc/config.toml >config.toml.orig
 $ cp config.toml.orig config.toml
 $ # 修改：启用 admin 接口

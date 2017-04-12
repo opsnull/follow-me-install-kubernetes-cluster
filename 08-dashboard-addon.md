@@ -28,7 +28,7 @@ $ diff dashboard-controller.yaml.orig dashboard-controller.yaml
 23c23
 <         image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.0
 ---
->         image: cokabug/kubernetes-dashboard-amd64:v1.6.0
+>         image: sz-pg-oam-docker-hub-001.tendcloud.com/library/kubernetes-dashboard-amd64:v1.6.0
 ```
 
 ## 执行所有定义文件
@@ -42,8 +42,6 @@ $ kubectl create -f  .
 service "kubernetes-dashboard" created
 deployment "kubernetes-dashboard" created
 ```
-
-
 
 ## 检查执行结果
 
@@ -69,23 +67,25 @@ kubernetes-dashboard-1339745653-pmn6z   1/1       Running   0          4m
 
 ## 访问dashboard
 
-1. kubernetes-dashboard 服务暴露了 NodePort，可以使用 `http://NodeIP:nodePort` 地址访问 dashboard；
-1. 通过 kube-apiserver 访问 dashboard；
-1. 通过 kubectl proxy 访问 dashboard：
+有以下三种方式：
+
+- kubernetes-dashboard 服务暴露了 NodePort，可以使用 `http://NodeIP:nodePort` 地址访问 dashboard；
+- 通过 kube-apiserver 访问 dashboard；
+- 通过 kubectl proxy 访问 dashboard：
 
 ### 通过 kubectl proxy 访问 dashboard
 
 启动代理
 
 ``` bash
-$ kubectl proxy --address='10.64.3.7' --port=8086 --accept-hosts='^*$'
-Starting to serve on 10.64.3.7:8086
+$ kubectl proxy --address='172.20.0.113' --port=8086 --accept-hosts='^*$'
+Starting to serve on 172.20.0.113:8086
 ```
 
 + 需要指定 `--accept-hosts` 选项，否则浏览器访问 dashboard 页面时提示 “Unauthorized”；
 
-浏览器访问 URL：`http://10.64.3.7:8086/ui`
-自动跳转到：`http://10.64.3.7:8086/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard/#/workload?namespace=default`
+浏览器访问 URL：`http://172.20.0.113:8086/ui`
+自动跳转到：`http://172.20.0.113:8086/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard/#/workload?namespace=default`
 
 ### 通过 kube-apiserver 访问dashboard
 
@@ -93,12 +93,12 @@ Starting to serve on 10.64.3.7:8086
 
 ``` bash
 $ kubectl cluster-info
-Kubernetes master is running at https://10.64.3.7:6443
-KubeDNS is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kube-dns
-kubernetes-dashboard is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
+Kubernetes master is running at https://172.20.0.113:6443
+KubeDNS is running at https://172.20.0.113:6443/api/v1/proxy/namespaces/kube-system/services/kube-dns
+kubernetes-dashboard is running at https://172.20.0.113:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
 ```
 
-浏览器访问 URL：`https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`
+浏览器访问 URL：`https://172.20.0.113:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`
 
 ![kubernetes-dashboard](./images/dashboard.png)
 

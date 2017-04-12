@@ -18,11 +18,11 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      serviceAccountName: dashboard
       containers:
       - name: kubernetes-dashboard
-        image: cokabug/kubernetes-dashboard-amd64:v1.6.0
+        image: sz-pg-oam-docker-hub-001.tendcloud.com/library/kubernetes-dashboard-amd64:v1.6.0
         resources:
-          # keep request = limit to keep this container in guaranteed class
           limits:
             cpu: 100m
             memory: 50Mi

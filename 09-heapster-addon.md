@@ -185,7 +185,7 @@ monitoring-influxdb-884893134-3vb6n     1/1       Running   0          11m
 
 ``` bash
 $ kubectl get svc -n kube-system|grep influxdb
-monitoring-influxdb    10.254.90.236   <nodes>       8086:30171/TCP,8083:30056/TCP   54m
+monitoring-influxdb    10.254.255.183   <nodes>       8086:8670/TCP,8083:8595/TCP   21m
 ```
 
 通过 kube-apiserver 的**非安全端口**访问 influxdb 的 admin UI 界面：

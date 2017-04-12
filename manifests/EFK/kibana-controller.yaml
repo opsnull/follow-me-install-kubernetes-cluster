@@ -17,6 +17,7 @@ spec:
       labels:
         k8s-app: kibana-logging
     spec:
+      serviceAccountName: efk
       containers:
       - name: kibana-logging
         image: onlyerich/kibana:v4.6.1-1

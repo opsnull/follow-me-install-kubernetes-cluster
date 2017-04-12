@@ -153,14 +153,16 @@ monitoring-influxdb-884893134-3vb6n     1/1       Running   0          11m
 
     ``` bash
     $ kubectl cluster-info
-    Kubernetes master is running at http://10.64.3.7:8080
-    Heapster is running at http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/heapster
-    KubeDNS is running at http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/kube-dns
-    kubernetes-dashboard is running at http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
-    monitoring-grafana is running at http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/monitoring-grafana
-    monitoring-influxdb is running at http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/monitoring-influxdb
+    Kubernetes master is running at https://10.64.3.7:6443
+    Heapster is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/heapster
+    KubeDNS is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kube-dns
+    kubernetes-dashboard is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
+    monitoring-grafana is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/monitoring-grafana
+    monitoring-influxdb is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/monitoring-influxdb
     $
     ```
+
+    由于 kube-apiserver 开启了 RBAC 授权，而浏览器访问 kube-apiserver 的时候使用的是匿名证书，所以访问安全端口会导致授权失败。这里需要使用**非安全**端口访问 kube-apiserver：
 
     浏览器访问 URL： `http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/monitoring-grafana`
 
@@ -186,7 +188,7 @@ $ kubectl get svc -n kube-system|grep influxdb
 monitoring-influxdb    10.254.90.236   <nodes>       8086:30171/TCP,8083:30056/TCP   54m
 ```
 
-浏览器访问 influxdb 的 admin UI 界面：
+通过 kube-apiserver 的**非安全端口**访问 influxdb 的 admin UI 界面：
 `http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/monitoring-influxdb:8083/`
 
 在页面的 “Connection Settings” 的 Host 中输入 node IP， Port 中输入 8086 映射的 nodePort 如上面的 30171，点击 “Save” 即可：

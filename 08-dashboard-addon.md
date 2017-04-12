@@ -109,7 +109,9 @@ KubeDNS is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system
 kubernetes-dashboard is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
 ```
 
-浏览器访问 URL：`https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`
+由于 kube-apiserver 开启了 RBAC 授权，而浏览器访问 kube-apiserver 的时候使用的是匿名证书，所以访问安全端口会导致授权失败。这里需要使用**非安全**端口访问 kube-apiserver：
+
+浏览器访问 URL：`http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`
 
 ![kubernetes-dashboard](./images/dashboard.png)
 

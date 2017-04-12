@@ -27,13 +27,7 @@ $ /root/local/bin/etcdctl \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  mkdir ${FLANNEL_ETCD_PREFIX}
-$ /root/local/bin/etcdctl \
-  --endpoints=http://127.0.0.1:2379  \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  mk ${FLANNEL_ETCD_PREFIX}/config '{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
+  set ${FLANNEL_ETCD_PREFIX}/config '{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
 ```
 
 + flanneld **目前版本 (v0.7) 不支持 etcd v3**，故使用 etcd v2 API 写入配置 key 和网段数据；

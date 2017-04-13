@@ -18,6 +18,7 @@ $ # 当前部署的节点 IP
 $ export NODE_ADDRESS=10.64.3.7
 $ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR、CLUSTER_DNS_SVC_IP、CLUSTER_DNS_DOMAIN、SERVICE_CIDR
 $ source /root/local/bin/environment.sh
+$
 ```
 
 ## 目录和文件
@@ -147,7 +148,7 @@ $ /root/local/bin/etcdctl \
 $ wget https://get.docker.com/builds/Linux/x86_64/docker-17.04.0-ce.tgz
 $ tar -xvf docker-17.04.0-ce.tgz
 $ cp docker/docker* /root/local/bin
-$ cp completion/bash/docker /etc/bash_completion.d/
+$ cp docker/completion/bash/docker /etc/bash_completion.d/
 $
 ```
 

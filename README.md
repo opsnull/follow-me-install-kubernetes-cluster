@@ -1,4 +1,4 @@
-# 和我一步步部署 kubernetes 集群
+# 和我一步步部署kubernetes集群
 
 本系列文档介绍使用二进制部署 `kubernetes` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群，同时开启了集群的TLS安全认证；
 
@@ -8,11 +8,13 @@
 
 所以本文档主要适合于那些有一定 kubernetes 基础，想通过一步步部署的方式来学习和了解系统配置、运行原理的人。
 
+*注：本文档中不包括docker和私有镜像仓库的安装。*
+
 ## 提供所有的配置文件
 
 集群安装时所有组件用到的配置文件，包含在以下目录中：
 
-- **etc**： serivce的环境变量配置文件
+- **etc**： service的环境变量配置文件
 - **manifest**： kubernetes应用的yaml文件
 - **systemd** ：systemd serivce配置文件
 
@@ -36,8 +38,20 @@
 4. [kubectl命令行工具](04-kubectl命令行工具.md)
 5. [部署高可用 master 集群](05-部署高可用master集群.md)
 6. [部署 node 节点](06-部署node节点.md)
-7. [DNS 插件](07-dns-addon.md)
+7. [kubedns 插件](07-dns-addon.md)
 8. [Dashboard 插件](08-dashboard-addon.md)
 9. [Heapster 插件](09-heapster-addon.md)
 10. [EFK 插件](10-EFK-addons.md)
+
+
+## 提醒
+
+1. 由于启用了 TLS 双向认证、RBAC 授权等严格的安全机制，建议**从头开始部署**，而不要从中间开始，否则可能会认证、授权等失败！
+2. 本文档将**随着各组件的更新而更新**，有任何问题欢迎提 issue！
+
+## 关于
+
+[Jimmy Song](http://rootsongjc.github.io/about)
+
+[我的Kubernetes相关文章](http://rootsongjc.github.io/tags/kubernetes)
 

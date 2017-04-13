@@ -1,6 +1,6 @@
 # 和我一步步部署 kubernetes 集群
 
-![dashboard](./images/dashboard.png)
+![dashboard-home](./images/dashboard-home.png)
 
 本系列文档介绍使用二进制部署 `kubernetes` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群；
 

@@ -148,8 +148,12 @@ server.basePath: /api/v1/proxy/namespaces/kube-system/services/kibana-logging
 
 在 Settings -> Indices 页面创建一个 index（相当于 mysql 中的一个 database），选中 `Index contains time-based events`，使用默认的 `logstash-*` pattern，点击 `Create` ;
 
+**可能遇到的问题**
+
+如果你在这里发现Create按钮是灰色的无法点击，且Time-filed name中没有选项，fluentd要读取`/var/log/containers/`目录下的log日志，这些日志是从`/var/lib/docker/containers/${CONTAINER_ID}/${CONTAINER_ID}-json.log`链接过来的，查看你的docker配置，`—log-dirver`需要设置为**json-file**格式，默认的可能是**journald**，参考[docker logging]([https://docs.docker.com/engine/admin/logging/overview/#examples](https://docs.docker.com/engine/admin/logging/overview/#examples))。
+
 ![es-setting](./images/es-setting.png)
 
 创建Index后，可以在 `Discover` 下看到 ElasticSearch logging 中汇聚的日志；
 
-![es-home](./images/es-home.png)
+![es-home](./images/kubernetes-efk-kibana.jpg)

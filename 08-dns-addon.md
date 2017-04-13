@@ -55,7 +55,7 @@ $ diff kubedns-svc.yaml.base kubedns-svc.yaml
 >   clusterIP: 10.254.0.2
 ```
 
-+ spec.clusterIP = 10.254.0.2，即明确指定了 kube-dns Service IP，这个 IP 需要和 kubelet 的 `—cluster-dns` 参数值一致；
++ 需要将 spec.clusterIP 设置为[集群环境文档](01-environment.md) 变量 `CLUSTER_DNS_SVC_IP` 分配的值，这个 IP 需要和 kubelet 的 `—cluster-dns` 参数值一致；
 
 ## 配置 `kube-dns` Deployment
 
@@ -93,6 +93,7 @@ $ diff kubedns-controller.yaml.base kubedns-controller.yaml
 >         - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.cluster.local.,5,A
 ```
 
++ `--domain` 为[集群环境文档](01-environment.md) 变量 `CLUSTER_DNS_SVC_DOMAIN` 的值；
 + 使用系统已经做了 RoleBinding 的 `kube-dns` ServiceAccount，该账户具有访问 kube-apiserver DNS 相关 API 的权限；
 
 ## 执行所有定义文件
@@ -104,8 +105,6 @@ $ ls *.yaml
 kubedns-cm.yaml  kubedns-controller.yaml  kubedns-sa.yaml  kubedns-svc.yaml
 $ kubectl create -f .
 ```
-
-
 
 ## 检查 kubedns 功能
 
@@ -141,7 +140,7 @@ $ kubectl get services --all-namespaces |grep my-nginx
 default       my-nginx               10.254.86.48     <none>        80/TCP          1d
 ```
 
-创建另一个 Pod，查看 `/etc/resolv.conf` 是否包含 `kubelet` 配置的 `--cluster_dns` 和 `--cluster_domain`，是否能够将服务 `my-nginx` 解析到 Cluster IP `10.254.86.48`
+创建另一个 Pod，查看 `/etc/resolv.conf` 是否包含 `kubelet` 配置的 `--cluster_dns` 和 `--cluster_domain`，是否能够将服务 `my-nginx` 解析到上面显示的 Cluster IP `10.254.86.48`
 
 ``` bash
 $ cat pod-nginx.yaml

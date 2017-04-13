@@ -2,6 +2,16 @@
 
 本文档介绍下载和配置 kubernetes 集群命令行工具 kubectl 的步骤。
 
+## 变量定义
+
+本文档用到的变量定义如下
+
+``` bash
+$ export MASTER_IP=10.64.3.7 # 替换为 kubernetes maste 集群任一机器 IP
+$ export KUBE_APISERVER="https://${MASTER_IP}:6443"
+$
+```
+
 ## 下载 kubectl
 
 ``` bash
@@ -16,7 +26,6 @@ $
 ## 创建 kubectl kubeconfig 文件
 
 ``` bash
-$ export KUBE_APISERVER="https://10.64.3.7:6443"
 $ # 设置集群参数
 $ kubectl config set-cluster kubernetes \
   --certificate-authority=/etc/kubernetes/ssl/ca.pem \

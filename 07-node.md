@@ -7,6 +7,19 @@ kubernetes node 节点包含如下组件：
 + kubelet
 + kube-proxy
 
+## 变量定义
+
+本文档用到的变量定义如下
+
+``` bash
+$ # 当前部署的节点通信接口名称
+$ export FLANNEL_OPTIONS="-iface=eth0"
+$ # 当前部署的节点 IP
+$ export NODE_ADDRESS=10.64.3.7
+$ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR、CLUSTER_DNS_SVC_IP、CLUSTER_DNS_DOMAIN、SERVICE_CIDR
+$ source /root/local/bin/environment.sh
+```
+
 ## 目录和文件
 
 ``` bash
@@ -21,17 +34,16 @@ $
 ### 向 etcd 写入集群 Pod 网段信息
 
 ``` bash
-$ export FLANNEL_ETCD_PREFIX="/kubernetes/network"
 $ /root/local/bin/etcdctl \
-  --endpoints=http://127.0.0.1:2379  \
+  --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  set ${FLANNEL_ETCD_PREFIX}/config '{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
+  set ${FLANNEL_ETCD_PREFIX}/config '{"Network":"'${CLUSTER_CIDR}'", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
 ```
 
 + flanneld **目前版本 (v0.7) 不支持 etcd v3**，故使用 etcd v2 API 写入配置 key 和网段数据；
-+ 写入的 Pod 网段(172.30.0.0/16) 必须与 kube-controller-manager 的 `--cluster-cidr` 选项值一致；
++ 写入的 Pod 网段(${CLUSTER_CIDR}，172.30.0.0/16) 必须与 kube-controller-manager 的 `--cluster-cidr` 选项值一致；
 
 ### 下载 flanneld
 
@@ -46,8 +58,6 @@ $
 ### 创建 flanneld 的 systemd unit 文件
 
 ``` bash
-$ export FLANNEL_ETCD_ENDPOINTS="https://10.64.3.7:2379,https://10.64.3.8:2379,https://10.66.3.86:2379"
-$ export FLANNEL_OPTIONS="-iface=eth0"
 $ cat > flanneld.service << EOF
 [Unit]
 Description=Flanneld overlay address etcd agent
@@ -63,7 +73,7 @@ ExecStart=/root/local/bin/flanneld \\
   -etcd-cafile=/etc/kubernetes/ssl/ca.pem \\
   -etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem \\
   -etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem \\
-  -etcd-endpoints=${FLANNEL_ETCD_ENDPOINTS} \\
+  -etcd-endpoints=${ETCD_ENDPOINTS} \\
   -etcd-prefix=${FLANNEL_ETCD_PREFIX} \\
   $FLANNEL_OPTIONS
 ExecStartPost=/root/local/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
@@ -105,7 +115,7 @@ $
 ``` bash
 $ # 查看集群 Pod 网段(/16)
 $ /root/local/bin/etcdctl \
-  --endpoints=http://127.0.0.1:2379  \
+  --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
@@ -113,19 +123,19 @@ $ /root/local/bin/etcdctl \
 { "Network": "172.30.0.0/16", "SubnetLen": 24, "Backend": { "Type": "vxlan" } }
 $ # 查看已分配的 Pod 子网段列表(/24)
 $ /root/local/bin/etcdctl \
-  --endpoints=http://127.0.0.1:2379  \
+  --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  ls  ${FLANNEL_ETCD_PREFIX}/subnets
+  ls ${FLANNEL_ETCD_PREFIX}/subnets
 /kubernetes/network/subnets/172.30.19.0-24
 $ # 查看某一 Pod 网段对应的 flanneld 进程监听的 IP 和网络参数
 $ /root/local/bin/etcdctl \
-  --endpoints=http://127.0.0.1:2379  \
+  --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  get  ${FLANNEL_ETCD_PREFIX}/subnets/172.30.19.0-24
+  get ${FLANNEL_ETCD_PREFIX}/subnets/172.30.19.0-24
 {"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
 ```
 
@@ -238,8 +248,6 @@ $
 
 ``` bash
 $ mkdir /var/lib/kublet
-$ export ADDRESS=10.64.3.7
-$ export CLUSTER_DNS=10.254.0.2
 $ cat > kubelet.service <<EOF
 [Unit]
 Description=Kubernetes Kubelet
@@ -250,15 +258,15 @@ Requires=docker.service
 [Service]
 WorkingDirectory=/var/lib/kubelet
 ExecStart=/root/local/bin/kubelet \\
-  --address=${ADDRESS} \\
-  --hostname-override=${ADDRESS} \\
+  --address=${NODE_ADDRESS} \\
+  --hostname-override=${NODE_ADDRESS} \\
   --pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest \\
   --experimental-bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \\
   --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \\
   --require-kubeconfig \\
   --cert-dir=/etc/kubernetes/ssl \\
-  --cluster_dns=${CLUSTER_DNS} \\
-  --cluster_domain=cluster.local. \\
+  --cluster_dns=${CLUSTER_DNS_SVC_IP} \\
+  --cluster_domain=${CLUSTER_DNS_DOMAIN} \\
   --hairpin-mode promiscuous-bridge \\
   --allow-privileged=true \\
   --serialize-image-pulls=false \\
@@ -334,8 +342,6 @@ $ ls -l /etc/kubernetes/ssl/kubelet*
 
 ``` bash
 $ sudo mkdir -p /var/lib/kube-proxy
-$ export ADDRESS=10.64.3.7
-$ export CLUSTER_CIDR=10.254.0.0/16
 $ cat > kube-proxy.service <<EOF
 [Unit]
 Description=Kubernetes Kube-Proxy Server
@@ -345,9 +351,9 @@ After=network.target
 [Service]
 WorkingDirectory=/var/lib/kube-proxy
 ExecStart=/root/local/bin/kube-proxy \\
-  --bind-address=${ADDRESS} \\
-  --hostname-override=${ADDRESS} \\
-  --cluster-cidr=${CLUSTER_CIDR} \\
+  --bind-address=${NODE_ADDRESS} \\
+  --hostname-override=${NODE_ADDRESS} \\
+  --cluster-cidr=${SERVICE_CIDR} \\
   --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig \\
   --logtostderr=true \\
   --v=2
@@ -361,6 +367,7 @@ EOF
 ```
 
 + `--hostname-override` 参数值必须与 kubelet 的值一致，否则 kube-proxy 启动后会找不到该 Node，从而不会创建任何 iptables 规则；
++ `--cluster-cidr` 必须与 kube-apiserver 的 `--service-cluster-ip-range` 选项值一致；
 + kube-proxy 根据 `--cluster-cidr` 判断集群内部和外部流量，指定 `--cluster-cidr` 或 `--masquerade-all` 选项后 kube-proxy 才会对访问 Service IP 的请求做 SNAT；
 + `--kubeconfig` 指定的配置文件嵌入了 kube-apiserver 的地址、用户名、证书、秘钥等请求和认证信息；
 + 预定义的 RoleBinding `cluster-admin` 将User `system:kube-proxy` 与 Role `system:node-proxier` 绑定，该 Role 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；

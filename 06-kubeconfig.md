@@ -4,10 +4,20 @@
 
 kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 `TLS Bootstrapping` 功能，这样就不需要为每个客户端生成证书了。该功能**当前仅支持为 `kubelet`** 生成证书。
 
+## 定的变量
+
+本文档用到的变量定义如下
+
+``` bash
+$ export MASTER_IP=10.64.3.7 # 替换为 kubernetes maste 集群任一机器 IP
+$ export KUBE_APISERVER="https://${MASTER_IP}:6443"
+$ export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
+$
+```
+
 ## 创建 TLS Bootstrapping Token
 
 ``` bash
-$ export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
 $ cat > token.csv <<EOF
 ${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"
 EOF
@@ -23,7 +33,6 @@ $
 ## 创建 kubelet bootstrapping kubeconfig 文件
 
 ``` bash
-$ export KUBE_APISERVER="https://10.64.3.7:6443"
 $ # 设置集群参数
 $ kubectl config set-cluster kubernetes \
   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
@@ -50,12 +59,11 @@ $ kubectl config use-context default --kubeconfig=bootstrap.kubeconfig
 ## 创建 kube-proxy kubeconfig 文件
 
 ``` bash
-$ export KUBE_APISERVER="https://10.64.3.7:6443"
 $ # 设置集群参数
 $ kubectl config set-cluster kubernetes \
   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
   --embed-certs=true \
-  --server=https://10.64.3.7:6443 \
+  --server=${KUBE_APISERVER} \
   --kubeconfig=kube-proxy.kubeconfig
 $ # 设置客户端认证参数
 $ kubectl config set-credentials kube-proxy \
@@ -77,7 +85,7 @@ $ kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
 
 ## 分发 kubeconfig 文件
 
-将三个 kubeconfig 文件分发到所有 Node 机器的 `/etc/kubernetes/` 目录
+将三个 kubeconfig 文件分发到所有 Node 节点的 `/etc/kubernetes/` 目录
 
 ``` bash
 $ sudo cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/

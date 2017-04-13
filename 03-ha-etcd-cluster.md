@@ -6,6 +6,19 @@ kuberntes 系统使用 etcd 存储所有数据，本文档介绍部署一个三�
 + etcd-host1：10.64.3.8
 + etcd-host2：10.66.3.86
 
+## 变量定义
+
+本文档用到的变量定义如下：
+
+``` bash
+$ export NODE_NAME=etcd-host0 # 当前部署的机器名称(随便定义，只要能区分不同机器即可)
+$ export NODE_IP=10.64.3.7 # 当前部署的机器 IP
+$ export NODE_IPS="10.64.3.7 10.64.3.8 10.66.3.86" # etcd 集群所有机器 IP
+$ # etcd 集群中各机器的名称和对应的IP、端口
+$ export ETCD_NODES=etcd-host0=https://10.64.3.7:2380,etcd-host1=https://10.64.3.8:2380,etcd-host2=https://10.66.3.86:2380
+$
+```
+
 ## TLS 认证文件
 
 需要为 etcd 集群创建加密通信的 TLS 证书，这里复用以前创建的 kubernetes 证书
@@ -30,11 +43,7 @@ $
 
 ## 创建 etcd 的 systemd unit 文件
 
-注意替换 `ETCD_NAME` 和 `INTERNAL_IP` 变量的值；
-
 ``` bash
-$ export ETCD_NAME=etcd-host0
-$ export INTERNAL_IP=10.64.3.7
 $ sudo mkdir -p /var/lib/etcd
 $ cat > etcd.service <<EOF
 [Unit]
@@ -49,20 +58,20 @@ Type=notify
 WorkingDirectory=/var/lib/etcd/
 EnvironmentFile=-/etc/etcd/etcd.conf
 ExecStart=/root/local/bin/etcd \\
-  --name ${ETCD_NAME} \\
+  --name={NODE_NAME} \\
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \\
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \\
   --peer-cert-file=/etc/kubernetes/ssl/kubernetes.pem \\
   --peer-key-file=/etc/kubernetes/ssl/kubernetes-key.pem \\
   --trusted-ca-file=/etc/kubernetes/ssl/ca.pem \\
   --peer-trusted-ca-file=/etc/kubernetes/ssl/ca.pem \\
-  --initial-advertise-peer-urls https://${INTERNAL_IP}:2380 \\
-  --listen-peer-urls https://${INTERNAL_IP}:2380 \\
-  --listen-client-urls https://${INTERNAL_IP}:2379,http://127.0.0.1:2379 \\
-  --advertise-client-urls https://${INTERNAL_IP}:2379 \\
-  --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster etcd-host0=https://10.64.3.7:2380,etcd-host1=https://10.64.3.8:2380,etcd-host2=https://10.66.3.86:2380 \\
-  --initial-cluster-state new \\
+  --initial-advertise-peer-urls=https://${NODE_IP}:2380 \\
+  --listen-peer-urls=https://${NODE_IP}:2380 \\
+  --listen-client-urls=https://${NODE_IP}:2379,http://127.0.0.1:2379 \\
+  --advertise-client-urls=https://${NODE_IP}:2379 \\
+  --initial-cluster-token=etcd-cluster-0 \\
+  --initial-cluster=${ETCD_NODES} \\
+  --initial-cluster-state=new \\
   --data-dir=/var/lib/etcd
 Restart=on-failure
 RestartSec=5
@@ -75,7 +84,7 @@ EOF
 
 + 指定 `etcd` 的工作目录和数据目录为 `/var/lib/etcd`，需在启动服务前创建这个目录；
 + 为了保证通信安全，需要指定 etcd 的公私钥(cert-file和key-file)、Peers 通信的公私钥和 CA 证书(peer-cert-file、peer-key-file、peer-trusted-ca-file)、客户端的CA证书（trusted-ca-file）；
-+ 创建 `kubernetes.pem` 证书时使用的 `kubernetes-csr.json` 文件的 `hosts` 字段**包含所有 etcd 节点的 INTERNAL_IP**，否则证书校验会出错；
++ 创建 `kubernetes.pem` 证书时使用的 `kubernetes-csr.json` 文件的 `hosts` 字段**包含所有 etcd 节点的 NODE_IP**，否则证书校验会出错；
 + `--initial-cluster-state` 值为 `new` 时，`--name` 的参数值必须位于 `--initial-cluster` 列表中；
 
 完整 unit 文件见：[etcd.service](./systemd/etcd.service)
@@ -98,13 +107,18 @@ $
 在任一 kubernetes master 机器上执行如下命令：
 
 ``` bash
-$ for ip in {10.64.3.7,10.64.3.8,10.66.3.86}; do
+$ for ip in ${NODE_IPS}; do
   ETCDCTL_API=3 /root/local/bin/etcdctl \
   --endpoints=https://${ip}:2379  \
   --cacert=/etc/kubernetes/ssl/ca.pem \
   --cert=/etc/kubernetes/ssl/kubernetes.pem \
   --key=/etc/kubernetes/ssl/kubernetes-key.pem \
   endpoint health; done
+```
+
+预期结果：
+
+``` text
 2017-04-10 14:50:50.011317 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
 https://10.64.3.7:2379 is healthy: successfully committed proposal: took = 1.687897ms
 2017-04-10 14:50:50.061577 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
@@ -113,4 +127,4 @@ https://10.64.3.8:2379 is healthy: successfully committed proposal: took = 1.246
 https://10.66.3.86:2379 is healthy: successfully committed proposal: took = 1.509229ms
 ```
 
-三台 etcd 的输出均为 healthy 时表示集群服务正常。
+三台 etcd 的输出均为 healthy 时表示集群服务正常（忽略 warning 信息）。

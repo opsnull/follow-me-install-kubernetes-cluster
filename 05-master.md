@@ -15,6 +15,16 @@ kubernetes master 节点包含的组件：
 
 计划后续再介绍部署 LB 的步骤，客户端 (kubectl、kubelet、kube-proxy) 使用 LB 的 VIP 来访问 kube-apiserver，从而实现高可用 master 集群。
 
+## 变量定义
+
+本文档用到的变量定义如下
+
+``` bash
+$ export MASTER_IP=10.64.3.7  # 替换为当前部署的 master 机器 IP
+$ # 导入用到的其它全局变量：SERVICE_CIDR、CLUSTER_CIDR、NODE_PORT_RANGE、ETCD_ENDPOINTS
+$ source /root/local/bin/environment.sh
+$
+```
 
 ## TLS 证书文件
 
@@ -65,7 +75,6 @@ $
 ### 创建 kube-apiserver 的 systemd unit 文件
 
 ``` bash
-$ export INTERNAL_IP=10.64.3.7  # 部署时需要修改该环境变量值
 $ cat  > kube-apiserver.service <<EOF
 [Unit]
 Description=Kubernetes API Server
@@ -75,16 +84,16 @@ After=network.target
 [Service]
 ExecStart=/root/local/bin/kube-apiserver \\
   --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
-  --advertise-address=${INTERNAL_IP} \\
-  --bind-address=${INTERNAL_IP} \\
-  --insecure-bind-address=${INTERNAL_IP} \\
+  --advertise-address=${MASTER_IP} \\
+  --bind-address=${MASTER_IP} \\
+  --insecure-bind-address=${MASTER_IP} \\
   --authorization-mode=RBAC \\
   --runtime-config=rbac.authorization.k8s.io/v1alpha1 \\
   --kubelet-https=true \\
   --experimental-bootstrap-token-auth \\
   --token-auth-file=/etc/kubernetes/token.csv \\
-  --service-cluster-ip-range=10.254.0.0/16 \\
-  --service-node-port-range=8400-9000 \\
+  --service-cluster-ip-range=${SERVICE_CIDR} \\
+  --service-node-port-range=${NODE_PORT_RANGE} \\
   --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem \\
   --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem \\
   --client-ca-file=/etc/kubernetes/ssl/ca.pem \\
@@ -92,7 +101,7 @@ ExecStart=/root/local/bin/kube-apiserver \\
   --etcd-cafile=/etc/kubernetes/ssl/ca.pem \\
   --etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem \\
   --etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem \\
-  --etcd-servers=https://10.64.3.7:2379,https://10.64.3.8:2379,https://10.66.3.86:2379 \\
+  --etcd-servers=${ETCD_ENDPOINTS} \\
   --enable-swagger-ui=true \\
   --allow-privileged=true \\
   --apiserver-count=3 \\
@@ -121,7 +130,7 @@ EOF
 + `--admission-control` 值必须包含 `ServiceAccount`；
 + `--bind-address` 不能为 `127.0.0.1`；
 + `--service-cluster-ip-range` 指定 Service Cluster IP 地址段，该地址段不能路由可达；
-+ `--service-node-port-range=8400-9000` 指定 NodePort 的端口范围；
++ `--service-node-port-range=${NODE_PORT_RANGE}` 指定 NodePort 的端口范围；
 + 缺省情况下 kubernetes 对象保存在 etcd `/registry` 路径下，可以通过 `--etcd-prefix` 参数进行调整；
 
 完整 unit 见 [kube-apiserver.service](./systemd/kube-apiserver.service)
@@ -142,7 +151,6 @@ $
 ### 创建 kube-controller-manager 的 systemd unit 文件
 
 ``` bash
-$ export INTERNAL_IP=10.64.3.7 # 部署时需要修改该环境变量值
 $ cat > kube-controller-manager.service <<EOF
 [Unit]
 Description=Kubernetes Controller Manager
@@ -151,10 +159,10 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 [Service]
 ExecStart=/root/local/binkube-controller-manager \\
   --address=127.0.0.1 \\
-  --master=http://${INTERNAL_IP}:8080 \\
+  --master=http://{MASTER_IP}:8080 \\
   --allocate-node-cidrs=true \\
-  --service-cluster-ip-range=10.254.0.0/16 \\
-  --cluster-cidr=172.30.0.0/16 \\
+  --service-cluster-ip-range=${SERVICE_CIDR} \\
+  --cluster-cidr=${CLUSTER_CIDR} \\
   --cluster-name=kubernetes \\
   --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem \\
   --cluster-signing-key-file=/etc/kubernetes/ssl/ca-key.pem \\
@@ -170,11 +178,6 @@ WantedBy=multi-user.target
 EOF
 ```
 
-+ `--cluster-cidr` 指定 Cluster 中 Pod 的 CIDR 范围，该网段在各 Node 间必须路由可达(flanneld保证)；
-+ `--service-cluster-ip-range` 参数指定 Cluster 中 Service 的CIDR范围，该网络在各 Node 间必须路由不可达，必须和 kube-apiserver 中的参数一致；
-+ `--master=http://${INTERNAL_IP}:8080`：使用非安全 8080 端口与 kube-apiserver 通信；
-+ `--cluster-signing-*` 指定的证书和私钥文件用来签名为 TLS BootStrap 创建的证书和私钥；
-+ `--root-ca-file` 用来对 kube-apiserver 证书进行校验，**指定该参数后，才会在Pod 容器的 ServiceAccount 中放置该 CA 证书文件**；
 + `--address` 值必须为 `127.0.0.1`，因为当前 kube-apiserver 期望 scheduler 和 controller-manager 在同一台机器，否则：
 
     ``` bash
@@ -185,6 +188,13 @@ EOF
     ```
 
     参考：https://github.com/kubernetes-incubator/bootkube/issues/64
+
++ `--master=http://{MASTER_IP}:8080`：使用非安全 8080 端口与 kube-apiserver 通信；
++ `--cluster-cidr` 指定 Cluster 中 Pod 的 CIDR 范围，该网段在各 Node 间必须路由可达(flanneld保证)；
++ `--service-cluster-ip-range` 参数指定 Cluster 中 Service 的CIDR范围，该网络在各 Node 间必须路由不可达，必须和 kube-apiserver 中的参数一致；
++ `--cluster-signing-*` 指定的证书和私钥文件用来签名为 TLS BootStrap 创建的证书和私钥；
++ `--root-ca-file` 用来对 kube-apiserver 证书进行校验，**指定该参数后，才会在Pod 容器的 ServiceAccount 中放置该 CA 证书文件**；
++ `--leader-elect=true` 部署多台机器组成的 master 集群时选举产生一处于工作状态的 `kube-controller-manager` 进程；
 
 完整 unit 见 [kube-controller-manager.service](./systemd/kube-controller-manager.service)
 
@@ -203,7 +213,6 @@ $
 ### 创建 kube-controller-manager 的 systemd unit 文件
 
 ``` bash
-$ export INTERNAL_IP=10.64.3.7 # 部署时需要修改该环境变量值
 $ cat > kube-scheduler.service <<EOF
 [Unit]
 Description=Kubernetes Scheduler
@@ -211,9 +220,9 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
 ExecStart=/root/local/bin/kube-scheduler \\
-  --leader-elect=true \\
-  --master=http://${INTERNAL_IP}:8080 \\
   --address=127.0.0.1 \\
+  --master=http://{MASTER_IP}:8080 \\
+  --leader-elect=true \\
   --v=2
 Restart=on-failure
 RestartSec=5
@@ -224,7 +233,8 @@ EOF
 ```
 
 + `--address` 值必须为 `127.0.0.1`，因为当前 kube-apiserver 期望 scheduler 和 controller-manager 在同一台机器；
-+ `--master=http://${INTERNAL_IP}:8080`：使用非安全 8080 端口与 kube-apiserver 通信；
++ `--master=http://{MASTER_IP}:8080`：使用非安全 8080 端口与 kube-apiserver 通信；
++ `--leader-elect=true` 部署多台机器组成的 master 集群时选举产生一处于工作状态的 `kube-controller-manager` 进程；
 
 完整 unit 见 [kube-scheduler.service](./systemd/kube-scheduler.service)
 

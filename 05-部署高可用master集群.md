@@ -149,7 +149,7 @@ Description=Kubernetes Controller Manager
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-ExecStart=/usr/bin/kube-controller-manager \\
+ExecStart=/root/local/binkube-controller-manager \\
   --address=127.0.0.1 \\
   --master=http://${INTERNAL_IP}:8080 \\
   --allocate-node-cidrs=true \\

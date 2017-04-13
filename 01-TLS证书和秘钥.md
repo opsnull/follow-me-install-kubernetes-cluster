@@ -147,7 +147,14 @@ $ cat kubernetes-csr.json
 }
 ```
 
-+ 如果 hosts 字段不为空则需要指定授权使用该证书的 **IP 或域名列表**，由于该证书后续被 `etcd` 集群和 `kubernetes master` 集群使用，所以上面分别指定了 `etcd` 集群、`kubernetes master` 集群的主机 IP 和 **`kubernetes` 服务的服务 IP**（一般是 `kue-apiserver` 的`--service-cluster-ip-range` 选项值指定的网段的第一个IP，如 10.254.0.1）；
++ 如果 hosts 字段不为空则需要指定授权使用该证书的 **IP 或域名列表**，由于该证书后续被 `etcd` 集群和 `kubernetes master` 集群使用，所以上面分别指定了 `etcd` 集群、`kubernetes master` 集群的主机 IP；
++ 还需要添加 kube-apiserver 注册的名为 `kubernetes` 的服务 IP (Service Cluster IP)，一般是 kube-apiserver `--service-cluster-ip-range` 选项值指定的网段的**第一个IP**，如 "10.254.0.1"。
+
+  ``` bash
+  $ kubectl get svc kubernetes
+  NAME         CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+  kubernetes   10.254.0.1   <none>        443/TCP   1d
+  ```
 
 生成 kubernetes 证书和私钥
 

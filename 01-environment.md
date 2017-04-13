@@ -29,16 +29,16 @@ SERVICE_CIDR="10.254.0.0/16"
 # POD 网段 (Cluster CIDR），必须路由可达(flanneld保证)
 CLUSTER_CIDR="172.30.0.0/16"
 
-# 服务端口范围 (NodePort CIDR)
+# 服务端口范围 (NodePort Range)
 NODE_PORT_RANGE="8400-9000"
 
-# etcd 集群监客户端连接的地列表，为保证高可至少指定两台机器
+# etcd 集群服务地址列表
 ETCD_ENDPOINTS="https://10.64.3.7:2379,https://10.64.3.8:2379,https://10.66.3.86:2379"
 
-# flanneld 从 etcd 集群获取网络配置的 key
+# flanneld 网络配置前缀
 FLANNEL_ETCD_PREFIX="/kubernetes/network"
 
-# kubernetes 服务IP, (一般是 SERVICE_CIDR 中第一个IP)
+# kubernetes 服务 IP (预分配，一般是 SERVICE_CIDR 中第一个IP)
 CLUSTER_KUBERNETES_SVC_IP="10.254.0.1"
 
 # 集群 DNS 服务 IP (从 SERVICE_CIDR 中预分配)
@@ -49,7 +49,7 @@ CLUSTER_DNS_DOMAIN="cluster.local."
 ```
 
 + 需要根据**实际情况修改**这些变量值；
-+ 打包后的变量定义见文件：[environment.sh](./manifests/environment.sh)，后续部署时会**提示导入**这个文中的环境变量；
++ 打包后的变量定义见 [environment.sh](./manifests/environment.sh)，后续部署时会**提示导入**这个文中的环境变量；
 
 ## 分发全局变量定义脚本
 

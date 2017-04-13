@@ -33,7 +33,7 @@
 1. [部署 DNS 插件](07-dns-addon.md)
 1. [部署 Dashboard 插件](08-dashboard-addon.md)
 1. [部署 Heapster 插件](09-heapster-addon.md)
-1. [部署 EFK 插件](10-efk-addons.md)
+1. [部署 EFK 插件](10-efk-addon.md)
 1. [部署 Docker Registry](11-docker-registry.md)
 1. [清理集群](12-clean-cluster.md)
 

@@ -40,4 +40,4 @@ $ kubectl config use-context kubernetes
 
 ## 分发 kubeconfig 文件
 
-将 `~/.kube/config` 文件分发到后续会运行 `kubelet` 命令的机器的 `~/.kube/config` 位置。
+将 `~/.kube/config` 文件分发到运行 `kubelet` 命令的机器的 `~/.kube/` 目录下。

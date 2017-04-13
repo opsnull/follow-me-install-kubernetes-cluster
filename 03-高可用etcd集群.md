@@ -22,9 +22,9 @@ $
 到 `https://github.com/coreos/etcd/releases` 页面下载最新版本的二进制文件
 
 ``` bash
-$ https://github.com/coreos/etcd/releases/download/v3.1.5/etcd-v3.1.5-linux-amd64.tar.gz
-$ tar -xvf etcd-v3.1.4-linux-amd64.tar.gz
-$ sudo mv etcd-v3.1.4-linux-amd64/etcd* /root/local/bin
+$ wget https://github.com/coreos/etcd/releases/download/v3.1.5/etcd-v3.1.5-linux-amd64.tar.gz
+$ tar -xvf etcd-v3.1.5-linux-amd64.tar.gz
+$ sudo mv etcd-v3.1.5-linux-amd64/etcd* /root/local/bin
 $
 ```
 

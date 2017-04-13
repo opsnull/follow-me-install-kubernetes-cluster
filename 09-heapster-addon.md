@@ -9,13 +9,16 @@ $ mv v1.3.0.zip heapster-1.3.0
 $
 ```
 
-文件目录： `heapster-1.3.0/deploy/kube-config/influxdb`
+官方文件目录： `heapster-1.3.0/deploy/kube-config/influxdb`
 
 ``` bash
 $ cd heapster-1.3.0/deploy/kube-config/influxdb
 $ ls *.yaml
-grafana-deployment.yaml  grafana-service.yaml  heapster-deployment.yaml  heapster-service.yaml  influxdb-deployment.yaml  influxdb-service.yaml
+grafana-deployment.yaml  heapster-deployment.yaml  heapster-service.yaml  influxdb-deployment.yaml
+grafana-service.yaml     heapster-rbac.yaml        influxdb-cm.yaml       influxdb-service.yaml
 ```
+
++ 新加了 `heapster-rbac.yaml` 和 `influxdb-cm.yaml` 文件，分别定义 RoleBinding 和 inflxudb 的配置。
 
 已经修改好的 yaml 文件见：[heapster](./manifests/heapster)
 

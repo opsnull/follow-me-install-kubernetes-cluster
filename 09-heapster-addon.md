@@ -1,4 +1,4 @@
-# 配置和安装 Heapster
+# 部署 heapster 插件
 
 到 [heapster release 页面](https://github.com/kubernetes/heapster/releases) 下载最新版本的 heapster
 

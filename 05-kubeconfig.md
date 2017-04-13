@@ -1,8 +1,8 @@
-# 创建 kubeconfig 文件
+# 配置 kubeconfig 文件
 
-`kubelet`、`kube-proxy` 等 Node 机器上的进程与 Master 机器的 `kube-apiserver` 进程通信时需要认证和授权；
+`kubelet`、`kube-proxy` 等 Node 节点上的进程与 Master 机器的 `kube-apiserver` 进程通信时需要认证和授权。
 
-kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 `TLS Bootstrapping` 功能，这样就不需要为每个客户端生成证书了；该功能**当前仅支持为 `kubelet`** 生成证书；
+kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 `TLS Bootstrapping` 功能，这样就不需要为每个客户端生成证书了。该功能**当前仅支持为 `kubelet`** 生成证书。
 
 ## 创建 TLS Bootstrapping Token
 
@@ -75,10 +75,9 @@ $ kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
 + 设置集群参数和客户端认证参数时 `--embed-certs` 都为 `true`，这会将 `certificate-authority`、`client-certificate` 和 `client-key` 指向的证书文件内容写入到生成的 `kube-proxy.kubeconfig` 文件中；
 + `kube-proxy.pem` 证书中 CN 为 `system:kube-proxy`，`kube-apiserver` 预定义的 RoleBinding `cluster-admin` 将User `system:kube-proxy` 与 Role `system:node-proxier` 绑定，该 Role 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；
 
-
 ## 分发 kubeconfig 文件
 
-将两个 kubeconfig 文件分发到所有 Node 机器的 `/etc/kubernetes/` 目录
+将三个 kubeconfig 文件分发到所有 Node 机器的 `/etc/kubernetes/` 目录
 
 ``` bash
 $ sudo cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/

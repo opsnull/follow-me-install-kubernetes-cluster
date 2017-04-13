@@ -19,22 +19,22 @@
 + TLS 认证通信 (所有组件，如 etcd、kubernetes master 和 node)
 + RBAC 授权
 + kublet TLS BootStrapping
-+ kubedns、dashboard、heapster(influxdb、grafana)、EFK(elasticsearch、fluentd、kibana) 集群插件
-+ 私有 registry 仓库，使用 ceph rgw 做存储，TLS + Basic 认证
++ kubedns、dashboard、heapster (influxdb、grafana)、EFK (elasticsearch、fluentd、kibana) 插件
++ 私有 docker registry，使用 ceph rgw 后端存储，TLS + HTTP Basic 认证
 
 ## 步骤介绍
 
-1. [创建 TLS 通信所需的证书和秘钥](01-TLS证书和秘钥.md)
-1. [创建 kubeconfig 文件](02-kubeconfig文件.md)
-1. [创建三节点的高可用 etcd 集群](03-高可用etcd集群.md)
-1. [kubectl命令行工具](04-kubectl命令行工具.md)
-1. [部署高可用 master 集群](05-部署高可用master集群.md)
-1. [部署 node 节点](06-部署node节点.md)
-1. [DNS 插件](07-dns-addon.md)
-1. [Dashboard 插件](08-dashboard-addon.md)
-1. [Heapster 插件](09-heapster-addon.md)
-1. [EFK 插件](10-EFK-addons.md)
-1. [创建私有 docker registry](11-创建私有docker-registry.md)
+1. [创建 TLS 证书和秘钥](01-ca-tls.md)
+1. [下载和配置 Kubectl 命令行工具](02-kubectl.md)
+1. [部署高可用 Etcd 集群](03-ha-etcd-cluster.md)
+1. [部署 Master 节点](04-master.md)
+1. [配置 Node Kubeconfig 文件](05-kubeconfig.md)
+1. [部署 Node 节点](06-node.md)
+1. [部署 DNS 插件](07-dns-addon.md)
+1. [部署 Dashboard 插件](08-dashboard-addon.md)
+1. [部署 Heapster 插件](09-heapster-addon.md)
+1. [部署 EFK 插件](10-efk-addons.md)
+1. [部署 Docker Registry](11-docker-registry.md)
 1. [清理集群](12-clean-cluster.md)
 
 ## 注意

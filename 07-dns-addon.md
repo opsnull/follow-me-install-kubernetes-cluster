@@ -1,4 +1,4 @@
-# 安装和配置 kubedns 插件
+# 部署 kubedns 插件
 
 官方文件目录：`kubernetes/cluster/addons/dns`
 

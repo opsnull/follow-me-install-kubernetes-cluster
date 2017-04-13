@@ -1,6 +1,6 @@
 # 下载和配置 kubectl 命令行工具
 
-本文档介绍下载和配置 kubernetes 集群命令行工具 kubelet 的步骤。
+本文档介绍下载和配置 kubernetes 集群命令行工具 kubectl 的步骤。
 
 ## 下载 kubectl
 
@@ -9,6 +9,7 @@ $ wget https://dl.k8s.io/v1.6.1/kubernetes-client-linux-amd64.tar.gz
 $ tar -xzvf kubernetes-client-linux-amd64.tar.gz
 $ sudo cp kubernetes/client/bin/kube* /root/local/bin/
 $ chmod a+x /root/local/bin/kube*
+$ export PATH=/root/local/bin:$PATH
 $
 ```
 
@@ -36,3 +37,7 @@ $ kubectl config use-context kubernetes
 
 + `admin.pem` 证书 OU 字段值为 `system:masters`，`kube-apiserver` 预定义的 RoleBinding `cluster-admin` 将 Group `system:masters` 与 Role `cluster-admin` 绑定，该 Role 授予了调用`kube-apiserver` 相关 API 的权限；
 + 生成的 kubeconfig 被保存到 `~/.kube/config` 文件；
+
+## 分发 kubeconfig 文件
+
+将 `~/.kube/config` 文件分发到后续会运行 `kubelet` 命令的机器的 `~/.kube/config` 位置。

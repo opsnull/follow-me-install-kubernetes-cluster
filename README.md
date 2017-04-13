@@ -1,24 +1,32 @@
 # 和我一步步部署 kubernetes 集群
 
-本系列文档介绍使用二进制部署 `kubernetes` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群；
+本系列文档介绍使用二进制部署 `kubernetes` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群，同时开启了集群的TLS安全认证；
 
-在部署的过程中，将详细列出各组件的启动参数，它们的含义和可能遇到的问题。
+在部署的过程中，将详细列出各组件的启动参数，给出配置文件，详解它们的含义和可能遇到的问题。
 
 部署完成后，你将理解系统各组件的交互原理，进而能快速解决实际问题。
 
 所以本文档主要适合于那些有一定 kubernetes 基础，想通过一步步部署的方式来学习和了解系统配置、运行原理的人。
 
+## 提供所有的配置文件
+
+集群安装时所有组件用到的配置文件，包含在以下目录中：
+
+- **etc**： serivce的环境变量配置文件
+- **manifest**： kubernetes应用的yaml文件
+- **systemd** ：systemd serivce配置文件
+
 ## 集群详情
 
 + Kubernetes 1.6.0
-+ Docker  1.12.5
++ Docker  1.12.5（使用yum安装）
 + Etcd 3.1.5
 + Flanneld 0.7 vxlan 网络
 + TLS 认证通信 (所有组件，如 etcd、kubernetes master 和 node)
 + RBAC 授权
 + kublet TLS BootStrapping
 + kubedns、dashboard、heapster(influxdb、grafana)、EFK(elasticsearch、fluentd、kibana) 集群插件
-+ 私有 registry 仓库，使用 ceph rgw 做存储，TLS + Basic 认证
++ 私有docker镜像仓库[harbor](github.com/vmware/harbor)（请自行部署，harbor提供离线安装包，直接使用docker-compose启动即可）
 
 ## 步骤介绍
 
@@ -32,4 +40,4 @@
 8. [Dashboard 插件](08-dashboard-addon.md)
 9. [Heapster 插件](09-heapster-addon.md)
 10. [EFK 插件](10-EFK-addons.md)
-11. [创建私有 docker registry](11-创建私有docker-registry.md)
+

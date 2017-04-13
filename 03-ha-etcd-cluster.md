@@ -44,7 +44,7 @@ $
 ## 创建 etcd 的 systemd unit 文件
 
 ``` bash
-$ sudo mkdir -p /var/lib/etcd
+$ sudo mkdir -p /var/lib/etcd  # 必须先创建工作目录
 $ cat > etcd.service <<EOF
 [Unit]
 Description=Etcd Server

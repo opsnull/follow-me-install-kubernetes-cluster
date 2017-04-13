@@ -23,9 +23,9 @@ $ source /root/local/bin/environment.sh
 ## 目录和文件
 
 ``` bash
-$ mkdir -p /etc/kubernetes/ssl
-$ cp ca.pem kubernetes.pem kubernetes-key.pem /etc/kubernetes/ssl
-$ cp bootstrap.kubeconfig kube-proxy.kubeconfig token.csv /etc/kubernetes
+$ sudo mkdir -p /etc/kubernetes/ssl /var/lib/kublet /var/lib/kube-proxy
+$ sudo cp ca.pem kubernetes.pem kubernetes-key.pem /etc/kubernetes/ssl
+$ sudo cp bootstrap.kubeconfig kube-proxy.kubeconfig token.csv /etc/kubernetes
 $
 ```
 
@@ -247,7 +247,7 @@ $
 ### 创建 kubelet 的 systemd unit 文件
 
 ``` bash
-$ mkdir /var/lib/kublet
+$ sudo mkdir /var/lib/kublet # 必须先创建工作目录
 $ cat > kubelet.service <<EOF
 [Unit]
 Description=Kubernetes Kubelet
@@ -341,7 +341,7 @@ $ ls -l /etc/kubernetes/ssl/kubelet*
 ### 创建 kube-proxy 的 systemd unit 文件
 
 ``` bash
-$ sudo mkdir -p /var/lib/kube-proxy
+$ sudo mkdir -p /var/lib/kube-proxy # 必须先创建工作目录
 $ cat > kube-proxy.service <<EOF
 [Unit]
 Description=Kubernetes Kube-Proxy Server

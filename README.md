@@ -1,5 +1,7 @@
 # 和我一步步部署kubernetes集群
 
+*FYI：本文档仅作为kubernetes安装文档，已停止更新，kubernetes相关内容已转移到[Kubernetes-handbook](https://github.com/rootsongjc/kubernetes-handbook)中，并同步到[gitbook](https://www.gitbook.com/book/rootsongjc/kubernetes-handbook/details)，欢迎大家围观和贡献。*
+
 本系列文档介绍使用二进制部署 `kubernetes` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群，同时开启了集群的TLS安全认证；
 
 在部署的过程中，将详细列出各组件的启动参数，给出配置文件，详解它们的含义和可能遇到的问题。

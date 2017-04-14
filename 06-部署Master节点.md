@@ -157,9 +157,9 @@ Description=Kubernetes Controller Manager
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-ExecStart=/root/local/binkube-controller-manager \\
+ExecStart=/root/local/bin/kube-controller-manager \\
   --address=127.0.0.1 \\
-  --master=http://{MASTER_IP}:8080 \\
+  --master=http://${MASTER_IP}:8080 \\
   --allocate-node-cidrs=true \\
   --service-cluster-ip-range=${SERVICE_CIDR} \\
   --cluster-cidr=${CLUSTER_CIDR} \\
@@ -221,7 +221,7 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 [Service]
 ExecStart=/root/local/bin/kube-scheduler \\
   --address=127.0.0.1 \\
-  --master=http://{MASTER_IP}:8080 \\
+  --master=http://${MASTER_IP}:8080 \\
   --leader-elect=true \\
   --v=2
 Restart=on-failure

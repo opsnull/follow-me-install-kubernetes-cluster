@@ -1,6 +1,6 @@
 # 创建 TLS 证书和秘钥
 
-`kubernetes` 系统各组件需要使用 `TLS` 证书对通信进行加密，本文档使用 `CloudFlare` 的 PKI 工具集 [cfssl](https://github.com/cloudflare/cfssl) 来生成 Certificate Authority (CA) 和其它证书；
+`kubernetes` 系统各组件需要使用 `TLS` 证书对通信进行加密，本文档使用 `CloudFlare` 的 PKI 工具集 [cfssl](https://github.com/cloudflare/cfssl) 来生成 Certificate Authority (CA) 和其它证书。
 
 生成的 CA 证书和秘钥文件如下：
 
@@ -21,7 +21,7 @@
 + kube-proxy：使用 ca.pem、kube-proxy-key.pem、kube-proxy.pem；
 + kubectl：使用 ca.pem、admin-key.pem、admin.pem；
 
-`kube-controller`、`kube-scheduler` 当前需要和 `kube-apiserver` 部署在同一台机器上且使用非安全端口通信，故不需要证书；
+`kube-controller`、`kube-scheduler` 当前需要和 `kube-apiserver` 部署在同一台机器上且使用非安全端口通信，故不需要证书。
 
 ## 安装 `CFSSL`
 
@@ -48,7 +48,7 @@ $
 
 ## 创建 CA (Certificate Authority)
 
-创建 CA 配置文件
+创建 CA 配置文件：
 
 ``` bash
 $ cat ca-config.json
@@ -77,7 +77,7 @@ $ cat ca-config.json
 + `server auth`：表示 client 可以用该 CA 对 server 提供的证书进行验证；
 + `client auth`：表示 server 可以用该 CA 对 client 提供的证书进行验证；
 
-创建 CA 证书签名请求
+创建 CA 证书签名请求：
 
 ``` bash
 $ cat ca-csr.json
@@ -102,7 +102,7 @@ $ cat ca-csr.json
 + "CN"：`Common Name`，kube-apiserver 从证书中提取该字段作为请求的用户名 (User Name)；浏览器使用该字段验证网站是否合法；
 + "O"：`Organization`，kube-apiserver 从证书中提取该字段作为请求用户所属的组 (Group)；
 
-生成 CA 证书和私钥
+生成 CA 证书和私钥：
 
 ``` bash
 $ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
@@ -113,7 +113,7 @@ $
 
 ## 创建 kubernetes 证书
 
-创建 kubernetes 证书签名请求
+创建 kubernetes 证书签名请求：
 
 ``` bash
 $ cat kubernetes-csr.json
@@ -156,7 +156,7 @@ $ cat kubernetes-csr.json
   kubernetes   10.254.0.1   <none>        443/TCP   1d
   ```
 
-生成 kubernetes 证书和私钥
+生成 kubernetes 证书和私钥：
 
 ``` bash
 $ cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
@@ -173,7 +173,7 @@ $
 
 ## 创建 admin 证书
 
-创建 admin 证书签名请求
+创建 admin 证书签名请求：
 
 ``` bash
 $ cat admin-csr.json
@@ -200,7 +200,7 @@ $ cat admin-csr.json
 + `kube-apiserver` 预定义了一些 `RBAC` 使用的 `RoleBindings`，如 `cluster-admin` 将 Group `system:masters` 与 Role `cluster-admin` 绑定，该 Role 授予了调用`kube-apiserver` **所有 API**的权限；
 + OU 指定该证书的 Group 为 `system:masters`，`kubelet` 使用该证书访问 `kube-apiserver` 时 ，由于证书被 CA 签名，所以认证通过，同时由于证书用户组为经过预授权的 `system:masters`，所以被授予访问所有 API 的权限；
 
-生成 admin 证书和私钥
+生成 admin 证书和私钥：
 
 ``` bash
 $ cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes admin-csr.json | cfssljson -bare admin
@@ -210,7 +210,7 @@ admin.csr  admin-csr.json  admin-key.pem  admin.pem
 
 ## 创建 kube-proxy 证书
 
-创建 kube-proxy 证书签名请求
+创建 kube-proxy 证书签名请求：
 
 ``` bash
 $ cat kube-proxy-csr.json
@@ -236,7 +236,7 @@ $ cat kube-proxy-csr.json
 + CN 指定该证书的 User 为 `system:kube-proxy`；
 + `kube-apiserver` 预定义的 RoleBinding `cluster-admin` 将User `system:kube-proxy` 与 Role `system:node-proxier` 绑定，该 Role 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；
 
-生成 kube-proxy 客户端证书和私钥
+生成 kube-proxy 客户端证书和私钥：
 
 ``` bash
 $ cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes  kube-proxy-csr.json | cfssljson -bare kube-proxy
@@ -246,7 +246,7 @@ kube-proxy.csr  kube-proxy-csr.json  kube-proxy-key.pem  kube-proxy.pem
 
 ## 校验证书
 
-以 kubernetes 证书为例
+以校验 kubernetes 证书为例：
 
 ### 使用 `openssl` 命令
 
@@ -329,6 +329,8 @@ $ cfssl-certinfo -cert kubernetes.pem
     "kubernetes.default.svc.cluster.local",
     "127.0.0.1",
     "10.64.3.7",
+    "10.64.3.8",
+    "10.66.3.86",
     "10.254.0.1"
   ],
   "not_before": "2017-04-05T05:36:00Z",
@@ -339,7 +341,7 @@ $ cfssl-certinfo -cert kubernetes.pem
 
 ## 分发证书
 
-将生成的证书和秘钥文件（后缀名为`.pem`）拷贝到所有机器的 `/etc/kubernetes/ssl` 目录下备用；
+将生成的证书和秘钥文件（后缀名为`.pem`）拷贝到所有机器的 `/etc/kubernetes/ssl` 目录下:
 
 ``` bash
 $ sudo mkdir -p /etc/kubernetes/ssl

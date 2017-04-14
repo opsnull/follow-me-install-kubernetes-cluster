@@ -6,7 +6,7 @@ kuberntes 系统使用 etcd 存储所有数据，本文档介绍部署一个三�
 + etcd-host1：10.64.3.8
 + etcd-host2：10.66.3.86
 
-## 变量定义
+## 使用的变量
 
 本文档用到的变量定义如下：
 
@@ -21,7 +21,7 @@ $
 
 ## TLS 认证文件
 
-需要为 etcd 集群创建加密通信的 TLS 证书，这里复用以前创建的 kubernetes 证书
+需要为 etcd 集群创建加密通信的 TLS 证书，这里复用以前创建的 kubernetes 证书：
 
 ``` bash
 $ sudo cp ca.pem kubernetes-key.pem kubernetes.pem /etc/kubernetes/ssl
@@ -32,7 +32,7 @@ $
 
 ## 下载二进制文件
 
-到 `https://github.com/coreos/etcd/releases` 页面下载最新版本的二进制文件
+到 `https://github.com/coreos/etcd/releases` 页面下载最新版本的二进制文件：
 
 ``` bash
 $ wget https://github.com/coreos/etcd/releases/download/v3.1.5/etcd-v3.1.5-linux-amd64.tar.gz
@@ -58,7 +58,7 @@ Type=notify
 WorkingDirectory=/var/lib/etcd/
 EnvironmentFile=-/etc/etcd/etcd.conf
 ExecStart=/root/local/bin/etcd \\
-  --name={NODE_NAME} \\
+  --name=${NODE_NAME} \\
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \\
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \\
   --peer-cert-file=/etc/kubernetes/ssl/kubernetes.pem \\
@@ -100,11 +100,11 @@ $ systemctl status etcd
 $
 ```
 
-在所有的 kubernetes master 节点重复上面的步骤，直到所有机器的 etcd 服务都已启动；
+在所有的 kubernetes master 节点重复上面的步骤，直到所有机器的 etcd 服务都已启动。
 
 ## 验证服务
 
-在任一 kubernetes master 机器上执行如下命令：
+在任一 etcd 集群机器上执行如下命令：
 
 ``` bash
 $ for ip in ${NODE_IPS}; do

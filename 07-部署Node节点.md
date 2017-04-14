@@ -7,9 +7,9 @@ kubernetes node 节点包含如下组件：
 + kubelet
 + kube-proxy
 
-## 变量定义
+## 使用的变量
 
-本文档用到的变量定义如下
+本文档用到的变量定义如下：
 
 ``` bash
 $ # 当前部署的节点通信接口名称
@@ -305,7 +305,7 @@ $
 
 kubelet 首次启动时向 kube-apiserver 发送证书签名请求，必须通过后 kubernetes 系统才会将该 Node 加入到集群。
 
-查看未授权的 CSR 请求
+查看未授权的 CSR 请求：
 
 ``` bash
 $ kubectl get csr
@@ -315,7 +315,7 @@ $ kubectl get nodes
 No resources found.
 ```
 
-通过 CSR 请求
+通过 CSR 请求：
 
 ``` bash
 $ kubectl certificate approve csr-2b308
@@ -325,7 +325,7 @@ NAME        STATUS    AGE       VERSION
 10.64.3.7   Ready     49m       v1.6.1
 ```
 
-自动生成了 kubelet kubeconfig 文件和公私钥
+自动生成了 kubelet kubeconfig 文件和公私钥：
 
 ``` bash
 $ ls -l /etc/kubernetes/kubelet.kubeconfig

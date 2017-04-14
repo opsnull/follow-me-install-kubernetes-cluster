@@ -15,19 +15,19 @@
 
 ## 步骤列表
 
-1. [组件版本和集群环境介绍](01-environment.md)
-1. [创建 TLS 证书和秘钥](02-ca-tls.md)
-1. [部署高可用 Etcd 集群](03-ha-etcd-cluster.md)
-1. [下载和配置 Kubectl 命令行工具](04-kubectl.md)
-1. [部署 Master 节点](05-master.md)
-1. [配置 Node Kubeconfig 文件](06-kubeconfig.md)
-1. [部署 Node 节点](07-node.md)
-1. [部署 DNS 插件](08-dns-addon.md)
-1. [部署 Dashboard 插件](09-dashboard-addon.md)
-1. [部署 Heapster 插件](10-heapster-addon.md)
-1. [部署 EFK 插件](11-efk-addon.md)
-1. [部署 Docker Registry](12-docker-registry.md)
-1. [清理集群](13-clean-cluster.md)
+1. [组件版本和集群环境](01-组件版本和集群环境.md)
+1. [创建 TLS 证书和秘钥](02-创建TLS证书和秘钥.md)
+1. [部署高可用 Etcd 集群](03-部署高可用Etcd集群.md)
+1. [下载和配置 Kubectl 命令行工具](04-部署Kubectl命令行工具.md)
+1. [配置 Kubeconfig 文件](05-配置Kubeconfig文件.md)
+1. [部署 Master 节点](06-部署Master节点.md)
+1. [部署 Node 节点](07-部署Node节点.md)
+1. [部署 DNS 插件](08-部署DNS插件.md)
+1. [部署 Dashboard 插件](09-部署Dashboard插件.md)
+1. [部署 Heapster 插件](10-部署Heapster插件.md)
+1. [部署 EFK 插件](11-部署EFK插件.md)
+1. [部署 Docker Registry](12-部署Docker-Registry.md)
+1. [清理集群](13-清理集群.md)
 
 ## 注意
 
@@ -39,4 +39,9 @@ Copyright 2017 zhangjun(geekard@qq.com)
 
 Apache License 2.0，详情见 [LICENSE](LICENSE) 文件。
 
-希望对你有帮助！
+
+如果你觉得这份文档对你有帮助，请微信扫描下方的二维码进行捐赠，加油后的 opsnull 将会和你分享更多的原创教程，谢谢！
+
+<p align="center">
+  <img src="https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/images/weixin_qr.jpg?raw=true" alt="weixin_qr.jpg"/>
+</p>

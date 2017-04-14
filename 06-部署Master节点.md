@@ -15,9 +15,9 @@ kubernetes master 节点包含的组件：
 
 计划后续再介绍部署 LB 的步骤，客户端 (kubectl、kubelet、kube-proxy) 使用 LB 的 VIP 来访问 kube-apiserver，从而实现高可用 master 集群。
 
-## 变量定义
+## 使用的变量
 
-本文档用到的变量定义如下
+本文档用到的变量定义如下：
 
 ``` bash
 $ export MASTER_IP=10.64.3.7  # 替换为当前部署的 master 机器 IP
@@ -37,7 +37,7 @@ $
 
 ## 下载最新版本的二进制文件
 
-有两种下载方式
+有两种下载方式：
 
 1. 从 [github release 页面](https://github.com/kubernetes/kubernetes/releases) 下载发布版 tarball，解压后再执行下载脚本
 
@@ -63,7 +63,7 @@ $
     $ tar -xzvf  kubernetes-src.tar.gz
     ```
 
-将二进制文件拷贝到指定路径
+将二进制文件拷贝到指定路径：
 
 ``` bash
 $ sudo cp -r server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /root/local/bin/
@@ -236,7 +236,7 @@ EOF
 + `--master=http://{MASTER_IP}:8080`：使用非安全 8080 端口与 kube-apiserver 通信；
 + `--leader-elect=true` 部署多台机器组成的 master 集群时选举产生一处于工作状态的 `kube-controller-manager` 进程；
 
-完整 unit 见 [kube-scheduler.service](./systemd/kube-scheduler.service)
+完整 unit 见 [kube-scheduler.service](./systemd/kube-scheduler.service)。
 
 ### 启动 kube-scheduler
 

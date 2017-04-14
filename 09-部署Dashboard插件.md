@@ -2,7 +2,7 @@
 
 官方文件目录：`kubernetes/cluster/addons/dashboard`
 
-使用的文件
+使用的文件：
 
 ``` bash
 $ ls *.yaml
@@ -15,9 +15,9 @@ dashboard-controller.yaml  dashboard-rbac.yaml  dashboard-service.yaml
 
 ![dashboard-403.png](./images/dashboard-403.png)
 
-解决办法是：定义一个名为 dashboard 的 ServiceAccount，然后将它和 Cluster Role view 绑定，具体参考 [dashboard-rbac.yaml文件](./manifests/dashboard/dashboard-rbac.yaml)
+解决办法是：定义一个名为 dashboard 的 ServiceAccount，然后将它和 Cluster Role view 绑定，具体参考 [dashboard-rbac.yaml文件](./manifests/dashboard/dashboard-rbac.yaml)。
 
-已经修改好的 yaml 文件见：[dashboard](./manifests/dashboard)
+已经修改好的 yaml 文件见：[dashboard](./manifests/dashboard)。
 
 ## 配置dashboard-service
 
@@ -48,7 +48,7 @@ $ diff dashboard-service.yaml.orig dashboard-service.yaml
 $ pwd
 /root/kubernetes/cluster/addons/dashboard
 $ ls *.yaml
-dashboard-controller.yaml  dashboard-service.yaml
+dashboard-controller.yaml  dashboard-rbac.yaml  dashboard-service.yaml
 $ kubectl create -f  .
 service "kubernetes-dashboard" created
 deployment "kubernetes-dashboard" created

@@ -18,9 +18,9 @@ grafana-deployment.yaml  heapster-deployment.yaml  heapster-service.yaml  influx
 grafana-service.yaml     heapster-rbac.yaml        influxdb-cm.yaml       influxdb-service.yaml
 ```
 
-+ 新加了 `heapster-rbac.yaml` 和 `influxdb-cm.yaml` 文件，分别定义 RoleBinding 和 inflxudb 的配置。
++ 新加了 `heapster-rbac.yaml` 和 `influxdb-cm.yaml` 文件，分别定义 RoleBinding 和 inflxudb 的配置；
 
-已经修改好的 yaml 文件见：[heapster](./manifests/heapster)
+已经修改好的 yaml 文件见：[heapster](./manifests/heapster)。
 
 ## 配置 grafana-deployment
 
@@ -113,15 +113,10 @@ $ diff influxdb-service.yaml.orig influxdb-service.yaml
 $ pwd
 /root/heapster-1.3.0/deploy/kube-config/influxdb
 $ ls *.yaml
-grafana-deployment.yaml  grafana-service.yaml  heapster-deployment.yaml  heapster-service.yaml  influxdb-deployment.yaml  influxdb-service.yaml
+grafana-deployment.yaml  heapster-deployment.yaml  heapster-service.yaml  influxdb-deployment.yaml
+grafana-service.yaml     heapster-rbac.yaml        influxdb-cm.yaml       influxdb-service.yaml
 $ kubectl create -f  .
-deployment "monitoring-grafana" created
-service "monitoring-grafana" created
-deployment "heapster" created
-service "heapster" created
-deployment "monitoring-influxdb" created
-service "monitoring-influxdb" created
-configmap "influxdb-config" created
+$
 ```
 
 ## 检查执行结果

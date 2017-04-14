@@ -1,15 +1,15 @@
 # 配置 kubeconfig 文件
 
-`kubelet`、`kube-proxy` 等 Node 节点上的进程与 Master 机器的 `kube-apiserver` 进程通信时需要认证和授权。
+`kubelet`、`kube-proxy` 等 Node 节点上的进程与 Master 机器的 `kube-apiserver` 进程通信时需要提供认证和授权信息，这些信息保存在 kubeconfig 文件中。
 
-kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 `TLS Bootstrapping` 功能，这样就不需要为每个客户端生成证书了。该功能**当前仅支持为 `kubelet`** 生成证书。
+本文档介绍配置 `kubelet`、`kube-proxy` 进程使用的 kubeconfig 文件步骤。
 
-## 定的变量
+## 使用的变量
 
-本文档用到的变量定义如下
+本文档用到的变量定义如下：
 
 ``` bash
-$ export MASTER_IP=10.64.3.7 # 替换为 kubernetes maste 集群任一机器 IP
+$ export MASTER_IP=10.64.3.7 # 替换为 kubernetes master 集群任一机器 IP
 $ export KUBE_APISERVER="https://${MASTER_IP}:6443"
 $ export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
 $
@@ -17,13 +17,19 @@ $
 
 ## 创建 TLS Bootstrapping Token
 
+kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 `TLS Bootstrapping` 功能，这样就不需要为每个客户端生成证书了（该功能**目前仅支持 `kubelet`**）。
+
+客户端请求 TLS Bootstrapping 时需要提供包含认证 token 的 boostrap kubeconfig 文件(参考 [部署 Node 节点](07-node.md))。
+
 ``` bash
 $ cat > token.csv <<EOF
 ${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"
 EOF
 ```
 
-将 token 文件分发到所有机器（Master 和 Node）的 `/etc/kubernetes/` 目录
+## 分发 token.csv 文件
+
+将 token.csv 文件拷贝到**所有机器**（Master 和 Node）的 `/etc/kubernetes/` 目录：
 
 ``` bash
 $ sudo cp token.csv /etc/kubernetes/
@@ -85,7 +91,7 @@ $ kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
 
 ## 分发 kubeconfig 文件
 
-将三个 kubeconfig 文件分发到所有 Node 节点的 `/etc/kubernetes/` 目录
+将两个 kubeconfig 文件拷贝到所有 Node 机器的 `/etc/kubernetes/` 目录：
 
 ``` bash
 $ sudo cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/

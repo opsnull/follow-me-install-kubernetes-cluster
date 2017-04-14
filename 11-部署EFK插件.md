@@ -7,9 +7,9 @@ $ ls *.yaml
 es-controller.yaml es-rbac.yaml es-service.yaml  fluentd-es-ds.yaml  kibana-controller.yaml  kibana-service.yaml fluentd-es-rbac.yaml
 ```
 
-+ 新加了 `es-rbac.yaml` 和 `fluentd-es-rbac.yaml` 文件，定义了 elasticsearch 和 fluentd 使用的 Role 和 RoleBinding 。
++ 新加了 `es-rbac.yaml` 和 `fluentd-es-rbac.yaml` 文件，定义了 elasticsearch 和 fluentd 使用的 Role 和 RoleBinding；
 
-已经修改好的 yaml 文件见：[efk](./manifests/efk)
+已经修改好的 yaml 文件见：[efk](./manifests/efk)。
 
 
 ## 配置 es-controller.yaml
@@ -66,16 +66,12 @@ node "10.64.3.7" labeled
 ## 执行定义文件
 
 ``` bash
+$ pwd
+/root/kubernetes/cluster/addons/fluentd-elasticsearch
+$ ls *.yaml
+es-controller.yaml es-rbac.yaml es-service.yaml  fluentd-es-ds.yaml  kibana-controller.yaml  kibana-service.yaml fluentd-es-rbac.yaml
 $ kubectl create -f .
-replicationcontroller "elasticsearch-logging-v1" created
-service "elasticsearch-logging" created
-daemonset "fluentd-es-v1.22" created
-deployment "kibana-logging" created
-service "kibana-logging" created
-serviceaccount "fluentd" created
-clusterrolebinding "fluentd" created
-serviceaccount "elasticsearch" created
-clusterrolebinding "elasticsearch" created
+
 ```
 
 ## 检查执行结果

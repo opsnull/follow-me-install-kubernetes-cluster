@@ -1,10 +1,10 @@
-# 下载和配置 kubectl 命令行工具
+# 部署 kubectl 命令行工具
 
 本文档介绍下载和配置 kubernetes 集群命令行工具 kubectl 的步骤。
 
-## 变量定义
+## 使用的变量
 
-本文档用到的变量定义如下
+本文档用到的变量定义如下：
 
 ``` bash
 $ export MASTER_IP=10.64.3.7 # 替换为 kubernetes maste 集群任一机器 IP
@@ -49,4 +49,4 @@ $ kubectl config use-context kubernetes
 
 ## 分发 kubeconfig 文件
 
-将 `~/.kube/config` 文件分发到运行 `kubelet` 命令的机器的 `~/.kube/` 目录下。
+将 `~/.kube/config` 文件拷贝到运行 `kubelet` 命令的机器的 `~/.kube/` 目录下。

@@ -22,13 +22,13 @@ $
 
 ``` bash
 $ export FLANNEL_ETCD_PREFIX="/kubernetes/network"
-$ /root/local/bin/etcdctl \
+$ /usr/bin/etcdctl \
   --endpoints=http://127.0.0.1:2379  \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
   mkdir ${FLANNEL_ETCD_PREFIX}
-$ /root/local/bin/etcdctl \
+$ /usr/bin/etcdctl \
   --endpoints=http://127.0.0.1:2379  \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
@@ -45,15 +45,15 @@ $ /root/local/bin/etcdctl \
 $ mkdir flannel
 $ wget https://github.com/coreos/flannel/releases/download/v0.7.0/flannel-v0.7.0-linux-amd64.tar.gz
 $ tar -xzvf flannel-v0.7.0-linux-amd64.tar.gz -C flannel
-$ sudo cp flannel/{flanneld,mk-docker-opts.sh} /root/local/bin
+$ sudo cp flannel/{flanneld,mk-docker-opts.sh} /usr/bin
 $
 ```
 
 ### 创建 flanneld 的 systemd unit 文件
 
 ``` bash
-$ export FLANNEL_ETCD_ENDPOINTS="https://10.64.3.7:2379,https://10.64.3.8:2379,https://10.66.3.86:2379"
-$ export FLANNEL_OPTIONS="-iface=eth0"
+$ export FLANNEL_ETCD_ENDPOINTS="https://192.168.1.34:2379,https://192.168.1.35:2379,https://192.168.1.36:2379"
+$ export FLANNEL_OPTIONS="-iface=p2p1" //这里他要求最好使用内网网卡，但是我不知道如果是跨局域网的时候是不是还用内网网卡
 $ cat > flanneld.service << EOF
 [Unit]
 Description=Flanneld overlay address etcd agent
@@ -65,14 +65,14 @@ Before=docker.service
 
 [Service]
 Type=notify
-ExecStart=/root/local/bin/flanneld \\
+ExecStart=/usr/bin/flanneld \\
   -etcd-cafile=/etc/kubernetes/ssl/ca.pem \\
   -etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem \\
   -etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem \\
   -etcd-endpoints=${FLANNEL_ETCD_ENDPOINTS} \\
   -etcd-prefix=${FLANNEL_ETCD_PREFIX} \\
   $FLANNEL_OPTIONS
-ExecStartPost=/root/local/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
+ExecStartPost=/usr/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
 Restart=on-failure
 
 [Install]
@@ -110,7 +110,7 @@ $
 
 ``` bash
 $ # 查看集群 Pod 网段(/16)
-$ /root/local/bin/etcdctl \
+$ /usr/bin/etcdctl \
   --endpoints=http://127.0.0.1:2379  \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
@@ -118,7 +118,7 @@ $ /root/local/bin/etcdctl \
   get ${FLANNEL_ETCD_PREFIX}/config
 { "Network": "172.30.0.0/16", "SubnetLen": 24, "Backend": { "Type": "vxlan" } }
 $ # 查看已分配的 Pod 子网段列表(/24)
-$ /root/local/bin/etcdctl \
+$ /usr/bin/etcdctl \
   --endpoints=http://127.0.0.1:2379  \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
@@ -126,23 +126,25 @@ $ /root/local/bin/etcdctl \
   ls  ${FLANNEL_ETCD_PREFIX}/subnets
 /kubernetes/network/subnets/172.30.19.0-24
 $ # 查看某一 Pod 网段对应的 flanneld 进程监听的 IP 和网络参数
-$ /root/local/bin/etcdctl \
+$ /usr/bin/etcdctl \
   --endpoints=http://127.0.0.1:2379  \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
   --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
   get  ${FLANNEL_ETCD_PREFIX}/subnets/172.30.19.0-24
-{"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
+{"PublicIP":"192.168.1.34","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
 ```
 
 ## 安装和配置 docker
+
+
 
 ### 下载最新的 docker 二进制文件
 
 ``` bash
 $ wget https://get.docker.com/builds/Linux/x86_64/docker-17.04.0-ce.tgz
 $ tar -xvf docker-17.04.0-ce.tgz
-$ cp docker/docker* /root/local/bin
+$ cp docker/docker* /usr/bin
 $ cp completion/bash/docker /etc/bash_completion.d/
 $
 ```
@@ -156,9 +158,9 @@ Description=Docker Application Container Engine
 Documentation=http://docs.docker.io
 
 [Service]
-Environment="PATH=/root/local/bin:/usr/bin:/bin:/usr/sbin:/usr/bin"
+Environment="PATH=/usr/bin:/bin:/usr/sbin:/usr/bin"
 EnvironmentFile=-/run/flannel/docker
-ExecStart=/root/local/bin/dockerd --log-level=error $DOCKER_NETWORK_OPTIONS
+ExecStart=/usr/bin/dockerd --log-level=error $DOCKER_NETWORK_OPTIONS
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=on-failure
 RestartSec=5
@@ -178,6 +180,11 @@ WantedBy=multi-user.target
 + 如果内核版本比较新，建议使用 `overlay` 存储驱动；
 + docker 从 1.13 版本开始，可能将 **iptables FORWARD chain的默认策略设置为DROP**，从而导致 ping 其它 Node 上的 Pod IP 失败，遇到这种情况时，需要手动设置策略为 `ACCEPT`：
 
+## 我安装这个装总是出错，所以我单独装了docker
+  ```bash
+  $ curl -sSL https://get.daocloud.io/docker | sh
+  ```
+
   ``` bash
   $ sudo iptables -P FORWARD ACCEPT
   $
@@ -188,7 +195,7 @@ WantedBy=multi-user.target
     ``` bash
     $ cat /etc/docker/daemon.json
     {
-      "registry-mirrors": ["https://docker.mirrors.ustc.edu.cn", "hub-mirror.c.163.com"],
+      "registry-mirrors": ["http://5778dd4b.m.daocloud.io"],
       "max-concurrent-downloads": 10
     }
     ```
@@ -204,7 +211,7 @@ $ sudo systemctl stop firewalld
 $ sudo iptables -F && sudo iptables -X && sudo iptables -F -t nat && sudo iptables -X -t nat
 $ sudo systemctl enable docker
 $ sudo systemctl start docker
-$
+$ sudo systemctl status docker
 ```
 
 + 需要关闭 firewalld，否则可能会重复创建的 iptables 规则；
@@ -236,7 +243,7 @@ $ wget https://dl.k8s.io/v1.6.1/kubernetes-server-linux-amd64.tar.gz
 $ tar -xzvf kubernetes-server-linux-amd64.tar.gz
 $ cd kubernetes
 $ tar -xzvf  kubernetes-src.tar.gz
-$ sudo cp -r ./server/bin/{kube-proxy,kubelet} /root/local/bin/
+$ sudo cp -r ./server/bin/{kube-proxy,kubelet} /usr/bin/
 $
 ```
 
@@ -244,7 +251,7 @@ $
 
 ``` bash
 $ mkdir /var/lib/kublet
-$ export ADDRESS=10.64.3.7
+$ export ADDRESS=192.168.1.34
 $ export CLUSTER_DNS=10.254.0.2
 $ cat > kubelet.service <<EOF
 [Unit]
@@ -255,7 +262,7 @@ Requires=docker.service
 
 [Service]
 WorkingDirectory=/var/lib/kubelet
-ExecStart=/root/local/bin/kubelet \\
+ExecStart=/usr/bin/kubelet \\
   --address=${ADDRESS} \\
   --hostname-override=${ADDRESS} \\
   --pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest \\
@@ -319,7 +326,7 @@ $ kubectl certificate approve csr-2b308
 certificatesigningrequest "csr-2b308" approved
 $ kubectl get nodes
 NAME        STATUS    AGE       VERSION
-10.64.3.7   Ready     49m       v1.6.1
+192.168.1.34   Ready     49m       v1.6.1
 ```
 
 自动生成了 kubelet kubeconfig 文件和公私钥
@@ -340,7 +347,7 @@ $ ls -l /etc/kubernetes/ssl/kubelet*
 
 ``` bash
 $ sudo mkdir -p /var/lib/kube-proxy
-$ export ADDRESS=10.64.3.7
+$ export ADDRESS=192.168.1.34
 $ export CLUSTER_CIDR=10.254.0.0/16
 $ cat > kube-proxy.service <<EOF
 [Unit]
@@ -350,7 +357,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/var/lib/kube-proxy
-ExecStart=/root/local/bin/kube-proxy \\
+ExecStart=/usr/bin/kube-proxy \\
   --bind-address=${ADDRESS} \\
   --hostname-override=${ADDRESS} \\
   --cluster-cidr=${CLUSTER_CIDR} \\

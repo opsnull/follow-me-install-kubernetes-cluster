@@ -7,15 +7,15 @@
 ``` bash
 $ wget https://dl.k8s.io/v1.6.1/kubernetes-client-linux-amd64.tar.gz
 $ tar -xzvf kubernetes-client-linux-amd64.tar.gz
-$ sudo cp kubernetes/client/bin/kube* /root/local/bin/
-$ chmod a+x /root/local/bin/kube*
+$ sudo cp kubernetes/client/bin/kube* /usr/bin/
+$ chmod a+x /usr/bin/kube*
 $
 ```
 
 ## 创建 kubectl kubeconfig 文件
 
 ``` bash
-$ export KUBE_APISERVER="https://10.64.3.7:6443"
+$ export KUBE_APISERVER="https://192.168.1.34:6443"
 $ # 设置集群参数
 $ kubectl config set-cluster kubernetes \
   --certificate-authority=/etc/kubernetes/ssl/ca.pem \

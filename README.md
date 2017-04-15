@@ -32,7 +32,7 @@
 
 ## 在线阅读
 
-+ [GitBook](https://k8s.opsnull.com/)
++ [GitBook](https://k8s-install.opsnull.com/)
 + [Github](https://www.gitbook.com/book/opsnull/follow-me-install-kubernetes-cluster)
 
 ## 电子书

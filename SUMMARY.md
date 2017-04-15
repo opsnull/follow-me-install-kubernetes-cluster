@@ -2,12 +2,12 @@
 
 ## 和我一步步部署 kubernetes 集群
 
-* [manifests](./manifests)
-  * [dashboard](./manifests/dashboard)
+* manifests
+  * dashboard
     * [dashboard-controller.yaml](./manifests/dashboard/dashboard-controller.yaml)
     * [dashboard-rbac.yaml](./manifests/dashboard/dashboard-rbac.yaml)
     * [dashboard-service.yaml](./manifests/dashboard/dashboard-service.yaml)
-  * [EFK](./manifests/EFK)
+  * EFK
     * [es-controller.yaml](./manifests/EFK/es-controller.yaml)
     * [es-rbac.yaml](./manifests/EFK/es-rbac.yaml)
     * [es-service.yaml](./manifests/EFK/es-service.yaml)
@@ -15,7 +15,7 @@
     * [fluentd-es-rbac.yaml](./manifests/EFK/fluentd-es-rbac.yaml)
     * [kibana-controller.yaml](./manifests/EFK/kibana-controller.yaml)
     * [kibana-service.yaml](./manifests/EFK/kibana-service.yaml)
-  * [heapster](./manifests/heapster)
+  * heapster
     * [grafana-deployment.yaml](./manifests/heapster/grafana-deployment.yaml)
     * [grafana-service.yaml](./manifests/heapster/grafana-service.yaml)
     * [heapster-deployment.yaml](./manifests/heapster/heapster-deployment.yaml)
@@ -24,13 +24,13 @@
     * [influxdb-cm.yaml](./manifests/heapster/influxdb-cm.yaml)
     * [influxdb-deployment.yaml](./manifests/heapster/influxdb-deployment.yaml)
     * [heapster-service.yaml](./manifests/heapster/heapster-service.yaml)
-  * [kubedns](./manifests/kubedns)
+  * kubedns
     * [kubedns-cm.yaml](./manifests/kubedns/kubedns-cm.yaml)
     * [kubedns-controller.yaml](./manifests/kubedns/kubedns-controller.yaml)
     * [kubedns-sa.yaml](./manifests/kubedns/kubedns-sa.yaml)
     * [kubedns-svc.yaml](./manifests/kubedns/kubedns-svc.yaml)
   * [environment.sh](./manifests/environment.sh)
-* [systemd](./systemd)
+* systemd
     * [docker.service](./systemd/docker.service)
     * [etcd.service](./systemd/etcd.service)
     * [flanneld.service](./systemd/flanneld.service)

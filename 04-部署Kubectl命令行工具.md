@@ -1,3 +1,5 @@
+<!-- toc -->
+
 # 部署 kubectl 命令行工具
 
 本文档介绍下载和配置 kubernetes 集群命令行工具 kubectl 的步骤。

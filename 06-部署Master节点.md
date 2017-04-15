@@ -1,3 +1,5 @@
+<!-- toc -->
+
 # 部署 master 节点
 
 kubernetes master 节点包含的组件：

@@ -1,3 +1,5 @@
+<!-- toc -->
+
 # 部署私有 docker registry
 
 本文档讲解部署一个 TLS 加密、HTTP Basic 认证、用 ceph rgw 做后端存储的私有 docker registry 步骤，如果使用其它类型的后端存储，则可以从 “创建 docker registry” 节开始；

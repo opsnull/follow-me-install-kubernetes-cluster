@@ -69,6 +69,9 @@
             "facebook", "google", "twitter",
             "weibo", "instapaper"
         ]
-    }
+    },
+    "theme-default": {
+	    "showLevel": true
+	}
   }
 }

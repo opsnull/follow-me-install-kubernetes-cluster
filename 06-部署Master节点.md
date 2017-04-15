@@ -1,5 +1,7 @@
 <!-- toc -->
 
+tags: master,kube-apiserver,kube-scheduler,kube-controller-manager
+
 # 部署 master 节点
 
 kubernetes master 节点包含的组件：

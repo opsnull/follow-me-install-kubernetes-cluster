@@ -1,5 +1,7 @@
 <!-- toc -->
 
+tags: kubeconfig,token.csv,bootstrap.kubeconfig kube-proxy.kubeconfig
+
 # 配置 kubeconfig 文件
 
 `kubelet`、`kube-proxy` 等 Node 节点上的进程与 Master 机器的 `kube-apiserver` 进程通信时需要提供认证和授权信息，这些信息保存在 kubeconfig 文件中。

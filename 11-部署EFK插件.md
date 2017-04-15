@@ -1,5 +1,7 @@
 <!-- toc -->
 
+tags: EFK,fluentd,elasticsearch,kibana
+
 # 部署 EFK 插件
 
 官方文件目录：`cluster/addons/fluentd-elasticsearch`

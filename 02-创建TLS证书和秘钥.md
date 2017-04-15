@@ -1,5 +1,7 @@
 <!-- toc -->
 
+tags: TLS,CA
+
 # 创建 TLS 证书和秘钥
 
 `kubernetes` 系统各组件需要使用 `TLS` 证书对通信进行加密，本文档使用 `CloudFlare` 的 PKI 工具集 [cfssl](https://github.com/cloudflare/cfssl) 来生成 Certificate Authority (CA) 和其它证书。

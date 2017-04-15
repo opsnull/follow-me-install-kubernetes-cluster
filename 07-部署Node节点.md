@@ -1,5 +1,7 @@
 <!-- toc -->
 
+tags: node,flanneld,docker,kubelet,kube-proxy
+
 # 部署 node 节点
 
 kubernetes node 节点包含如下组件：

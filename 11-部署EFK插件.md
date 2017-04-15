@@ -1,6 +1,6 @@
 <!-- toc -->
 
-tags: EFK,fluentd,elasticsearch,kibana
+tags: EFK, fluentd, elasticsearch, kibana
 
 # 部署 EFK 插件
 
@@ -13,7 +13,7 @@ es-controller.yaml es-rbac.yaml es-service.yaml  fluentd-es-ds.yaml  kibana-cont
 
 + 新加了 `es-rbac.yaml` 和 `fluentd-es-rbac.yaml` 文件，定义了 elasticsearch 和 fluentd 使用的 Role 和 RoleBinding；
 
-已经修改好的 yaml 文件见：[EFK](./manifests/EFK)。
+已经修改好的 yaml 文件见：[EFK](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/manifests/EFK)。
 
 
 ## 配置 es-controller.yaml

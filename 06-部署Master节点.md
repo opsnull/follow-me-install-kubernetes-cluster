@@ -1,6 +1,6 @@
 <!-- toc -->
 
-tags: master,kube-apiserver,kube-scheduler,kube-controller-manager
+tags: master, kube-apiserver, kube-scheduler, kube-controller-manager
 
 # 部署 master 节点
 
@@ -137,7 +137,7 @@ EOF
 + `--service-node-port-range=${NODE_PORT_RANGE}` 指定 NodePort 的端口范围；
 + 缺省情况下 kubernetes 对象保存在 etcd `/registry` 路径下，可以通过 `--etcd-prefix` 参数进行调整；
 
-完整 unit 见 [kube-apiserver.service](./systemd/kube-apiserver.service)
+完整 unit 见 [kube-apiserver.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kube-apiserver.service)
 
 ### 启动 kube-apiserver
 
@@ -200,7 +200,7 @@ EOF
 + `--root-ca-file` 用来对 kube-apiserver 证书进行校验，**指定该参数后，才会在Pod 容器的 ServiceAccount 中放置该 CA 证书文件**；
 + `--leader-elect=true` 部署多台机器组成的 master 集群时选举产生一处于工作状态的 `kube-controller-manager` 进程；
 
-完整 unit 见 [kube-controller-manager.service](./systemd/kube-controller-manager.service)
+完整 unit 见 [kube-controller-manager.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kube-controller-manager.service)
 
 ### 启动 kube-controller-manager
 
@@ -240,7 +240,7 @@ EOF
 + `--master=http://{MASTER_IP}:8080`：使用非安全 8080 端口与 kube-apiserver 通信；
 + `--leader-elect=true` 部署多台机器组成的 master 集群时选举产生一处于工作状态的 `kube-controller-manager` 进程；
 
-完整 unit 见 [kube-scheduler.service](./systemd/kube-scheduler.service)。
+完整 unit 见 [kube-scheduler.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kube-scheduler.service)。
 
 ### 启动 kube-scheduler
 

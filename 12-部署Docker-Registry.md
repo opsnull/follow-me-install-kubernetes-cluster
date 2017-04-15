@@ -1,6 +1,6 @@
 <!-- toc -->
 
-tags: registry,ceph
+tags: registry, ceph
 
 # 部署私有 docker registry
 

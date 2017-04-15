@@ -13,7 +13,7 @@ $ ls *.yaml *.base
 kubedns-cm.yaml  kubedns-sa.yaml  kubedns-controller.yaml.base  kubedns-svc.yaml.base
 ```
 
-已经修改好的 yaml 文件见：[dns](./manifests/kubedns)。
+已经修改好的 yaml 文件见：[dns](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/manifests/kubedns)。
 
 ## 系统预定义的 RoleBinding
 
@@ -59,7 +59,7 @@ $ diff kubedns-svc.yaml.base kubedns-svc.yaml
 >   clusterIP: 10.254.0.2
 ```
 
-+ 需要将 spec.clusterIP 设置为[集群环境变量](./manifests/environment.sh)中变量 `CLUSTER_DNS_SVC_IP` 值，这个 IP 需要和 kubelet 的 `—cluster-dns` 参数值一致；
++ 需要将 spec.clusterIP 设置为[集群环境变量](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/manifests/environment.sh)中变量 `CLUSTER_DNS_SVC_IP` 值，这个 IP 需要和 kubelet 的 `—cluster-dns` 参数值一致；
 
 ## 配置 `kube-dns` Deployment
 

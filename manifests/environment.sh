@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/manifests/environment.sh#!/usr/bin/bash
 
 # 服务网段 (Service CIDR），部署前必须路由不可达
 export SERVICE_CIDR="10.254.0.0/16"

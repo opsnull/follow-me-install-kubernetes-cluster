@@ -1,6 +1,6 @@
 <!-- toc -->
 
-tags: kubeconfig,token.csv,bootstrap.kubeconfig kube-proxy.kubeconfig
+tags: kubeconfig, token.csv, bootstrap.kubeconfig, kube-proxy.kubeconfig
 
 # 配置 kubeconfig 文件
 

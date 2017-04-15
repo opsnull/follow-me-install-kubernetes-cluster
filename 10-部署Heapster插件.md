@@ -24,7 +24,7 @@ grafana-service.yaml     heapster-rbac.yaml        influxdb-cm.yaml       influx
 
 + 新加了 `heapster-rbac.yaml` 和 `influxdb-cm.yaml` 文件，分别定义 RoleBinding 和 inflxudb 的配置；
 
-已经修改好的 yaml 文件见：[heapster](./manifests/heapster)。
+已经修改好的 yaml 文件见：[heapster](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/manifests/heapster)。
 
 ## 配置 grafana-deployment
 
@@ -65,7 +65,7 @@ influxdb 官方建议使用命令行或 HTTP API 接口来查询数据库，从 
 
 开启镜像中 admin UI的办法如下：先导出镜像中的 influxdb 配置文件，开启 admin 插件后，再将配置文件内容写入 ConfigMap，最后挂载到镜像中，达到覆盖原始配置的目的：
 
-注意：manifests 目录已经提供了 [修改后的 ConfigMap 定义文件](./manifests/heapster/influxdb-cm.yaml)
+注意：manifests 目录已经提供了 [修改后的 ConfigMap 定义文件](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/manifests/heapster/influxdb-cm.yaml)
 
 ``` bash
 $ # 导出镜像中的 influxdb 配置文件

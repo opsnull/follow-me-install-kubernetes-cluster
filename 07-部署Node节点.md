@@ -1,6 +1,6 @@
 <!-- toc -->
 
-tags: node,flanneld,docker,kubelet,kube-proxy
+tags: node, flanneld, docker, kubelet, kube-proxy
 
 # 部署 node 节点
 
@@ -94,7 +94,7 @@ EOF
 + mk-docker-opts.sh 脚本将分配给 flanneld 的 Pod 子网网段信息写入到 `/run/flannel/docker` 文件中，后续 docker 启动时使用这个文件中参数值设置 docker0 网桥；
 + `-iface` 选项值指定 flanneld 和其它 Node 通信的接口，如果机器有内、外网，则最好指定为内网接口；
 
-完整 unit 见 [flanneld.service](./systemd/flanneld.service)
+完整 unit 见 [flanneld.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/flanneld.service)
 
 ### 启动 flanneld
 
@@ -202,7 +202,7 @@ WantedBy=multi-user.target
     }
     ```
 
-完整 unit 见 [docker.service](./systemd/docker.service)
+完整 unit 见 [docker.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/docker.service)
 
 ### 启动 dockerd
 
@@ -292,7 +292,7 @@ EOF
 + 建议在 `--kubeconfig` 配置文件中指定 `kube-apiserver` 地址，如果未指定 `--api-servers` 选项，则必须指定 `--require-kubeconfig` 选项后才从配置文件中读取 kue-apiserver 的地址，否则 kubelet 启动后将找不到 kube-apiserver (日志中提示未找到 API Server），`kubectl get nodes` 不会返回对应的 Node 信息;
 + `--cluster_dns` 指定 kubedns 的 Service IP(可以先分配，后续创建 kubedns 服务时指定该 IP)，`--cluster_domain` 指定域名后缀，这两个参数同时指定后才会生效；
 
-完整 unit 见 [kubelet.service](./systemd/kubelet.service)
+完整 unit 见 [kubelet.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kubelet.service)
 
 ### 启动 kublet
 
@@ -377,7 +377,7 @@ EOF
 + `--kubeconfig` 指定的配置文件嵌入了 kube-apiserver 的地址、用户名、证书、秘钥等请求和认证信息；
 + 预定义的 RoleBinding `cluster-admin` 将User `system:kube-proxy` 与 Role `system:node-proxier` 绑定，该 Role 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；
 
-完整 unit 见 [kube-proxy.service](./systemd/kube-proxy.service)
+完整 unit 见 [kube-proxy.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kube-proxy.service)
 
 ### 启动 kube-proxy
 

@@ -21,7 +21,7 @@ dashboard-controller.yaml  dashboard-rbac.yaml  dashboard-service.yaml
 
 解决办法是：定义一个名为 dashboard 的 ServiceAccount，然后将它和 Cluster Role view 绑定，具体参考 [dashboard-rbac.yaml文件](./manifests/dashboard/dashboard-rbac.yaml)。
 
-已经修改好的 yaml 文件见：[dashboard](./manifests/dashboard)。
+已经修改好的 yaml 文件见：[dashboard](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/manifests/dashboard)。
 
 ## 配置dashboard-service
 

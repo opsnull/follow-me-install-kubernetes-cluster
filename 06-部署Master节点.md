@@ -34,7 +34,7 @@ $
 
 ``` bash
 $ sudo mkdir -p /etc/kubernetes/ssl
-$ sudo cp token.csv /etc/kubernetes/ssl
+$ sudo cp token.csv /etc/kubernetes
 $ sudo cp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem /etc/kubernetes/ssl
 $
 ```

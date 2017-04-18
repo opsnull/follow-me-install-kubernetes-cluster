@@ -345,7 +345,7 @@ $ cfssl-certinfo -cert kubernetes.pem
 
 ## 分发证书
 
-将生成的证书和秘钥文件（后缀名为`.pem`）拷贝到所有机器的 `/etc/kubernetes/ssl` 目录下:
+将生成的证书和秘钥文件（后缀名为`.pem`）拷贝到**所有机器**的 `/etc/kubernetes/ssl` 目录下:
 
 ``` bash
 $ sudo mkdir -p /etc/kubernetes/ssl

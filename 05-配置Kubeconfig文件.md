@@ -40,6 +40,13 @@ $ sudo cp token.csv /etc/kubernetes/
 $
 ```
 
+注意：如果后续重新生成了 BOOTSTRAP_TOKEN，则需要：
+
+1. 更新 token.csv 文件，分发到所有机器 (master 和 node）的 /etc/kubernetes/ 目录下；
+1. 重新生成 bootstrap.kubeconfig 文件，分发到所有 node 机器的 /etc/kubernetes/ 目录下；
+1. 重启 kube-apiserver 和 kubelet 进程；
+1. 重新 approve kubelet 的 csr 请求；(参考：[07-部署Node节点.md](07-部署Node节点.md))
+
 ## 创建 kubelet bootstrapping kubeconfig 文件
 
 ``` bash

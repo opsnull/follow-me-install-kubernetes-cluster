@@ -6,14 +6,14 @@ tags: kubectl
 
 本文档介绍下载和配置 kubernetes 集群命令行工具 kubectl 的步骤。
 
-kublet 默认使用 `localhost:8080` 访问 kube-apiserver，而通常情况下执行 Kublet 命令的机器并不是 kube-apiserver，故执行时出错：
+kublet 默认使用 `localhost:8080` 访问 kube-apiserver，而通常情况下执行 kublet 命令的机器并不是 kube-apiserver，故执行时出错：
 
 ``` bash
 $  kubectl get pods
 The connection to the server localhost:8080 was refused - did you specify the right host or port?
 ```
 
-需要拷贝生成的 `~/.kube/config` 配置文件到**所有使用 kublet 命令的机器**。
+故需要为 kublet 生成 `~/.kube/config` 配置文件， 然后拷贝到**所有使用 kublet 命令的机器**。
 
 ## 使用的变量
 
@@ -24,6 +24,8 @@ $ export MASTER_IP=10.64.3.7 # 替换为 kubernetes maste 集群任一机器 IP
 $ export KUBE_APISERVER="https://${MASTER_IP}:6443"
 $
 ```
+
++ 变量 KUBE_APISERVER 指定 kublet 访问的 kube-apiserver 的地址，后续被写入 `~/.kube/config` 配置文件。
 
 ## 下载 kubectl
 

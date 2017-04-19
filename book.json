@@ -1,7 +1,6 @@
 {
   "title": "和我一步步部署kubernetes集群",
   "description": "和我一步步部署kubernetes集群",
-  "language": "zh-cn",
   "plugins": [
     "expandable-chapters",
     "anchors",

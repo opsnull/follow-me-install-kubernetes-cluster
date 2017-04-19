@@ -24,7 +24,7 @@ $
 ## 目录和文件
 
 ``` bash
-$ sudo mkdir -p /etc/kubernetes/ssl /var/lib/kublet /var/lib/kube-proxy
+$ sudo mkdir -p /etc/kubernetes/ssl /var/lib/kubelet /var/lib/kube-proxy
 $ sudo cp ca.pem kubernetes.pem kubernetes-key.pem /etc/kubernetes/ssl
 $ sudo cp bootstrap.kubeconfig kube-proxy.kubeconfig token.csv /etc/kubernetes
 $
@@ -225,7 +225,7 @@ $
 
 ## 安装和配置 kubelet
 
-kubelet 启动时向 kube-apiserver 发送 TLS bootstrapping 请求，需要先将 bootstrap token 文件中的 kubelet-bootstrap 用户赋予 system:node-bootstrapper 角色，然后 kublet 才有权限创建认证请求(certificatesigningrequests)：
+kubelet 启动时向 kube-apiserver 发送 TLS bootstrapping 请求，需要先将 bootstrap token 文件中的 kubelet-bootstrap 用户赋予 system:node-bootstrapper 角色，然后 kubelet 才有权限创建认证请求(certificatesigningrequests)：
 
 ``` bash
 $ kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --user=kubelet-bootstrap
@@ -248,7 +248,7 @@ $
 ### 创建 kubelet 的 systemd unit 文件
 
 ``` bash
-$ sudo mkdir /var/lib/kublet # 必须先创建工作目录
+$ sudo mkdir /var/lib/kubelet # 必须先创建工作目录
 $ cat > kubelet.service <<EOF
 [Unit]
 Description=Kubernetes Kubelet
@@ -290,7 +290,7 @@ EOF
 
 完整 unit 见 [kubelet.service](./systemd/kubelet.service)
 
-### 启动 kublet
+### 启动 kubelet
 
 ``` bash
 $ sudo cp kubelet.service /etc/systemd/system/kubelet.service
@@ -301,7 +301,7 @@ $ systemctl status kubelet
 $
 ```
 
-### 通过 kublet 的 TLS 证书请求
+### 通过 kubelet 的 TLS 证书请求
 
 kubelet 首次启动时向 kube-apiserver 发送证书签名请求，必须通过后 kubernetes 系统才会将该 Node 加入到集群。
 

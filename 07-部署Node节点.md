@@ -253,7 +253,7 @@ $
 ### 创建 kubelet 的 systemd unit 文件
 
 ``` bash
-$ sudo mkdir /var/lib/kublet # 必须先创建工作目录
+$ sudo mkdir /var/lib/kubelet # 必须先创建工作目录
 $ cat > kubelet.service <<EOF
 [Unit]
 Description=Kubernetes Kubelet

@@ -60,7 +60,6 @@ Documentation=https://github.com/coreos
 [Service]
 Type=notify
 WorkingDirectory=/var/lib/etcd/
-EnvironmentFile=-/etc/etcd/etcd.conf
 ExecStart=/root/local/bin/etcd \\
   --name=${NODE_NAME} \\
   --cert-file=/etc/kubernetes/ssl/kubernetes.pem \\

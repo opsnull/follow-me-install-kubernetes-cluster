@@ -28,7 +28,7 @@ $
 ## 目录和文件
 
 ``` bash
-$ sudo mkdir -p /etc/kubernetes/ssl /var/lib/kublet /var/lib/kube-proxy
+$ sudo mkdir -p /etc/kubernetes/ssl /var/lib/kubelet /var/lib/kube-proxy
 $ sudo cp ca.pem kubernetes.pem kubernetes-key.pem /etc/kubernetes/ssl
 $ sudo cp bootstrap.kubeconfig kube-proxy.kubeconfig token.csv /etc/kubernetes
 $
@@ -230,7 +230,7 @@ $
 
 ## 安装和配置 kubelet
 
-kubelet 启动时向 kube-apiserver 发送 TLS bootstrapping 请求，需要先将 bootstrap token 文件中的 kubelet-bootstrap 用户赋予 system:node-bootstrapper 角色，然后 kublet 才有权限创建认证请求(certificatesigningrequests)：
+kubelet 启动时向 kube-apiserver 发送 TLS bootstrapping 请求，需要先将 bootstrap token 文件中的 kubelet-bootstrap 用户赋予 system:node-bootstrapper 角色，然后 kubelet 才有权限创建认证请求(certificatesigningrequests)：
 
 ``` bash
 $ kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --user=kubelet-bootstrap
@@ -278,6 +278,10 @@ ExecStart=/root/local/bin/kubelet \\
   --serialize-image-pulls=false \\
   --logtostderr=true \\
   --v=2
+ExecStopPost=/sbin/iptables -A INPUT -s 10.0.0.0/8 -p tcp --dport 4194 -j ACCEPT
+ExecStopPost=/sbin/iptables -A INPUT -s 172.16.0.0/12 -p tcp --dport 4194 -j ACCEPT
+ExecStopPost=/sbin/iptables -A INPUT -s 192.168.0.0/16 -p tcp --dport 4194 -j ACCEPT
+ExecStopPost=/sbin/iptables -A INPUT -p tcp --dport 4194 -j DROP
 Restart=on-failure
 RestartSec=5
 
@@ -292,10 +296,11 @@ EOF
 + 管理员通过了 CSR 请求后，kubelet 自动在 `--cert-dir` 目录创建证书和私钥文件(`kubelet-client.crt` 和 `kubelet-client.key`)，然后写入 `--kubeconfig` 文件；
 + 建议在 `--kubeconfig` 配置文件中指定 `kube-apiserver` 地址，如果未指定 `--api-servers` 选项，则必须指定 `--require-kubeconfig` 选项后才从配置文件中读取 kue-apiserver 的地址，否则 kubelet 启动后将找不到 kube-apiserver (日志中提示未找到 API Server），`kubectl get nodes` 不会返回对应的 Node 信息;
 + `--cluster_dns` 指定 kubedns 的 Service IP(可以先分配，后续创建 kubedns 服务时指定该 IP)，`--cluster_domain` 指定域名后缀，这两个参数同时指定后才会生效；
++ kubelet cAdvisor 默认在**所有接口**监听 4194 端口的请求，对于有外网的机器来说不安全，`ExecStopPost` 选项指定的 iptables 规则只允许内网机器访问 4194 端口；
 
 完整 unit 见 [kubelet.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kubelet.service)
 
-### 启动 kublet
+### 启动 kubelet
 
 ``` bash
 $ sudo cp kubelet.service /etc/systemd/system/kubelet.service
@@ -306,7 +311,7 @@ $ systemctl status kubelet
 $
 ```
 
-### 通过 kublet 的 TLS 证书请求
+### 通过 kubelet 的 TLS 证书请求
 
 kubelet 首次启动时向 kube-apiserver 发送证书签名请求，必须通过后 kubernetes 系统才会将该 Node 加入到集群。
 
@@ -390,3 +395,109 @@ $ sudo systemctl start kube-proxy
 $ systemctl status kube-proxy
 $
 ```
+
+## 验证 Node 节点功能
+
+定义文件：
+
+``` bash
+$ cat nginx-ds.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ds
+  labels:
+    app: nginx-ds
+spec:
+  type: NodePort
+  selector:
+    app: nginx-ds
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+
+---
+
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: nginx-ds
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  template:
+    metadata:
+      labels:
+        app: nginx-ds
+    spec:
+      containers:
+      - name: my-nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+```
+
+创建 Pod 和服务：
+
+``` bash
+$ kubectl create -f nginx-ds.yml
+service "nginx-ds" created
+daemonset "nginx-ds" created
+```
+
+### 检查节点状态
+
+``` bash
+$ kubectl get nodes
+NAME        STATUS    AGE       VERSION
+10.64.3.7   Ready     8d        v1.6.1
+10.64.3.8   Ready     8d        v1.6.1
+```
+
+都为 Ready 时正常。
+
+### 检查各 Node 上的 Pod IP 连通性
+
+``` bash
+$ kubectl get pods  -o wide|grep nginx-ds
+nginx-ds-6ktz8              1/1       Running            0          5m        172.30.25.19   10.64.3.7
+nginx-ds-6ktz9              1/1       Running            0          5m        172.30.20.20   10.64.3.8
+```
+
+可见，nginx-ds 的 Pod IP 分别是 `172.30.25.19`、`172.30.20.20`，在两个 Node 上分别 ping 这两个 IP，看是否连通。
+
+### 检查服务 IP 和端口可达性
+
+``` bash
+$ kubectl get svc |grep nginx-ds
+nginx-ds     10.254.136.178   <nodes>       80:8744/TCP         11m
+```
+
+可见：
+
++ 服务IP：10.254.136.178
++ 服务端口：80
++ NodePort端口：8744
+
+在所有 Node 上执行：
+
+``` bash
+$ curl 10.254.136.178 # `kubectl get svc |grep nginx-ds` 输出中的服务 IP
+$
+```
+
+预期输出 nginx 欢迎页面内容。
+
+### 检查服务的 NodePort 可达性
+
+在所有 Node 上执行：
+
+``` bash
+$ export NODE_IP=10.64.3.7 # 当前 Node 的 IP
+$ export NODE_PORT=8744 # `kubectl get svc |grep nginx-ds` 输出中 80 端口映射的 NodePort
+$ curl ${NODE_IP}:${NODE_PORT}
+$
+```
+
+预期输出 nginx 欢迎页面内容。

@@ -19,11 +19,16 @@ $ export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
 $
 ```
 
-## 创建 TLS Bootstrapping Token
+BOOTSTRAP_TOKEN 将被写入到 kube-apiserver 使用的 token.csv 文件和 kubelet 使用的 bootstrap.kubeconfig 文件，如果后续重新生成了 BOOTSTRAP_TOKEN，则需要：
 
-kubernetes 1.4 开始支持由 `kube-apiserver` 为客户端生成 TLS 证书的 `TLS Bootstrapping` 功能，这样就不需要为每个客户端生成证书了（该功能**目前仅支持 `kubelet`**）。
+1. 更新 token.csv 文件，分发到所有机器 (master 和 node）的 /etc/kubernetes/ 目录下；
+1. 重新生成 bootstrap.kubeconfig 文件，分发到所有 node 机器的 /etc/kubernetes/ 目录下；
+1. 重启 kube-apiserver 和 kubelet 进程；
+1. 重新 approve kubelet 的 csr 请求；(参考：[07-部署Node节点.md](07-部署Node节点.md))
 
-客户端请求 TLS Bootstrapping 时需要提供包含认证 token 的 boostrap kubeconfig 文件(参考 [部署 Node 节点](07-node.md))。
+## 创建 kube-apiserver 使用的客户端 token 文件
+
+kubelet **首次启动**时向 kube-apiserver 发送 TLS Bootstrapping 请求，kube-apiserver 验证 kubelet 请求中的 token 是否与它配置的 token.csv 一致，如果一致则自动为 kubelet生成证书和秘钥。
 
 ``` bash
 $ cat > token.csv <<EOF
@@ -39,13 +44,6 @@ EOF
 $ sudo cp token.csv /etc/kubernetes/
 $
 ```
-
-注意：如果后续重新生成了 BOOTSTRAP_TOKEN，则需要：
-
-1. 更新 token.csv 文件，分发到所有机器 (master 和 node）的 /etc/kubernetes/ 目录下；
-1. 重新生成 bootstrap.kubeconfig 文件，分发到所有 node 机器的 /etc/kubernetes/ 目录下；
-1. 重启 kube-apiserver 和 kubelet 进程；
-1. 重新 approve kubelet 的 csr 请求；(参考：[07-部署Node节点.md](07-部署Node节点.md))
 
 ## 创建 kubelet bootstrapping kubeconfig 文件
 
@@ -70,7 +68,7 @@ $ kubectl config use-context default --kubeconfig=bootstrap.kubeconfig
 ```
 
 + `--embed-certs` 为 `true` 时表示将 `certificate-authority` 证书写入到生成的 `bootstrap.kubeconfig` 文件中；
-+ 设置客户端认证参数时**没有**指定秘钥和证书，后续由 `kube-apiserver` 自动生成；
++ 设置 kubelet 客户端认证参数时**没有**指定秘钥和证书，后续由 `kube-apiserver` 自动生成；
 
 
 ## 创建 kube-proxy kubeconfig 文件

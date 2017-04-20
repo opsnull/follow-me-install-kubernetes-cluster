@@ -27,6 +27,8 @@ tags: TLS, CA
 
 `kube-controller`、`kube-scheduler` 当前需要和 `kube-apiserver` 部署在同一台机器上且使用非安全端口通信，故不需要证书。
 
+kubernetes 1.4 开始支持 `TLS Bootstrapping` 功能，由 `kube-apiserver` 为客户端生成 TLS 证书，这样就不需要为每个客户端生成证书（该功能**目前仅支持 `kubelet`**，所以本文档没有为 kubelet 生成证书和秘钥）。
+
 ## 安装 `CFSSL`
 
 ``` bash
@@ -152,7 +154,7 @@ $ cat kubernetes-csr.json
 ```
 
 + 如果 hosts 字段不为空则需要指定授权使用该证书的 **IP 或域名列表**，由于该证书后续被 `etcd` 集群和 `kubernetes master` 集群使用，所以上面分别指定了 `etcd` 集群、`kubernetes master` 集群的主机 IP；
-+ 还需要添加 kube-apiserver 注册的名为 `kubernetes` 的服务 IP (Service Cluster IP)，一般是 kube-apiserver `--service-cluster-ip-range` 选项值指定的网段的**第一个IP**，如 "10.254.0.1"。
++ 还需要添加 kube-apiserver 注册的名为 `kubernetes` 的服务 IP (Service Cluster IP)，一般是 kube-apiserver `--service-cluster-ip-range` 选项值指定的网段的**第一个IP**，如 "10.254.0.1"；
 
   ``` bash
   $ kubectl get svc kubernetes

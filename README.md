@@ -2,9 +2,9 @@
 
 ![dashboard-home](./images/dashboard-home.png)
 
-本系列文档介绍使用二进制部署最新 `kubernetes v1.6.1` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群；
+本系列文档介绍使用二进制部署最新 `kubernetes v1.6.1` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群。
 
-在部署的过程中，将详细列出各组件的启动参数，它们的含义和可能遇到的问题；
+在部署的过程中，将详细列出各组件的启动参数，它们的含义和可能遇到的问题。
 
 部署完成后，你将理解系统各组件的交互原理，进而能快速解决实际问题。
 
@@ -32,7 +32,7 @@
 
 ## 在线阅读
 
-+ [GitBook](https://k8s-install.opsnull.com/)
++ 建议：[GitBook](https://k8s-install.opsnull.com/)
 + [Github](https://www.gitbook.com/book/opsnull/follow-me-install-kubernetes-cluster)
 
 ## 电子书
@@ -42,7 +42,7 @@
 
 ## 版权
 
-Copyright 2017 zhangjun(geekard@qq.com)
+Copyright 2017 zhangjun (geekard@qq.com)
 
 Apache License 2.0，详情见 [LICENSE](LICENSE) 文件。
 

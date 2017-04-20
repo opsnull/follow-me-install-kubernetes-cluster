@@ -2,9 +2,9 @@
 
 tags: node, flanneld, docker, kubelet, kube-proxy
 
-# 部署 node 节点
+# 部署 Node 节点
 
-kubernetes node 节点包含如下组件：
+kubernetes Node 节点包含如下组件：
 
 + flanneld
 + docker
@@ -396,7 +396,7 @@ $ systemctl status kube-proxy
 $
 ```
 
-## 验证 Node 节点功能
+## 验证集群功能
 
 定义文件：
 
@@ -465,7 +465,7 @@ nginx-ds-6ktz8              1/1       Running            0          5m        17
 nginx-ds-6ktz9              1/1       Running            0          5m        172.30.20.20   10.64.3.8
 ```
 
-可见，nginx-ds 的 Pod IP 分别是 `172.30.25.19`、`172.30.20.20`，在两个 Node 上分别 ping 这两个 IP，看是否连通。
+可见，nginx-ds 的 Pod IP 分别是 `172.30.25.19`、`172.30.20.20`，在所有 Node 上分别 ping 这两个 IP，看是否连通。
 
 ### 检查服务 IP 和端口可达性
 

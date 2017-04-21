@@ -10,7 +10,7 @@
 
 所以本文档主要适合于那些有一定 kubernetes 基础，想通过一步步部署的方式来学习和了解系统配置、运行原理的人。
 
-**项目代码中提供了汇总后的markdon和pdf格式的安装文档，pdf版本文档[下载](http://olz1di9xf.bkt.clouddn.com/Kubernetes1.6%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97%E2%80%94%E2%80%94%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6%E9%83%A8%E7%BD%B2%E5%BC%80%E5%90%AFTLS%E5%9F%BA%E4%BA%8ECentOS7.pdf)。**
+**项目代码中已提供了汇总后的markdon和pdf格式的安装文档供大家参阅**
 
 注：本文档中不包括docker和私有镜像仓库的安装。
 

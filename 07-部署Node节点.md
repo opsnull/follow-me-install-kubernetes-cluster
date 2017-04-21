@@ -165,7 +165,7 @@ Description=Docker Application Container Engine
 Documentation=http://docs.docker.io
 
 [Service]
-Environment="PATH=/root/local/bin:/usr/bin:/bin:/usr/sbin:/usr/bin"
+Environment="PATH=/root/local/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 EnvironmentFile=-/run/flannel/docker
 ExecStart=/root/local/bin/dockerd --log-level=error $DOCKER_NETWORK_OPTIONS
 ExecReload=/bin/kill -s HUP $MAINPID

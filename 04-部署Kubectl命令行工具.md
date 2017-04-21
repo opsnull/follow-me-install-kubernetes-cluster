@@ -13,7 +13,7 @@ The connection to the server localhost:8080 was refused - did you specify the ri
 
 本文档介绍下载和配置 kubernetes 集群命令行工具 kubectl 的步骤。
 
-需要将下载的 kubectl 二进制程序和生成的 `~/.kube/config` 配置文件拷贝到**所有使用 kubelet 命令的机器**。
+需要将下载的 kubectl 二进制程序和生成的 `~/.kube/config` 配置文件拷贝到**所有使用 kubectl 命令的机器**。
 
 ## 使用的变量
 
@@ -30,7 +30,7 @@ $
 ## 下载 kubectl
 
 ``` bash
-$ wget https://dl.k8s.io/v1.6.1/kubernetes-client-linux-amd64.tar.gz
+$ wget https://dl.k8s.io/v1.6.2/kubernetes-client-linux-amd64.tar.gz
 $ tar -xzvf kubernetes-client-linux-amd64.tar.gz
 $ sudo cp kubernetes/client/bin/kube* /root/local/bin/
 $ chmod a+x /root/local/bin/kube*

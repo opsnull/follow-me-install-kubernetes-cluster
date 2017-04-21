@@ -16,7 +16,7 @@ kubernetes Node 节点包含如下组件：
 本文档用到的变量定义如下：
 
 ``` bash
-$ # 当前部署的节点通信接口名称
+$ # 当前部署的节点通信接口名称，使用和其它 Node 互通的接口即可
 $ export FLANNEL_OPTIONS="-iface=eth0"
 $ # 当前部署的节点 IP
 $ export NODE_ADDRESS=10.64.3.7
@@ -47,15 +47,15 @@ $ /root/local/bin/etcdctl \
   set ${FLANNEL_ETCD_PREFIX}/config '{"Network":"'${CLUSTER_CIDR}'", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
 ```
 
-+ flanneld **目前版本 (v0.7) 不支持 etcd v3**，故使用 etcd v2 API 写入配置 key 和网段数据；
++ flanneld **目前版本 (v0.7.1) 不支持 etcd v3**，故使用 etcd v2 API 写入配置 key 和网段数据；
 + 写入的 Pod 网段(${CLUSTER_CIDR}，172.30.0.0/16) 必须与 kube-controller-manager 的 `--cluster-cidr` 选项值一致；
 
 ### 下载 flanneld
 
 ``` bash
 $ mkdir flannel
-$ wget https://github.com/coreos/flannel/releases/download/v0.7.0/flannel-v0.7.0-linux-amd64.tar.gz
-$ tar -xzvf flannel-v0.7.0-linux-amd64.tar.gz -C flannel
+$ wget https://github.com/coreos/flannel/releases/download/v0.7.1/flannel-v0.7.1-linux-amd64.tar.gz
+$ tar -xzvf flannel-v0.7.1-linux-amd64.tar.gz -C flannel
 $ sudo cp flannel/{flanneld,mk-docker-opts.sh} /root/local/bin
 $
 ```

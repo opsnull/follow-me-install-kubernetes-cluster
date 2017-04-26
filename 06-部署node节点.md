@@ -83,6 +83,8 @@ etcdctl --endpoints=https://172.20.0.113:2379,https://172.20.0.114:2379,https://
   mk /kube-centos/network/config "{ \"Network\": \"172.30.0.0/16\", \"SubnetLen\": 24, \"Backend\": { \"Type\": \"vxlan\" } }"
 ```
 
+注意：vxlan的性能损耗大约是40%～50%，如果将Type设置为host-gw，网络性能损耗只有10%左右，而配置没有什么不同，只是要保证kubernetes的所有node都在同一个二层网络中。
+
 **配置Docker**
 
 Flannel的[文档](https://github.com/coreos/flannel/blob/master/Documentation/running.md)中有写**Docker Integration**：

@@ -47,6 +47,7 @@
 9. [Heapster 插件](09-heapster-addon.md)
 10. [EFK 插件](10-EFK-addons.md)
 11. [Traefik ingress安装](11-traefik-ingress.md)
+12. [Kubernetes网络和集群性能测试](12-kubernetes网络和集群性能测试.md)
 
 
 ## 提醒

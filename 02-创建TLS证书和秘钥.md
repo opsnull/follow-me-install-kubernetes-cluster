@@ -32,6 +32,8 @@ kubernetes 1.4 开始支持 `TLS Bootstrapping` 功能，由 `kube-apiserver` �
 ## 安装 `CFSSL`
 
 ``` bash
+$ mkdir -p /root/local/bin/
+
 $ wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
 $ chmod +x cfssl_linux-amd64
 $ sudo mv cfssl_linux-amd64 /root/local/bin/cfssl
@@ -203,7 +205,7 @@ $ cat admin-csr.json
 ```
 
 + 后续 `kube-apiserver` 使用 `RBAC` 对客户端(如 `kubelet`、`kube-proxy`、`Pod`)请求进行授权；
-+ `kube-apiserver` 预定义了一些 `RBAC` 使用的 `RoleBindings`，如 `cluster-admin` 将 Group `system:masters` 与 Role `cluster-admin` 绑定，该 Role 授予了调用`kube-apiserver` **所有 API**的权限；
++ `kube-apiserver` 预定义了一些 `RBAC` 使用的 `RoleBindings`，如 Group `system:masters` 与 Role `cluster-admin` 绑定，该 Role 授予了调用`kube-apiserver` **所有 API**的权限；
 + O 指定该证书的 Group 为 `system:masters`，`kubelet` 使用该证书访问 `kube-apiserver` 时 ，由于证书被 CA 签名，所以认证通过，同时由于证书用户组为经过预授权的 `system:masters`，所以被授予访问所有 API 的权限；
 
 生成 admin 证书和私钥：
@@ -240,7 +242,7 @@ $ cat kube-proxy-csr.json
 ```
 
 + CN 指定该证书的 User 为 `system:kube-proxy`；
-+ `kube-apiserver` 预定义的 RoleBinding `cluster-admin` 将User `system:kube-proxy` 与 Role `system:node-proxier` 绑定，该 Role 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；
++ `kube-apiserver` 预定义的 RoleBinding  将User `system:kube-proxy` 与 Role `system:node-proxier` 绑定，该 Role 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；
 
 生成 kube-proxy 客户端证书和私钥：
 

@@ -103,7 +103,7 @@ $ systemctl status etcd
 $
 ```
 
-在所有的 kubernetes master 节点重复上面的步骤，直到所有机器的 etcd 服务都已启动。
+在所有的 etcd 节点重复上面的步骤，直到所有机器的 etcd 服务都已启动。
 
 ## 验证服务
 

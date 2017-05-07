@@ -1,6 +1,6 @@
 <!-- toc -->
 
-tags: node, flanneld, docker, kubelet, kube-proxy
+tags: node, flanneld, docker, kubeconfig, kubelet, kube-proxy
 
 # 部署 Node 节点
 
@@ -16,8 +16,9 @@ kubernetes Node 节点包含如下组件：
 本文档用到的变量定义如下：
 
 ``` bash
-$ # 当前部署的节点通信接口名称，使用和其它 Node 互通的接口即可
-$ export FLANNEL_OPTIONS="-iface=eth0"
+$ # 替换为 kubernetes master 集群任一机器 IP
+$ export MASTER_IP=10.64.3.7
+$ export KUBE_APISERVER="https://${MASTER_IP}:6443"
 $ # 当前部署的节点 IP
 $ export NODE_ADDRESS=10.64.3.7
 $ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR、CLUSTER_DNS_SVC_IP、CLUSTER_DNS_DOMAIN、SERVICE_CIDR
@@ -30,119 +31,13 @@ $
 ``` bash
 $ sudo mkdir -p /etc/kubernetes/ssl /var/lib/kubelet /var/lib/kube-proxy
 $ sudo cp ca.pem kubernetes.pem kubernetes-key.pem /etc/kubernetes/ssl
-$ sudo cp bootstrap.kubeconfig kube-proxy.kubeconfig token.csv /etc/kubernetes
+$ sudo cp kube-proxy.pem kube-proxy-key.pem /etc/kubernetes/ssl
 $
 ```
 
 ## 安装和配置 flanneld
 
-### 向 etcd 写入集群 Pod 网段信息
-
-``` bash
-$ /root/local/bin/etcdctl \
-  --endpoints=${ETCD_ENDPOINTS} \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  set ${FLANNEL_ETCD_PREFIX}/config '{"Network":"'${CLUSTER_CIDR}'", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
-```
-
-+ flanneld **目前版本 (v0.7.1) 不支持 etcd v3**，故使用 etcd v2 API 写入配置 key 和网段数据；
-+ 写入的 Pod 网段(${CLUSTER_CIDR}，172.30.0.0/16) 必须与 kube-controller-manager 的 `--cluster-cidr` 选项值一致；
-
-### 下载 flanneld
-
-``` bash
-$ mkdir flannel
-$ wget https://github.com/coreos/flannel/releases/download/v0.7.1/flannel-v0.7.1-linux-amd64.tar.gz
-$ tar -xzvf flannel-v0.7.1-linux-amd64.tar.gz -C flannel
-$ sudo cp flannel/{flanneld,mk-docker-opts.sh} /root/local/bin
-$
-```
-
-### 创建 flanneld 的 systemd unit 文件
-
-``` bash
-$ cat > flanneld.service << EOF
-[Unit]
-Description=Flanneld overlay address etcd agent
-After=network.target
-After=network-online.target
-Wants=network-online.target
-After=etcd.service
-Before=docker.service
-
-[Service]
-Type=notify
-ExecStart=/root/local/bin/flanneld \\
-  -etcd-cafile=/etc/kubernetes/ssl/ca.pem \\
-  -etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem \\
-  -etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem \\
-  -etcd-endpoints=${ETCD_ENDPOINTS} \\
-  -etcd-prefix=${FLANNEL_ETCD_PREFIX} \\
-  $FLANNEL_OPTIONS
-ExecStartPost=/root/local/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-RequiredBy=docker.service
-EOF
-```
-
-+ etcd 集群启用了双向 TLS 认证，所以需要为 flanneld 指定与 etcd 集群通信的 CA 和秘钥；
-+ mk-docker-opts.sh 脚本将分配给 flanneld 的 Pod 子网网段信息写入到 `/run/flannel/docker` 文件中，后续 docker 启动时使用这个文件中参数值设置 docker0 网桥；
-+ `-iface` 选项值指定 flanneld 和其它 Node 通信的接口，如果机器有内、外网，则最好指定为内网接口；
-
-完整 unit 见 [flanneld.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/flanneld.service)
-
-### 启动 flanneld
-
-``` bash
-$ sudo cp flanneld.service /etc/systemd/system/
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable flanneld
-$ sudo systemctl start flanneld
-$ systemctl status flanneld
-$
-```
-
-### 检查 flanneld 服务
-
-``` bash
-$ journalctl  -u flanneld |grep 'Lease acquired'
-$ ifconfig flannel.1
-$
-```
-
-### 检查分配给各 flanneld 的 Pod 网段信息
-
-``` bash
-$ # 查看集群 Pod 网段(/16)
-$ /root/local/bin/etcdctl \
-  --endpoints=${ETCD_ENDPOINTS} \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  get ${FLANNEL_ETCD_PREFIX}/config
-{ "Network": "172.30.0.0/16", "SubnetLen": 24, "Backend": { "Type": "vxlan" } }
-$ # 查看已分配的 Pod 子网段列表(/24)
-$ /root/local/bin/etcdctl \
-  --endpoints=${ETCD_ENDPOINTS} \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  ls ${FLANNEL_ETCD_PREFIX}/subnets
-/kubernetes/network/subnets/172.30.19.0-24
-$ # 查看某一 Pod 网段对应的 flanneld 进程监听的 IP 和网络参数
-$ /root/local/bin/etcdctl \
-  --endpoints=${ETCD_ENDPOINTS} \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  get ${FLANNEL_ETCD_PREFIX}/subnets/172.30.19.0-24
-{"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
-```
+参考 [05-部署Flannel网络.md](./05-部署Flannel网络.md)
 
 ## 安装和配置 docker
 
@@ -183,6 +78,7 @@ WantedBy=multi-user.target
 
 + dockerd 运行时会调用其它 docker 命令，如 docker-proxy，所以需要将 docker 命令所在的目录加到 PATH 环境变量中；
 + flanneld 启动时将网络配置写入到 `/run/flannel/docker` 文件中的变量 `DOCKER_NETWORK_OPTIONS`，dockerd 命令行上指定该变量值来设置 docker0 网桥参数；
++ 如果指定了多个 `EnvironmentFile` 选项，则必须将 `/run/flannel/docker` 放在最后(确保 docker0 使用 flanneld 生成的 bip 参数)；
 + 不能关闭默认开启的 `--iptables` 和 `--ip-masq` 选项；
 + 如果内核版本比较新，建议使用 `overlay` 存储驱动；
 + docker 从 1.13 版本开始，可能将 **iptables FORWARD chain的默认策略设置为DROP**，从而导致 ping 其它 Node 上的 Pod IP 失败，遇到这种情况时，需要手动设置策略为 `ACCEPT`：
@@ -250,6 +146,32 @@ $ sudo cp -r ./server/bin/{kube-proxy,kubelet} /root/local/bin/
 $
 ```
 
+## 创建 kubelet bootstrapping kubeconfig 文件
+
+``` bash
+$ # 设置集群参数
+$ kubectl config set-cluster kubernetes \
+  --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+  --embed-certs=true \
+  --server=${KUBE_APISERVER} \
+  --kubeconfig=bootstrap.kubeconfig
+$ # 设置客户端认证参数
+$ kubectl config set-credentials kubelet-bootstrap \
+  --token=${BOOTSTRAP_TOKEN} \
+  --kubeconfig=bootstrap.kubeconfig
+$ # 设置上下文参数
+$ kubectl config set-context default \
+  --cluster=kubernetes \
+  --user=kubelet-bootstrap \
+  --kubeconfig=bootstrap.kubeconfig
+$ # 设置默认上下文
+$ kubectl config use-context default --kubeconfig=bootstrap.kubeconfig
+$ mv bootstrap.kubeconfig /etc/kubernetes/
+```
+
++ `--embed-certs` 为 `true` 时表示将 `certificate-authority` 证书写入到生成的 `bootstrap.kubeconfig` 文件中；
++ 设置 kubelet 客户端认证参数时**没有**指定秘钥和证书，后续由 `kube-apiserver` 自动生成；
+
 ### 创建 kubelet 的 systemd unit 文件
 
 ``` bash
@@ -293,7 +215,7 @@ EOF
 + `--address` 不能设置为 `127.0.0.1`，否则后续 Pods 访问 kubelet 的 API 接口时会失败，因为 Pods 访问的 `127.0.0.1` 指向自己而不是 kubelet；
 + 如果设置了 `--hostname-override` 选项，则 `kube-proxy` 也需要设置该选项，否则会出现找不到 Node 的情况；
 + `--experimental-bootstrap-kubeconfig` 指向 bootstrap kubeconfig 文件，kubelet 使用该文件中的用户名和 token 向 kube-apiserver 发送 TLS Bootstrapping 请求；
-+ 管理员通过了 CSR 请求后，kubelet 自动在 `--cert-dir` 目录创建证书和私钥文件(`kubelet-client.crt` 和 `kubelet-client.key`)，然后写入 `--kubeconfig` 文件；
++ 管理员通过了 CSR 请求后，kubelet 自动在 `--cert-dir` 目录创建证书和私钥文件(`kubelet-client.crt` 和 `kubelet-client.key`)，然后写入 `--kubeconfig` 文件(自动创建 `--kubeconfig` 指定的文件)；
 + 建议在 `--kubeconfig` 配置文件中指定 `kube-apiserver` 地址，如果未指定 `--api-servers` 选项，则必须指定 `--require-kubeconfig` 选项后才从配置文件中读取 kue-apiserver 的地址，否则 kubelet 启动后将找不到 kube-apiserver (日志中提示未找到 API Server），`kubectl get nodes` 不会返回对应的 Node 信息;
 + `--cluster_dns` 指定 kubedns 的 Service IP(可以先分配，后续创建 kubedns 服务时指定该 IP)，`--cluster_domain` 指定域名后缀，这两个参数同时指定后才会生效；
 + kubelet cAdvisor 默认在**所有接口**监听 4194 端口的请求，对于有外网的机器来说不安全，`ExecStopPost` 选项指定的 iptables 规则只允许内网机器访问 4194 端口；
@@ -348,6 +270,34 @@ $ ls -l /etc/kubernetes/ssl/kubelet*
 ```
 
 ## 配置 kube-proxy
+
+### 创建 kube-proxy kubeconfig 文件
+
+``` bash
+$ # 设置集群参数
+$ kubectl config set-cluster kubernetes \
+  --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+  --embed-certs=true \
+  --server=${KUBE_APISERVER} \
+  --kubeconfig=kube-proxy.kubeconfig
+$ # 设置客户端认证参数
+$ kubectl config set-credentials kube-proxy \
+  --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
+  --client-key=/etc/kubernetes/ssl/kube-proxy-key.pem \
+  --embed-certs=true \
+  --kubeconfig=kube-proxy.kubeconfig
+$ # 设置上下文参数
+$ kubectl config set-context default \
+  --cluster=kubernetes \
+  --user=kube-proxy \
+  --kubeconfig=kube-proxy.kubeconfig
+$ # 设置默认上下文
+$ kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
+$ mv kube-proxy.kubeconfig /etc/kubernetes/
+```
+
++ 设置集群参数和客户端认证参数时 `--embed-certs` 都为 `true`，这会将 `certificate-authority`、`client-certificate` 和 `client-key` 指向的证书文件内容写入到生成的 `kube-proxy.kubeconfig` 文件中；
++ `kube-proxy.pem` 证书中 CN 为 `system:kube-proxy`，`kube-apiserver` 预定义的 RoleBinding `cluster-admin` 将User `system:kube-proxy` 与 Role `system:node-proxier` 绑定，该 Role 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；
 
 ### 创建 kube-proxy 的 systemd unit 文件
 

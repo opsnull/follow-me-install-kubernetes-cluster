@@ -25,7 +25,7 @@ kubernetes master 节点包含的组件：
 
 ``` bash
 $ export MASTER_IP=10.64.3.7  # 替换为当前部署的 master 机器 IP
-$ # 导入用到的其它全局变量：SERVICE_CIDR、CLUSTER_CIDR、NODE_PORT_RANGE、ETCD_ENDPOINTS
+$ # 导入用到的其它全局变量：SERVICE_CIDR、CLUSTER_CIDR、NODE_PORT_RANGE、ETCD_ENDPOINTS、BOOTSTRAP_TOKEN
 $ source /root/local/bin/environment.sh
 $
 ```
@@ -75,6 +75,19 @@ $
 ```
 
 ## 配置和启动 kube-apiserver
+
+### 创建 kube-apiserver 使用的客户端 token 文件
+
+kubelet **首次启动**时向 kube-apiserver 发送 TLS Bootstrapping 请求，kube-apiserver 验证 kubelet 请求中的 token 是否与它配置的 token.csv 一致，如果一致则自动为 kubelet生成证书和秘钥。
+
+``` bash
+$ # 导入的 environment.sh 文件定义了 BOOTSTRAP_TOKEN 变量
+$ cat > token.csv <<EOF
+${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"
+EOF
+$ mv token.csv /etc/kubernetes/
+$
+```
 
 ### 创建 kube-apiserver 的 systemd unit 文件
 
@@ -131,7 +144,7 @@ EOF
 + kubelet、kube-proxy、kubectl 部署在其它 Node 节点上，如果通过**安全端口**访问 kube-apiserver，则必须先通过 TLS 证书认证，再通过 RBAC 授权；
 + kube-proxy、kubectl 通过在使用的证书里指定相关的 User、Group 来达到通过 RBAC 授权的目的；
 + 如果使用了 kubelet TLS Boostrap 机制，则不能再指定 `--kubelet-certificate-authority`、`--kubelet-client-certificate` 和 `--kubelet-client-key` 选项，否则后续 kube-apiserver 校验 kubelet 证书时出现 ”x509: certificate signed by unknown authority“ 错误；
-+ `--admission-control` 值必须包含 `ServiceAccount`；
++ `--admission-control` 值必须包含 `ServiceAccount`，否则部署集群插件时会失败；
 + `--bind-address` 不能为 `127.0.0.1`；
 + `--service-cluster-ip-range` 指定 Service Cluster IP 地址段，该地址段不能路由可达；
 + `--service-node-port-range=${NODE_PORT_RANGE}` 指定 NodePort 的端口范围；

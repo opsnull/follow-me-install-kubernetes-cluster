@@ -38,6 +38,52 @@ $ export PATH=/root/local/bin:$PATH
 $
 ```
 
+## 创建 admin 证书
+
+kubectl 与 kube-apiserver 的安全端口通信，需要为安全通信提供 TLS 证书和秘钥。
+
+创建 admin 证书签名请求
+
+``` bash
+$ cat admin-csr.json
+{
+  "CN": "admin",
+  "hosts": [],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "CN",
+      "ST": "BeiJing",
+      "L": "BeiJing",
+      "O": "system:masters",
+      "OU": "System"
+    }
+  ]
+}
+```
+
++ 后续 `kube-apiserver` 使用 `RBAC` 对客户端(如 `kubelet`、`kube-proxy`、`Pod`)请求进行授权；
++ `kube-apiserver` 预定义了一些 `RBAC` 使用的 `RoleBindings`，如 `cluster-admin` 将 Group `system:masters` 与 Role `cluster-admin` 绑定，该 Role 授予了调用`kube-apiserver` **所有 API**的权限；
++ O 指定该证书的 Group 为 `system:masters`，`kubelet` 使用该证书访问 `kube-apiserver` 时 ，由于证书被 CA 签名，所以认证通过，同时由于证书用户组为经过预授权的 `system:masters`，所以被授予访问所有 API 的权限；
++ hosts 属性值为空列表；
+
+生成 admin 证书和私钥：
+
+``` bash
+$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
+  -ca-key=/etc/kubernetes/ssl/ca-key.pem \
+  -config=/etc/kubernetes/ssl/ca-config.json \
+  -profile=kubernetes admin-csr.json | cfssljson -bare admin
+$ ls admin*
+admin.csr  admin-csr.json  admin-key.pem  admin.pem
+$ sudo mv admin*.pem /etc/kubernetes/ssl/
+$ rm admin.csr admin-csr.json
+$
+```
+
 ## 创建 kubectl kubeconfig 文件
 
 ``` bash

@@ -20,18 +20,9 @@ $ # 替换为 kubernetes master 集群任一机器 IP
 $ export MASTER_IP=10.64.3.7
 $ export KUBE_APISERVER="https://${MASTER_IP}:6443"
 $ # 当前部署的节点 IP
-$ export NODE_ADDRESS=10.64.3.7
+$ export NODE_IP=10.64.3.7
 $ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR、CLUSTER_DNS_SVC_IP、CLUSTER_DNS_DOMAIN、SERVICE_CIDR
 $ source /root/local/bin/environment.sh
-$
-```
-
-## 目录和文件
-
-``` bash
-$ sudo mkdir -p /etc/kubernetes/ssl /var/lib/kubelet /var/lib/kube-proxy
-$ sudo cp ca.pem kubernetes.pem kubernetes-key.pem /etc/kubernetes/ssl
-$ sudo cp kube-proxy.pem kube-proxy-key.pem /etc/kubernetes/ssl
 $
 ```
 
@@ -116,7 +107,6 @@ $
 + 需要关闭 firewalld，否则可能会重复创建的 iptables 规则；
 + 最好清理旧的 iptables rules 和 chains 规则；
 
-
 ### 检查 docker 服务
 
 ``` bash
@@ -138,7 +128,7 @@ $
 ### 下载最新的 kubelet 和 kube-proxy 二进制文件
 
 ``` bash
-$ wget https://dl.k8s.io/v1.6.1/kubernetes-server-linux-amd64.tar.gz
+$ wget https://dl.k8s.io/v1.6.2/kubernetes-server-linux-amd64.tar.gz
 $ tar -xzvf kubernetes-server-linux-amd64.tar.gz
 $ cd kubernetes
 $ tar -xzvf  kubernetes-src.tar.gz
@@ -186,8 +176,8 @@ Requires=docker.service
 [Service]
 WorkingDirectory=/var/lib/kubelet
 ExecStart=/root/local/bin/kubelet \\
-  --address=${NODE_ADDRESS} \\
-  --hostname-override=${NODE_ADDRESS} \\
+  --address=${NODE_IP} \\
+  --hostname-override=${NODE_IP} \\
   --pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest \\
   --experimental-bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \\
   --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \\
@@ -254,7 +244,7 @@ $ kubectl certificate approve csr-2b308
 certificatesigningrequest "csr-2b308" approved
 $ kubectl get nodes
 NAME        STATUS    AGE       VERSION
-10.64.3.7   Ready     49m       v1.6.1
+10.64.3.7   Ready     49m       v1.6.2
 ```
 
 自动生成了 kubelet kubeconfig 文件和公私钥：
@@ -270,6 +260,49 @@ $ ls -l /etc/kubernetes/ssl/kubelet*
 ```
 
 ## 配置 kube-proxy
+
+### 创建 kube-proxy 证书
+
+创建 kube-proxy 证书签名请求：
+
+``` bash
+$ cat kube-proxy-csr.json
+{
+  "CN": "system:kube-proxy",
+  "hosts": [],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "CN",
+      "ST": "BeiJing",
+      "L": "BeiJing",
+      "O": "k8s",
+      "OU": "System"
+    }
+  ]
+}
+```
+
++ CN 指定该证书的 User 为 `system:kube-proxy`；
++ `kube-apiserver` 预定义的 RoleBinding `cluster-admin` 将User `system:kube-proxy` 与 Role `system:node-proxier` 绑定，该 Role 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；
++ hosts 属性值为空列表；
+
+生成 kube-proxy 客户端证书和私钥：
+
+``` bash
+$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
+  -ca-key=/etc/kubernetes/ssl/ca-key.pem \
+  -config=/etc/kubernetes/ssl/ca-config.json \
+  -profile=kubernetes  kube-proxy-csr.json | cfssljson -bare kube-proxy
+$ ls kube-proxy*
+kube-proxy.csr  kube-proxy-csr.json  kube-proxy-key.pem  kube-proxy.pem
+$ sudo mv kube-proxy*.pem /etc/kubernetes/ssl/
+$ rm kube-proxy.csr  kube-proxy-csr.json
+$
+```
 
 ### 创建 kube-proxy kubeconfig 文件
 
@@ -312,8 +345,8 @@ After=network.target
 [Service]
 WorkingDirectory=/var/lib/kube-proxy
 ExecStart=/root/local/bin/kube-proxy \\
-  --bind-address=${NODE_ADDRESS} \\
-  --hostname-override=${NODE_ADDRESS} \\
+  --bind-address=${NODE_IP} \\
+  --hostname-override=${NODE_IP} \\
   --cluster-cidr=${SERVICE_CIDR} \\
   --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig \\
   --logtostderr=true \\
@@ -401,8 +434,8 @@ daemonset "nginx-ds" created
 ``` bash
 $ kubectl get nodes
 NAME        STATUS    AGE       VERSION
-10.64.3.7   Ready     8d        v1.6.1
-10.64.3.8   Ready     8d        v1.6.1
+10.64.3.7   Ready     8d        v1.6.2
+10.64.3.8   Ready     8d        v1.6.2
 ```
 
 都为 Ready 时正常。

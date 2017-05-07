@@ -61,7 +61,7 @@ DaemonSet `fluentd-es-v1.22` 只会调度到设置了标签 `beta.kubernetes.io/
 ``` bash
 $ kubectl get nodes
 NAME        STATUS    AGE       VERSION
-10.64.3.7   Ready     1d        v1.6.1
+10.64.3.7   Ready     1d        v1.6.2
 
 $ kubectl label nodes 10.64.3.7 beta.kubernetes.io/fluentd-ds-ready=true
 node "10.64.3.7" labeled

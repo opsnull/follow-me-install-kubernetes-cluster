@@ -11,17 +11,57 @@ kubernetes 要求集群内各节点能通过 Pod 网段互联互通，本文档�
 本文档用到的变量定义如下：
 
 ``` bash
+$ export NODE_IP=10.64.3.7 # 当前部署节点的 IP
 $ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR
 $ source /root/local/bin/environment.sh
 $
 ```
 
-## 目录和文件
+## 创建 TLS 秘钥和证书
+
+etcd 集群启用了双向 TLS 认证，所以需要为 flanneld 指定与 etcd 集群通信的 CA 和秘钥。
+
+创建 flanneld 证书签名请求：
 
 ``` bash
-$ sudo mkdir -p /etc/kubernetes/ssl
-$ sudo cp ca.pem kubernetes.pem kubernetes-key.pem /etc/kubernetes/ssl
-$
+$ cat > flanneld-csr.json <<EOF
+{
+  "CN": "flanneld",
+  "hosts": [
+    "127.0.0.1",
+    "$NODE_IP"
+  ],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "CN",
+      "ST": "BeiJing",
+      "L": "BeiJing",
+      "O": "k8s",
+      "OU": "System"
+    }
+  ]
+}
+EOF
+```
+
++ hosts 字段指定授权使用该证书的当前部署节点 IP；
+
+生成 flanneld 证书和私钥：
+
+``` bash
+$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
+  -ca-key=/etc/kubernetes/ssl/ca-key.pem \
+  -config=/etc/kubernetes/ssl/ca-config.json \
+  -profile=kubernetes etcd-csr.json | cfssljson -bare flanneld
+$ ls flanneld*
+flanneld.csr  flanneld-csr.json  flanneld-key.pem flanneld.pem
+$ sudo mkdir -p /etc/flanneld/ssl
+$ sudo mv flanneld*.pem /etc/flanneld/ssl
+$ rm flanneld.csr  flanneld-csr.json
 ```
 
 ## 向 etcd 写入集群 Pod 网段信息
@@ -32,14 +72,13 @@ $
 $ /root/local/bin/etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
+  --cert-file=/etc/flanneld/ssl/flanneld.pem \
+  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
   set ${FLANNEL_ETCD_PREFIX}/config '{"Network":"'${CLUSTER_CIDR}'", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
 ```
 
 + flanneld **目前版本 (v0.7.1) 不支持 etcd v3**，故使用 etcd v2 API 写入配置 key 和网段数据；
 + 写入的 Pod 网段(${CLUSTER_CIDR}，172.30.0.0/16) 必须与 kube-controller-manager 的 `--cluster-cidr` 选项值一致；
-
 
 ## 安装和配置 flanneld
 
@@ -69,8 +108,8 @@ Before=docker.service
 Type=notify
 ExecStart=/root/local/bin/flanneld \\
   -etcd-cafile=/etc/kubernetes/ssl/ca.pem \\
-  -etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem \\
-  -etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem \\
+  -etcd-certfile=/etc/flanneld/ssl/flanneld.pem \\
+  -etcd-keyfile=/etc/flanneld/ssl/flanneld-key.pem \\
   -etcd-endpoints=${ETCD_ENDPOINTS} \\
   -etcd-prefix=${FLANNEL_ETCD_PREFIX}
 ExecStartPost=/root/local/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
@@ -82,7 +121,6 @@ RequiredBy=docker.service
 EOF
 ```
 
-+ etcd 集群启用了双向 TLS 认证，所以需要为 flanneld 指定与 etcd 集群通信的 CA 和秘钥；
 + mk-docker-opts.sh 脚本将分配给 flanneld 的 Pod 子网网段信息写入到 `/run/flannel/docker` 文件中，后续 docker 启动时使用这个文件中参数值设置 docker0 网桥；
 + `-iface` 选项值指定 flanneld 和其它 Node 通信的接口，如果机器有内、外网，则最好指定为内网接口；
 
@@ -114,24 +152,24 @@ $ # 查看集群 Pod 网段(/16)
 $ /root/local/bin/etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
+  --cert-file=/etc/flanneld/ssl/flanneld.pem \
+  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
   get ${FLANNEL_ETCD_PREFIX}/config
 { "Network": "172.30.0.0/16", "SubnetLen": 24, "Backend": { "Type": "vxlan" } }
 $ # 查看已分配的 Pod 子网段列表(/24)
 $ /root/local/bin/etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
+  --cert-file=/etc/flanneld/ssl/flanneld.pem \
+  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
   ls ${FLANNEL_ETCD_PREFIX}/subnets
 /kubernetes/network/subnets/172.30.19.0-24
 $ # 查看某一 Pod 网段对应的 flanneld 进程监听的 IP 和网络参数
 $ /root/local/bin/etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
+  --cert-file=/etc/flanneld/ssl/flanneld.pem \
+  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
   get ${FLANNEL_ETCD_PREFIX}/subnets/172.30.19.0-24
 {"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
 ```
@@ -144,8 +182,8 @@ $ /root/local/bin/etcdctl \
 $ /root/local/bin/etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
+  --cert-file=/etc/flanneld/ssl/flanneld.pem \
+  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
   ls ${FLANNEL_ETCD_PREFIX}/subnets
 /kubernetes/network/subnets/172.30.19.0-24
 /kubernetes/network/subnets/172.30.20.0-24

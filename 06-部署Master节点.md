@@ -32,15 +32,6 @@ $ source /root/local/bin/environment.sh
 $
 ```
 
-## TLS 证书文件
-
-``` bash
-$ sudo mkdir -p /etc/kubernetes/ssl
-$ sudo cp token.csv /etc/kubernetes
-$ sudo cp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem /etc/kubernetes/ssl
-$
-```
-
 ## 下载最新版本的二进制文件
 
 有两种下载方式：
@@ -79,6 +70,64 @@ $
 ## 安装和配置 flanneld
 
 参考 [05-部署Flannel网络.md](./05-部署Flannel网络.md)
+
+## 创建 kubernetes 证书
+
+创建 kubernetes 证书签名请求
+
+``` bash
+$ cat > kubernetes-csr.json <<EOF
+{
+  "CN": "kubernetes",
+  "hosts": [
+    "127.0.0.1",
+    "${MASTER_IP}",
+    "10.254.0.1",
+    "kubernetes",
+    "kubernetes.default",
+    "kubernetes.default.svc",
+    "kubernetes.default.svc.cluster",
+    "kubernetes.default.svc.cluster.local"
+  ],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "CN",
+      "ST": "BeiJing",
+      "L": "BeiJing",
+      "O": "k8s",
+      "OU": "System"
+    }
+  ]
+}
+EOF
+```
+
++ 如果 hosts 字段不为空则需要指定授权使用该证书的 **IP 或域名列表**，所以上面分别指定了当前部署的 master 节点主机 IP；
++ 还需要添加 kube-apiserver 注册的名为 `kubernetes` 的服务 IP (Service Cluster IP)，一般是 kube-apiserver `--service-cluster-ip-range` 选项值指定的网段的**第一个IP**，如 "10.254.0.1"；
+
+  ``` bash
+  $ kubectl get svc kubernetes
+  NAME         CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+  kubernetes   10.254.0.1   <none>        443/TCP   1d
+  ```
+
+生成 kubernetes 证书和私钥
+
+``` bash
+$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
+  -ca-key=/etc/kubernetes/ssl/ca-key.pem \
+  -config=/etc/kubernetes/ssl/ca-config.json \
+  -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
+$ ls kubernetes*
+kubernetes.csr  kubernetes-csr.json  kubernetes-key.pem  kubernetes.pem
+$ sudo mkdir -p /etc/kubernetes/ssl/
+$ sudo mv kubernetes*.pem /etc/kubernetes/ssl/
+$ rm kubernetes.csr  kubernetes-csr.json
+```
 
 ## 配置和启动 kube-apiserver
 

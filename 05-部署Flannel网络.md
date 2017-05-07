@@ -4,7 +4,7 @@ tags: flanneld
 
 # 部署 Flannel 网络
 
-kubernetes 要求集群内的 Node、Pod 能通过 Pod 网段互联互通，本文档介绍使用 Flannel 在**所有节点** (Master、Node) 上创建互联互通的 Pod 网段的步骤。
+kubernetes 要求集群内各节点能通过 Pod 网段互联互通，本文档介绍使用 Flannel 在**所有节点** (Master、Node) 上创建互联互通的 Pod 网段的步骤。
 
 ## 使用的变量
 

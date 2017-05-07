@@ -4,7 +4,7 @@ tags: EFK, fluentd, elasticsearch, kibana
 
 # 部署 EFK 插件
 
-官方文件目录：`cluster/addons/fluentd-elasticsearch`
+官方文件目录：`kubernetes/cluster/addons/fluentd-elasticsearch`
 
 ``` bash
 $ ls *.yaml
@@ -75,7 +75,7 @@ $ pwd
 $ ls *.yaml
 es-controller.yaml es-rbac.yaml es-service.yaml  fluentd-es-ds.yaml  kibana-controller.yaml  kibana-service.yaml fluentd-es-rbac.yaml
 $ kubectl create -f .
-
+$
 ```
 
 ## 检查执行结果

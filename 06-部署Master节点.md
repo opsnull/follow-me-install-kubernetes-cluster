@@ -82,7 +82,7 @@ $ cat > kubernetes-csr.json <<EOF
   "hosts": [
     "127.0.0.1",
     "${MASTER_IP}",
-    "10.254.0.1",
+    "${CLUSTER_KUBERNETES_SVC_IP}",
     "kubernetes",
     "kubernetes.default",
     "kubernetes.default.svc",

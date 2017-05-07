@@ -108,6 +108,7 @@ $ pwd
 $ ls *.yaml
 kubedns-cm.yaml  kubedns-controller.yaml  kubedns-sa.yaml  kubedns-svc.yaml
 $ kubectl create -f .
+$
 ```
 
 ## 检查 kubedns 功能

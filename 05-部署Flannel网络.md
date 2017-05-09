@@ -56,7 +56,7 @@ EOF
 $ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
   -ca-key=/etc/kubernetes/ssl/ca-key.pem \
   -config=/etc/kubernetes/ssl/ca-config.json \
-  -profile=kubernetes etcd-csr.json | cfssljson -bare flanneld
+  -profile=kubernetes flanneld-csr.json | cfssljson -bare flanneld
 $ ls flanneld*
 flanneld.csr  flanneld-csr.json  flanneld-key.pem flanneld.pem
 $ sudo mkdir -p /etc/flanneld/ssl

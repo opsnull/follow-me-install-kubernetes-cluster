@@ -4,6 +4,8 @@ tags: registry, ceph
 
 # 部署私有 docker registry
 
+注意：本文档介绍使用 docker 官方的 registry v2 镜像部署私有仓库的步骤，你也可以部署 Harbor 私有仓库（[部署 Harbor 私有仓库](13-部署harbor私有仓库.md)）。 
+
 本文档讲解部署一个 TLS 加密、HTTP Basic 认证、用 ceph rgw 做后端存储的私有 docker registry 步骤，如果使用其它类型的后端存储，则可以从 “创建 docker registry” 节开始；
 
 示例两台机器 IP 如下：

@@ -14,7 +14,8 @@
 * [10. 部署 Heapster 插件](10-部署Heapster插件.md)
 * [11. 部署 EFK 插件](11-部署EFK插件.md)
 * [12. 部署 Docker Registry](12-部署Docker-Registry.md)
-* [13. 清理集群](13-清理集群.md)
+* [13. 部署 Harbor 私有仓库](13-部署harbor私有仓库.md)
+* [14. 清理集群](14-清理集群.md)
 
 ## 标签集合
 

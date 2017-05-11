@@ -1,6 +1,6 @@
 # 部署 harbor 私有仓库
 
-本文档介绍使用 docker-compose 运行 harbor 私有仓库的步骤，你也可以使用 docker 官方的 registry 镜像部署私有仓库([部署 Docker Registry](12-部署Docker-Registry.md))。
+本文档介绍使用 docker-compose 部署 harbor 私有仓库的步骤，你也可以使用 docker 官方的 registry 镜像部署私有仓库([部署 Docker Registry](12-部署Docker-Registry.md))。
 
 ## 使用的变量
 
@@ -34,7 +34,7 @@ $
 
 ## 导入 docker images
 
-导入离线安装包中 harbor 相关的 docker images
+导入离线安装包中 harbor 相关的 docker images：
 
 ``` bash
 $ docker load -i harbor.v1.1.0.tar.gz
@@ -70,7 +70,7 @@ $ cat > harbor-csr.json <<EOF
 EOF
 ```
 
-+ hosts 字段指定授权使用该证书的当前部署节点 IP，如果后续使用域名访问 harbor，则还需要添加域名；
++ hosts 字段指定授权使用该证书的当前部署节点 IP，如果后续使用域名访问 harbor则还需要添加域名；
 
 生成 harbor 证书和私钥：
 
@@ -106,7 +106,7 @@ $ diff harbor.cfg.orig harbor.cfg
 > ssl_cert_key = /etc/harbor/ssl/harbor-key.pem
 ```
 
-## 创建和启动 harbor 镜像
+## 加载和启动 harbor 镜像
 
 ``` bash
 $ ./install.sh
@@ -183,6 +183,16 @@ ca_download  config  database  job_logs registry  secretkey
 ```
 
 ## docker 客户端登陆
+
+将签署 harbor 证书的 CA 证书拷贝到 `/etc/docker/certs.d/10.64.3.7` 目录下
+
+``` bash
+$ sudo mkdir -p /etc/docker/certs.d/10.64.3.7
+$ sudo cp /etc/kubernetes/ssl/ca.pem /etc/docker/certs.d/10.64.3.7/ca.crt
+$
+```
+
+登陆 harbor
 
 ``` bash
 $ docker login 10.64.3.7

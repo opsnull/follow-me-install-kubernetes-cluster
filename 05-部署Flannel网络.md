@@ -27,10 +27,7 @@ etcd 集群启用了双向 TLS 认证，所以需要为 flanneld 指定与 etcd 
 $ cat > flanneld-csr.json <<EOF
 {
   "CN": "flanneld",
-  "hosts": [
-    "127.0.0.1",
-    "$NODE_IP"
-  ],
+  "hosts": [],
   "key": {
     "algo": "rsa",
     "size": 2048
@@ -48,7 +45,7 @@ $ cat > flanneld-csr.json <<EOF
 EOF
 ```
 
-+ hosts 字段指定授权使用该证书的当前部署节点 IP；
++ hosts 字段为空；
 
 生成 flanneld 证书和私钥：
 

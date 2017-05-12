@@ -97,7 +97,7 @@ $ diff kubedns-controller.yaml.base kubedns-controller.yaml
 >         - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.cluster.local.,5,A
 ```
 
-+ `--domain` 为[集群环境文档](01-environment.md) 变量 `CLUSTER_DNS_SVC_DOMAIN` 的值；
++ `--domain` 为[集群环境文档](01-environment.md) 变量 `CLUSTER_DNS_DOMAIN` 的值；
 + 使用系统已经做了 RoleBinding 的 `kube-dns` ServiceAccount，该账户具有访问 kube-apiserver DNS 相关 API 的权限；
 
 ## 执行所有定义文件

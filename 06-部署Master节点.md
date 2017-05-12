@@ -282,7 +282,7 @@ $
 
 ## 配置和启动 kube-scheduler
 
-### 创建 kube-controller-manager 的 systemd unit 文件
+### 创建 kube-scheduler 的 systemd unit 文件
 
 ``` bash
 $ cat > kube-scheduler.service <<EOF

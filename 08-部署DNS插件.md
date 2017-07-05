@@ -145,7 +145,7 @@ $ kubectl get services --all-namespaces |grep my-nginx
 default       my-nginx               10.254.86.48     <none>        80/TCP          1d
 ```
 
-创建另一个 Pod，查看 `/etc/resolv.conf` 是否包含 `kubelet` 配置的 `--cluster_dns` 和 `--cluster_domain`，是否能够将服务 `my-nginx` 解析到上面显示的 Cluster IP `10.254.86.48`
+创建另一个 Pod，查看 `/etc/resolv.conf` 是否包含 `kubelet` 配置的 `--cluster-dns` 和 `--cluster-domain`，是否能够将服务 `my-nginx` 解析到上面显示的 Cluster IP `10.254.86.48`
 
 ``` bash
 $ cat pod-nginx.yaml

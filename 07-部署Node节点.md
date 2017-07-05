@@ -183,8 +183,8 @@ ExecStart=/root/local/bin/kubelet \\
   --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \\
   --require-kubeconfig \\
   --cert-dir=/etc/kubernetes/ssl \\
-  --cluster_dns=${CLUSTER_DNS_SVC_IP} \\
-  --cluster_domain=${CLUSTER_DNS_DOMAIN} \\
+  --cluster-dns=${CLUSTER_DNS_SVC_IP} \\
+  --cluster-domain=${CLUSTER_DNS_DOMAIN} \\
   --hairpin-mode promiscuous-bridge \\
   --allow-privileged=true \\
   --serialize-image-pulls=false \\
@@ -207,7 +207,7 @@ EOF
 + `--experimental-bootstrap-kubeconfig` 指向 bootstrap kubeconfig 文件，kubelet 使用该文件中的用户名和 token 向 kube-apiserver 发送 TLS Bootstrapping 请求；
 + 管理员通过了 CSR 请求后，kubelet 自动在 `--cert-dir` 目录创建证书和私钥文件(`kubelet-client.crt` 和 `kubelet-client.key`)，然后写入 `--kubeconfig` 文件(自动创建 `--kubeconfig` 指定的文件)；
 + 建议在 `--kubeconfig` 配置文件中指定 `kube-apiserver` 地址，如果未指定 `--api-servers` 选项，则必须指定 `--require-kubeconfig` 选项后才从配置文件中读取 kue-apiserver 的地址，否则 kubelet 启动后将找不到 kube-apiserver (日志中提示未找到 API Server），`kubectl get nodes` 不会返回对应的 Node 信息;
-+ `--cluster_dns` 指定 kubedns 的 Service IP(可以先分配，后续创建 kubedns 服务时指定该 IP)，`--cluster_domain` 指定域名后缀，这两个参数同时指定后才会生效；
++ `--cluster-dns` 指定 kubedns 的 Service IP(可以先分配，后续创建 kubedns 服务时指定该 IP)，`--cluster-domain` 指定域名后缀，这两个参数同时指定后才会生效；
 + kubelet cAdvisor 默认在**所有接口**监听 4194 端口的请求，对于有外网的机器来说不安全，`ExecStopPost` 选项指定的 iptables 规则只允许内网机器访问 4194 端口；
 
 完整 unit 见 [kubelet.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kubelet.service)

@@ -119,7 +119,7 @@ EOF
 ```
 
 + mk-docker-opts.sh 脚本将分配给 flanneld 的 Pod 子网网段信息写入到 `/run/flannel/docker` 文件中，后续 docker 启动时使用这个文件中参数值设置 docker0 网桥；
-+ `-iface` 选项值指定 flanneld 和其它 Node 通信的接口，如果机器有内、外网，则最好指定为内网接口；
++ flanneld 使用系统缺省路由所在的接口和其它节点通信，对于有多个网络接口的机器（如，内网和公网），可以用 `-iface` 选项值指定通信接口(上面的 systemd unit 文件没指定这个选项)；
 
 完整 unit 见 [flanneld.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/flanneld.service)
 

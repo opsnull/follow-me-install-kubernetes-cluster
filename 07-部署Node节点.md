@@ -78,6 +78,12 @@ WantedBy=multi-user.target
   $ sudo iptables -P FORWARD ACCEPT
   $
   ```
+  并且把以下命令写入/etc/rc.local文件中，防止节点重启**iptables FORWARD chain的默认策略又还原为DROP**
+  
+  ``` bash
+  sleep 60 && /sbin/iptables -P FORWARD ACCEPT
+  ```
+
 
 + 为了加快 pull image 的速度，可以使用国内的仓库镜像服务器，同时增加下载的并发数。(如果 dockerd 已经运行，则需要重启 dockerd 生效。)
 
@@ -104,7 +110,7 @@ $ sudo systemctl start docker
 $
 ```
 
-+ 需要关闭 firewalld，否则可能会重复创建的 iptables 规则；
++ 需要关闭 firewalld(centos7)/ufw(ubuntu16.04)，否则可能会重复创建的 iptables 规则；
 + 最好清理旧的 iptables rules 和 chains 规则；
 
 ### 检查 docker 服务
@@ -190,10 +196,10 @@ ExecStart=/root/local/bin/kubelet \\
   --serialize-image-pulls=false \\
   --logtostderr=true \\
   --v=2
-ExecStopPost=/sbin/iptables -A INPUT -s 10.0.0.0/8 -p tcp --dport 4194 -j ACCEPT
-ExecStopPost=/sbin/iptables -A INPUT -s 172.16.0.0/12 -p tcp --dport 4194 -j ACCEPT
-ExecStopPost=/sbin/iptables -A INPUT -s 192.168.0.0/16 -p tcp --dport 4194 -j ACCEPT
-ExecStopPost=/sbin/iptables -A INPUT -p tcp --dport 4194 -j DROP
+ExecStartPost=/sbin/iptables -A INPUT -s 10.0.0.0/8 -p tcp --dport 4194 -j ACCEPT
+ExecStartPost=/sbin/iptables -A INPUT -s 172.16.0.0/12 -p tcp --dport 4194 -j ACCEPT
+ExecStartPost=/sbin/iptables -A INPUT -s 192.168.0.0/16 -p tcp --dport 4194 -j ACCEPT
+ExecStartPost=/sbin/iptables -A INPUT -p tcp --dport 4194 -j DROP
 Restart=on-failure
 RestartSec=5
 
@@ -208,7 +214,7 @@ EOF
 + 管理员通过了 CSR 请求后，kubelet 自动在 `--cert-dir` 目录创建证书和私钥文件(`kubelet-client.crt` 和 `kubelet-client.key`)，然后写入 `--kubeconfig` 文件(自动创建 `--kubeconfig` 指定的文件)；
 + 建议在 `--kubeconfig` 配置文件中指定 `kube-apiserver` 地址，如果未指定 `--api-servers` 选项，则必须指定 `--require-kubeconfig` 选项后才从配置文件中读取 kue-apiserver 的地址，否则 kubelet 启动后将找不到 kube-apiserver (日志中提示未找到 API Server），`kubectl get nodes` 不会返回对应的 Node 信息;
 + `--cluster-dns` 指定 kubedns 的 Service IP(可以先分配，后续创建 kubedns 服务时指定该 IP)，`--cluster-domain` 指定域名后缀，这两个参数同时指定后才会生效；
-+ kubelet cAdvisor 默认在**所有接口**监听 4194 端口的请求，对于有外网的机器来说不安全，`ExecStopPost` 选项指定的 iptables 规则只允许内网机器访问 4194 端口；
++ kubelet cAdvisor 默认在**所有接口**监听 4194 端口的请求，对于有外网的机器来说不安全，`ExecStartPost` 选项指定的 iptables 规则只允许内网机器访问 4194 端口；
 
 完整 unit 见 [kubelet.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kubelet.service)
 

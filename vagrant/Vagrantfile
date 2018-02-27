@@ -18,7 +18,7 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  ips = ["10.64.3.7", "10.64.3.8", "10.64.3.86"]
+  ips = ["10.64.3.7", "10.64.3.8", "10.66.3.86"]
   (0..2).each do |id|
     mid = id + 1
     config.vm.define "kube-node#{mid}" do |node|

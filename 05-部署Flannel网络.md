@@ -171,7 +171,7 @@ $ /root/local/bin/etcdctl \
 {"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
 ```
 
-###检查脚本
+## 检查脚本
 ```
 #!/bin/bash
 
@@ -199,7 +199,7 @@ do
 done	
 ```
 
-###运行结果
+## 运行结果
 ```
 [root@k8snode1 ~]# sh status.sh 
 查看集群 Pod 网段(/16)

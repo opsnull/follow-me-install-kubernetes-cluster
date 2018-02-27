@@ -171,6 +171,53 @@ $ /root/local/bin/etcdctl \
 {"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
 ```
 
+###检查脚本
+```
+#!/bin/bash
+
+#define var
+CMD_etcdctl="/root/local/bin/etcdctl \
+  --endpoints=${ETCD_ENDPOINTS} \
+  --ca-file=/etc/kubernetes/ssl/ca.pem \
+  --cert-file=/etc/flanneld/ssl/flanneld.pem \
+  --key-file=/etc/flanneld/ssl/flanneld-key.pem"
+
+
+echo "查看集群 Pod 网段(/16)"
+$CMD_etcdctl get ${FLANNEL_ETCD_PREFIX}/config  2>/dev/null
+
+echo "查看已分配的 Pod 子网段列表(/24)"
+String=`$CMD_etcdctl ls ${FLANNEL_ETCD_PREFIX}/subnets 2>/dev/null`
+echo
+
+echo  "查看某一 Pod 网段对应的 flanneld 进程监听的 IP 和网络参数"
+for i in $String
+do 
+   echo $i 
+   $CMD_etcdctl get  $i 2>/dev/null
+   echo
+done	
+```
+
+###运行结果
+```
+[root@k8snode1 ~]# sh status.sh 
+查看集群 Pod 网段(/16)
+{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}
+查看已分配的 Pod 子网段列表(/24)
+
+查看某一 Pod 网段对应的 flanneld 进程监听的 IP 和网络参数
+/kubernetes/network/subnets/172.30.60.0-24
+{"PublicIP":"192.168.0.100","BackendType":"vxlan","BackendData":{"VtepMAC":"fa:fc:0a:79:41:30"}}
+
+/kubernetes/network/subnets/172.30.71.0-24
+{"PublicIP":"192.168.0.101","BackendType":"vxlan","BackendData":{"VtepMAC":"82:1d:3a:e0:06:07"}}
+
+/kubernetes/network/subnets/172.30.88.0-24
+{"PublicIP":"192.168.0.102","BackendType":"vxlan","BackendData":{"VtepMAC":"c2:b5:15:ae:6c:8b"}}
+
+```
+
 ### 确保各节点间 Pod 网段能互联互通
 
 在**各节点上部署完** Flannel 后，查看已分配的 Pod 子网段列表(/24)

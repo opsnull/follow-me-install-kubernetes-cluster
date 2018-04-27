@@ -192,6 +192,11 @@ $ /root/local/bin/etcdctl \
 在各节点上分配 ping 这三个网段的网关地址，确保能通：
 
 ``` bash
+
+$ ip link add name docker0 type bridge
+$ source /run/flannel/subnet.env
+$ ifconfig docker0 ${FLANNEL_SUBNET}
+
 $ ping 172.30.19.1
 $ ping 172.30.20.2
 $ ping 172.30.21.3

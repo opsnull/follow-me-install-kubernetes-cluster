@@ -49,11 +49,18 @@ $ cat docker.service
 [Unit]
 Description=Docker Application Container Engine
 Documentation=http://docs.docker.io
+After=network.target
 
 [Service]
-Environment="PATH=/root/local/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 EnvironmentFile=-/run/flannel/docker
-ExecStart=/root/local/bin/dockerd --log-level=error $DOCKER_NETWORK_OPTIONS
+EnvironmentFile=-/run/docker_opts.env
+EnvironmentFile=-/run/flannel/subnet.env
+EnvironmentFile=-/etc/sysconfig/docker
+EnvironmentFile=-/etc/sysconfig/docker-storage
+EnvironmentFile=-/etc/sysconfig/docker-network
+EnvironmentFile=-/run/docker_opts.env
+Environment="PATH=/root/local/bin:/usr/bin:/bin:/usr/sbin:/usr/bin"
+ExecStart=/root/local/bin/dockerd  $DOCKER_NETWORK_OPTIONS  --storage-driver=overlay2 --iptables=false --log-level=error
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=on-failure
 RestartSec=5
@@ -70,8 +77,8 @@ WantedBy=multi-user.target
 + dockerd 运行时会调用其它 docker 命令，如 docker-proxy，所以需要将 docker 命令所在的目录加到 PATH 环境变量中；
 + flanneld 启动时将网络配置写入到 `/run/flannel/docker` 文件中的变量 `DOCKER_NETWORK_OPTIONS`，dockerd 命令行上指定该变量值来设置 docker0 网桥参数；
 + 如果指定了多个 `EnvironmentFile` 选项，则必须将 `/run/flannel/docker` 放在最后(确保 docker0 使用 flanneld 生成的 bip 参数)；
-+ 不能关闭默认开启的 `--iptables` 和 `--ip-masq` 选项；
-+ 如果内核版本比较新，建议使用 `overlay` 存储驱动；
++ 不能关闭默认开启的 `--iptables` 和 `--ip-masq` 选项； (????)
++ 如果内核版本比较新，建议使用 `overlay` 存储驱动； (Running "modprob overlay" to load it before use it)
 + docker 从 1.13 版本开始，可能将 **iptables FORWARD chain的默认策略设置为DROP**，从而导致 ping 其它 Node 上的 Pod IP 失败，遇到这种情况时，需要手动设置策略为 `ACCEPT`：
 
   ``` bash

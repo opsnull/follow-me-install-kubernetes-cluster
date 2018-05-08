@@ -20,7 +20,7 @@ The connection to the server localhost:8080 was refused - did you specify the ri
 本文档用到的变量定义如下：
 
 ``` bash
-$ export MASTER_IP=10.64.3.7 # 替换为 kubernetes master 集群任一机器 IP
+$ export MASTER_IP=10.64.3.1 # 替换为 kubernetes master 集群任一机器 IP
 $ export KUBE_APISERVER="https://${MASTER_IP}:6443"
 $
 ```
@@ -30,11 +30,11 @@ $
 ## 下载 kubectl
 
 ``` bash
-$ wget https://dl.k8s.io/v1.6.2/kubernetes-client-linux-amd64.tar.gz
+$ wget https://dl.k8s.io/v1.10.2/kubernetes-client-linux-amd64.tar.gz
 $ tar -xzvf kubernetes-client-linux-amd64.tar.gz
-$ sudo cp kubernetes/client/bin/kube* /root/local/bin/
-$ chmod a+x /root/local/bin/kube*
-$ export PATH=/root/local/bin:$PATH
+$ sudo cp kubernetes/client/bin/kubectl /vagrant/bin/
+$ sudo chmod a+x /vagrant/bin/kubectl
+$ export PATH=/vagrant/bin:$PATH
 $
 ```
 
@@ -42,7 +42,7 @@ $
 
 kubectl 与 kube-apiserver 的安全端口通信，需要为安全通信提供 TLS 证书和秘钥。
 
-创建 admin 证书签名请求
+创建 admin 证书签名请求：
 
 ``` bash
 $ cat admin-csr.json
@@ -59,7 +59,7 @@ $ cat admin-csr.json
       "ST": "BeiJing",
       "L": "BeiJing",
       "O": "system:masters",
-      "OU": "System"
+      "OU": "4Paradigm"
     }
   ]
 }
@@ -73,13 +73,13 @@ $ cat admin-csr.json
 生成 admin 证书和私钥：
 
 ``` bash
-$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
+$ sudo /vagrant/bin/cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
   -ca-key=/etc/kubernetes/ssl/ca-key.pem \
   -config=/etc/kubernetes/ssl/ca-config.json \
-  -profile=kubernetes admin-csr.json | cfssljson -bare admin
+  -profile=kubernetes admin-csr.json | /vagrant/bin/cfssljson -bare admin
 $ ls admin*
 admin.csr  admin-csr.json  admin-key.pem  admin.pem
-$ sudo mv admin*.pem /etc/kubernetes/ssl/
+$ sudo cp admin*.pem /etc/kubernetes/ssl/
 $ rm admin.csr admin-csr.json
 $
 ```
@@ -88,21 +88,24 @@ $
 
 ``` bash
 $ # 设置集群参数
-$ kubectl config set-cluster kubernetes \
+$ sudo /vagrant/bin/kubectl config set-cluster kubernetes \
   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
   --embed-certs=true \
   --server=${KUBE_APISERVER}
+
 $ # 设置客户端认证参数
-$ kubectl config set-credentials admin \
+$ sudo /vagrant/bin/kubectl config set-credentials admin \
   --client-certificate=/etc/kubernetes/ssl/admin.pem \
   --embed-certs=true \
   --client-key=/etc/kubernetes/ssl/admin-key.pem
+
 $ # 设置上下文参数
-$ kubectl config set-context kubernetes \
+$ sudo /vagrant/bin/kubectl config set-context kubernetes \
   --cluster=kubernetes \
   --user=admin
+  
 $ # 设置默认上下文
-$ kubectl config use-context kubernetes
+$ sudo /vagrant/bin/kubectl config use-context kubernetes
 ```
 
 + `admin.pem` 证书 O 字段值为 `system:masters`，`kube-apiserver` 预定义的 RoleBinding `cluster-admin` 将 Group `system:masters` 与 Role `cluster-admin` 绑定，该 Role 授予了调用`kube-apiserver` 相关 API 的权限；

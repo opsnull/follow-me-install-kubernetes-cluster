@@ -2,7 +2,7 @@
 
 ![dashboard-home](./images/dashboard-home.png)
 
-本系列文档介绍使用二进制部署最新 `kubernetes v1.6.2` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群。
+本系列文档介绍使用二进制部署最新 `kubernetes v1.10.2` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群。
 
 在部署的过程中，将详细列出各组件的启动参数，它们的含义和可能遇到的问题。
 
@@ -43,10 +43,13 @@
 
 ## 版权
 
-Copyright 2017 zhangjun (geekard@qq.com)
+Copyright 2017-2018 zhangjun (geekard@qq.com)
 
 Apache License 2.0，详情见 [LICENSE](LICENSE) 文件。
 
+转载时请保证内容完整，并注明来源！
+
+## 打赏
 
 如果你觉得这份文档对你有帮助，请微信扫描下方的二维码进行捐赠，加油后的 opsnull 将会和你分享更多的原创教程，谢谢！
 

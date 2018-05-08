@@ -26,7 +26,7 @@ master 节点与 node 节点上的 Pods 通过 Pod 网络通信，所以需要�
 本文档用到的变量定义如下：
 
 ``` bash
-$ export MASTER_IP=10.64.3.7  # 替换为当前部署的 master 机器 IP
+$ export MASTER_IP=10.64.3.1  # 替换为当前部署的 master 机器 IP
 $ # 导入用到的其它全局变量：SERVICE_CIDR、CLUSTER_CIDR、NODE_PORT_RANGE、ETCD_ENDPOINTS、BOOTSTRAP_TOKEN
 $ source /root/local/bin/environment.sh
 $
@@ -39,7 +39,7 @@ $
 1. 从 [github release 页面](https://github.com/kubernetes/kubernetes/releases) 下载发布版 tarball，解压后再执行下载脚本
 
     ``` shell
-    $ wget https://github.com/kubernetes/kubernetes/releases/download/v1.6.2/kubernetes.tar.gz
+    $ wget https://github.com/kubernetes/kubernetes/releases/download/v1.10.2/kubernetes.tar.gz
     $ tar -xzvf kubernetes.tar.gz
     ...
     $ cd kubernetes
@@ -52,8 +52,7 @@ $
     `server` 的 tarball `kubernetes-server-linux-amd64.tar.gz` 已经包含了 `client`(`kubectl`) 二进制文件，所以不用单独下载`kubernetes-client-linux-amd64.tar.gz`文件；
 
     ``` shell
-    $ # wget https://dl.k8s.io/v1.6.2/kubernetes-client-linux-amd64.tar.gz
-    $ wget https://dl.k8s.io/v1.6.2/kubernetes-server-linux-amd64.tar.gz
+    $ wget https://dl.k8s.io/v1.10.2/kubernetes-server-linux-amd64.tar.gz
     $ tar -xzvf kubernetes-server-linux-amd64.tar.gz
     ...
     $ cd kubernetes
@@ -63,7 +62,7 @@ $
 将二进制文件拷贝到指定路径：
 
 ``` bash
-$ sudo cp -r server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /root/local/bin/
+$ sudo cp server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /vagrant/bin/
 $
 ```
 
@@ -99,7 +98,7 @@ $ cat > kubernetes-csr.json <<EOF
       "ST": "BeiJing",
       "L": "BeiJing",
       "O": "k8s",
-      "OU": "System"
+      "OU": "4Paradigm"
     }
   ]
 }
@@ -118,32 +117,47 @@ EOF
 生成 kubernetes 证书和私钥
 
 ``` bash
-$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
+$ sudo /vagrant/bin/cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
   -ca-key=/etc/kubernetes/ssl/ca-key.pem \
   -config=/etc/kubernetes/ssl/ca-config.json \
-  -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
+  -profile=kubernetes kubernetes-csr.json | /vagrant/bin/cfssljson -bare kubernetes
+
 $ ls kubernetes*
 kubernetes.csr  kubernetes-csr.json  kubernetes-key.pem  kubernetes.pem
+
 $ sudo mkdir -p /etc/kubernetes/ssl/
-$ sudo mv kubernetes*.pem /etc/kubernetes/ssl/
+
+$ sudo cp kubernetes*.pem /etc/kubernetes/ssl/
+
 $ rm kubernetes.csr  kubernetes-csr.json
 ```
 
 ## 配置和启动 kube-apiserver
 
-### 创建 kube-apiserver 使用的客户端 token 文件
-
-kubelet **首次启动**时向 kube-apiserver 发送 TLS Bootstrapping 请求，kube-apiserver 验证 kubelet 请求中的 token 是否与它配置的 token.csv 一致，如果一致则自动为 kubelet生成证书和秘钥。
+### 生成一个加密配置文件
 
 ``` bash
-$ # 导入的 environment.sh 文件定义了 BOOTSTRAP_TOKEN 变量
-$ cat > token.csv <<EOF
-${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"
+cat > encryption-config.yaml <<EOF
+kind: EncryptionConfig
+apiVersion: v1
+resources:
+  - resources:
+      - secrets
+    providers:
+      - aescbc:
+          keys:
+            - name: key1
+              secret: ${ENCRYPTION_KEY}
+      - identity: {}
 EOF
-$ mv token.csv /etc/kubernetes/
-$
 ```
 
+将 `encryption-config.yaml` 拷贝到 `/etc/kubernetes` 目录下：
+
+``` bash
+$ sudo cp encryption-config.yaml /etc/kubernetes
+$
+```
 ### 创建 kube-apiserver 的 systemd unit 文件
 
 ``` bash
@@ -154,16 +168,17 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
 
 [Service]
-ExecStart=/root/local/bin/kube-apiserver \\
-  --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
+ExecStart=/vagrant/bin/kube-apiserver \\
+  --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
+  --anonymous-auth=false \\
+  --experimental-encryption-provider-config=/etc/kubernetes/encryption-config.yaml \\
   --advertise-address=${MASTER_IP} \\
   --bind-address=${MASTER_IP} \\
   --insecure-bind-address=${MASTER_IP} \\
-  --authorization-mode=RBAC \\
-  --runtime-config=rbac.authorization.k8s.io/v1alpha1 \\
+  --authorization-mode=Node,RBAC \\
+  --runtime-config=api/all \\
   --kubelet-https=true \\
-  --experimental-bootstrap-token-auth \\
-  --token-auth-file=/etc/kubernetes/token.csv \\
+  --enable-bootstrap-token-auth \\
   --service-cluster-ip-range=${SERVICE_CIDR} \\
   --service-node-port-range=${NODE_PORT_RANGE} \\
   --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem \\
@@ -194,15 +209,17 @@ EOF
 ```
 
 + kube-apiserver 1.6 版本开始使用 etcd v3 API 和存储格式；
-+ `--authorization-mode=RBAC` 指定在安全端口使用 RBAC 授权模式，拒绝未通过授权的请求；
++ `--experimental-encryption-provider-config`
++ `--authorization-mode=Node,RBAC` 指定在安全端口使用 Node 和 RBAC 授权模式，拒绝未通过授权的请求；
 + kube-scheduler、kube-controller-manager 一般和 kube-apiserver 部署在同一台机器上，它们使用**非安全端口**和 kube-apiserver通信;
 + kubelet、kube-proxy、kubectl 部署在其它 Node 节点上，如果通过**安全端口**访问 kube-apiserver，则必须先通过 TLS 证书认证，再通过 RBAC 授权；
 + kube-proxy、kubectl 通过在使用的证书里指定相关的 User、Group 来达到通过 RBAC 授权的目的；
 + 如果使用了 kubelet TLS Boostrap 机制，则不能再指定 `--kubelet-certificate-authority`、`--kubelet-client-certificate` 和 `--kubelet-client-key` 选项，否则后续 kube-apiserver 校验 kubelet 证书时出现 ”x509: certificate signed by unknown authority“ 错误；
-+ `--admission-control` 值必须包含 `ServiceAccount`，否则部署集群插件时会失败；
++ `--enable-admission-plugins` 值必须包含 `ServiceAccount`，否则部署集群插件时会失败；同时包含 NodeRestriction，用于限制 Node 的认证和授权；
 + `--bind-address` 不能为 `127.0.0.1`；
 + `--service-cluster-ip-range` 指定 Service Cluster IP 地址段，该地址段不能路由可达；
 + `--service-node-port-range=${NODE_PORT_RANGE}` 指定 NodePort 的端口范围；
++ `--client-ca-file` 启用 X509 认证；
 + 缺省情况下 kubernetes 对象保存在 etcd `/registry` 路径下，可以通过 `--etcd-prefix` 参数进行调整；
 
 完整 unit 见 [kube-apiserver.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kube-apiserver.service)
@@ -214,9 +231,52 @@ $ sudo cp kube-apiserver.service /etc/systemd/system/
 $ sudo systemctl daemon-reload
 $ sudo systemctl enable kube-apiserver
 $ sudo systemctl start kube-apiserver
-$ sudo systemctl status kube-apiserver
+
 $
 ```
+
+### 检查 kube-apiserver 运行状态
+
+``` bash
+$ sudo systemctl status kube-apiserver
+
+$ 打印 kube-apiserver 启动成功后写入 etcd 的信息
+$ ETCDCTL_API=3 /vagrant/bin/etcdctl \
+    --endpoints=https://10.64.3.1:2379 \
+    --cacert=/etc/kubernetes/ssl/ca.pem \
+    --cert=/etc/etcd/ssl/etcd.pem \
+    --key=/etc/etcd/ssl/etcd-key.pem \
+    get /registry/ --prefix --keys-only
+
+$ kubectl version
+Client Version: version.Info{Major:"1", Minor:"10", GitVersion:"v1.10.2", GitCommit:"81753b10df112992bf51bbc2c2f85208aad78335", GitTreeState:"clean", BuildDate:"2018-04-27T09:22:21Z", GoVersion:"go1.9.3", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"10", GitVersion:"v1.10.2", GitCommit:"81753b10df112992bf51bbc2c2f85208aad78335", GitTreeState:"clean", BuildDate:"2018-04-27T09:10:24Z", GoVersion:"go1.9.3", Compiler:"gc", Platform:"linux/amd64"}
+
+$ kubectl get ns
+NAME          STATUS    AGE
+default       Active    35m
+kube-public   Active    35m
+kube-system   Active    35m
+
+$ kubectl get all --all-namespaces
+NAMESPACE   NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+default     service/kubernetes   ClusterIP   10.254.0.1   <none>        443/TCP   35m
+
+$ kubectl get all
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.254.0.1   <none>        443/TCP   33m
+
+$ kubectl get componentstatuses
+NAME                 STATUS      MESSAGE                                                                                        ERROR
+controller-manager   Unhealthy   Get http://127.0.0.1:10252/healthz: dial tcp 127.0.0.1:10252: getsockopt: connection refused
+scheduler            Unhealthy   Get http://127.0.0.1:10251/healthz: dial tcp 127.0.0.1:10251: getsockopt: connection refused
+etcd-1               Healthy     {"health":"true"}
+etcd-0               Healthy     {"health":"true"}
+etcd-2               Healthy     {"health":"true"}
+
+```
+
+注意：如果执行 kubectl 命令式出错，提示 `The connection to the server localhost:8080 was refused - did you specify the right host or port?`，则说明使用的 `~/.kube/config` 文件不对，请切换到正确的账户后再执行该命令；
 
 ## 配置和启动 kube-controller-manager
 
@@ -229,7 +289,7 @@ Description=Kubernetes Controller Manager
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-ExecStart=/root/local/bin/kube-controller-manager \\
+ExecStart=/vagrant/bin/kube-controller-manager \\
   --address=127.0.0.1 \\
   --master=http://${MASTER_IP}:8080 \\
   --allocate-node-cidrs=true \\
@@ -241,6 +301,8 @@ ExecStart=/root/local/bin/kube-controller-manager \\
   --service-account-private-key-file=/etc/kubernetes/ssl/ca-key.pem \\
   --root-ca-file=/etc/kubernetes/ssl/ca.pem \\
   --leader-elect=true \\
+  --feature-gates=RotateKubeletServerCertificate=true \\
+  --controllers=*,bootstrapsigner,tokencleaner \\
   --v=2
 Restart=on-failure
 RestartSec=5
@@ -267,6 +329,8 @@ EOF
 + `--cluster-signing-*` 指定的证书和私钥文件用来签名为 TLS BootStrap 创建的证书和私钥；
 + `--root-ca-file` 用来对 kube-apiserver 证书进行校验，**指定该参数后，才会在Pod 容器的 ServiceAccount 中放置该 CA 证书文件**；
 + `--leader-elect=true` 部署多台机器组成的 master 集群时选举产生一处于工作状态的 `kube-controller-manager` 进程；
++ `--feature-gates=RotateKubeletServerCertificate=true` 用于开启 kublet server 证书的自动更新；
++ `--controllers=*,bootstrapsigner,tokencleaner` tokencleaner 用于自动清理过期的 bootstrap token；
 
 完整 unit 见 [kube-controller-manager.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/kube-controller-manager.service)
 
@@ -280,6 +344,15 @@ $ sudo systemctl start kube-controller-manager
 $
 ```
 
+### 检查 kube-controller-manager 的运行状态
+
+``` bash
+$ sudo systemctl status kube-controller-manager
+
+$ kubectl get componentstatuses|grep controller-manager
+controller-manager   Healthy     ok
+```
+
 ## 配置和启动 kube-scheduler
 
 ### 创建 kube-scheduler 的 systemd unit 文件
@@ -291,7 +364,7 @@ Description=Kubernetes Scheduler
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-ExecStart=/root/local/bin/kube-scheduler \\
+ExecStart=/vagrant/bin/kube-scheduler \\
   --address=127.0.0.1 \\
   --master=http://${MASTER_IP}:8080 \\
   --leader-elect=true \\
@@ -320,14 +393,11 @@ $ sudo systemctl start kube-scheduler
 $
 ```
 
-## 验证 master 节点功能
+### 检查 kube-scheduler 的运行状态
 
 ``` bash
-$ kubectl get componentstatuses
-NAME                 STATUS    MESSAGE              ERROR
-controller-manager   Healthy   ok
+$ sudo systemctl status kube-scheduler
+
+$ kubectl get componentstatuses|grep scheduler
 scheduler            Healthy   ok
-etcd-0               Healthy   {"health": "true"}
-etcd-1               Healthy   {"health": "true"}
-etcd-2               Healthy   {"health": "true"}
 ```

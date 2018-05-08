@@ -212,11 +212,12 @@ registry             /entrypoint.sh serve /etc/ ...   Up (healthy)   5000/tcp
 ```
 
 浏览器访问 `https://${NODE_IP}`，示例的是 `https://10.64.3.2`；
+
 由于是在 virtualbox 虚机 kube-node2 中运行，所以需要做下端口转发，Vagrant 文件中已经指定 host 端口为 4443，也可以在 virtualbox 的 GUI 中直接添加端口转发：
 
 ![virtualbox-harbor](./images/virtualbox-harbor.png)
 
-用账号 `admin` 和 harbor.cfg 配置文件中的默认密码 `Harbor12345` 登陆系统。
+浏览器访问 `https://127.0.0.1:443`，用账号 `admin` 和 harbor.cfg 配置文件中的默认密码 `Harbor12345` 登陆系统。
 
 ![harbor](./images/harbo.png)
 

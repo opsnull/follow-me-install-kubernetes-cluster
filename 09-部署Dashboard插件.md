@@ -11,7 +11,7 @@ $ pwd
 /vagrant/kubernetes/cluster/addons/dashboard
 ```
 
-## 配置dashboard-service
+## 配置 dashboard-service
 
 ``` bash
 $ cp dashboard-controller.yaml{,.bak}
@@ -195,7 +195,7 @@ $ echo ${DASHBOARD_LOGIN_TOKEN}
 
 使用输出的 token 登录 Dashboard。
 
-### 使用创建的 token 创建 KubeConfig 文件
+### 创建使用 token 的 KubeConfig 文件
 
 ``` bash
 $ export MASTER_IP=10.64.3.1 # 替换为 kubernetes master 集群任一机器 IP
@@ -207,7 +207,7 @@ $ kubectl config set-cluster kubernetes \
   --server=${KUBE_APISERVER} \
   --kubeconfig=dashboard.kubeconfig
 
-$ # 设置客户端认证参数
+$ # 设置客户端认证参数，使用上面创建的 Token
 $ kubectl config set-credentials dashboard_user \
   --token=${DASHBOARD_LOGIN_TOKEN} \
   --kubeconfig=dashboard.kubeconfig

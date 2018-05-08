@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-# 生产一个加密 key
+# 生成 EncryptionConfig 所需的加密 key
 ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
 
 # 最好使用 主机未用的网段 来定义服务网段和 Pod 网段

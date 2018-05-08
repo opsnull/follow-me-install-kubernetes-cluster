@@ -109,7 +109,7 @@ $ cat registry-csr.json
       "ST": "BeiJing",
       "L": "BeiJing",
       "O": "k8s",
-      "OU": "System"
+      "OU": "4Paradigm"
     }
   ]
 }

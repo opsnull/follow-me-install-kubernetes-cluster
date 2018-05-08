@@ -4,24 +4,24 @@ tags: etcd
 
 # 部署高可用 etcd 集群
 
-kuberntes 系统使用 etcd 存储所有数据，本文档介绍部署一个三节点高可用 etcd 集群的步骤，这三个节点复用 kubernetes master 机器，分别命名为`etcd-host0`、`etcd-host1`、`etcd-host2`：
+kuberntes 系统使用 etcd 存储所有数据，本文档介绍部署一个三节点高可用 etcd 集群的步骤：
 
-+ etcd-host0：10.64.3.7
-+ etcd-host1：10.64.3.8
-+ etcd-host2：10.66.3.86
++ kube-node1：10.64.3.1
++ kube-node2：10.64.3.2
++ kube-node3：10.64.3.3
 
 ## 使用的变量
 
 本文档用到的变量定义如下：
 
 ``` bash
-$ export NODE_NAME=etcd-host0 # 当前部署的机器名称(随便定义，只要能区分不同机器即可)
-$ export NODE_IP=10.64.3.7 # 当前部署的机器 IP
-$ export NODE_IPS="10.64.3.7 10.64.3.8 10.66.3.86" # etcd 集群所有机器 IP
+$ export NODE_NAME=kube-node1 # 当前部署的机器名称(随便定义，只要能区分不同机器即可)
+$ export NODE_IP=10.64.3.1 # 当前部署的机器 IP
+$ export NODE_IPS="10.64.3.1 10.64.3.2 10.64.3.3" # etcd 集群所有机器 IP
 $ # etcd 集群间通信的IP和端口
-$ export ETCD_NODES=etcd-host0=https://10.64.3.7:2380,etcd-host1=https://10.64.3.8:2380,etcd-host2=https://10.66.3.86:2380
+$ export ETCD_NODES="kube-node1=https://10.64.3.1:2380,kube-node2=https://10.64.3.2:2380,kube-node3=https://10.64.3.3:2380"
 $ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR
-$ source /root/local/bin/environment.sh
+$ source /vagrant/bin/environment.sh
 $
 ```
 
@@ -30,9 +30,10 @@ $
 到 `https://github.com/coreos/etcd/releases` 页面下载最新版本的二进制文件：
 
 ``` bash
-$ wget https://github.com/coreos/etcd/releases/download/v3.1.6/etcd-v3.1.6-linux-amd64.tar.gz
-$ tar -xvf etcd-v3.1.6-linux-amd64.tar.gz
-$ sudo mv etcd-v3.1.6-linux-amd64/etcd* /root/local/bin
+$ wget https://github.com/coreos/etcd/releases/download/v3.3.4/etcd-v3.3.4-linux-amd64.tar.gz
+$ tar -xvf etcd-v3.3.4-linux-amd64.tar.gz
+$ sudo mv etcd-v3.3.4-linux-amd64/etcd* /vagrant/bin
+$ rm -rf etcd-v3.3.4-linux-amd64* # 删除无用的文件
 $
 ```
 
@@ -43,6 +44,7 @@ $
 创建 etcd 证书签名请求：
 
 ``` bash
+$ cd ~/
 $ cat > etcd-csr.json <<EOF
 {
   "CN": "etcd",
@@ -60,7 +62,7 @@ $ cat > etcd-csr.json <<EOF
       "ST": "BeiJing",
       "L": "BeiJing",
       "O": "k8s",
-      "OU": "System"
+      "OU": "4Paradigm"
     }
   ]
 }
@@ -72,10 +74,11 @@ EOF
 生成 etcd 证书和私钥：
 
 ``` bash
-$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
+$ cd ~/
+$ sudo /vagrant/bin/cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
   -ca-key=/etc/kubernetes/ssl/ca-key.pem \
   -config=/etc/kubernetes/ssl/ca-config.json \
-  -profile=kubernetes etcd-csr.json | cfssljson -bare etcd
+  -profile=kubernetes etcd-csr.json | /vagrant/bin/cfssljson -bare etcd
 $ ls etcd*
 etcd.csr  etcd-csr.json  etcd-key.pem etcd.pem
 $ sudo mkdir -p /etc/etcd/ssl
@@ -98,7 +101,7 @@ Documentation=https://github.com/coreos
 [Service]
 Type=notify
 WorkingDirectory=/var/lib/etcd/
-ExecStart=/root/local/bin/etcd \\
+ExecStart=/vagrant/bin/etcd \\
   --name=${NODE_NAME} \\
   --cert-file=/etc/etcd/ssl/etcd.pem \\
   --key-file=/etc/etcd/ssl/etcd-key.pem \\
@@ -124,7 +127,7 @@ EOF
 ```
 
 + 指定 `etcd` 的工作目录和数据目录为 `/var/lib/etcd`，需在启动服务前创建这个目录；
-+ 为了保证通信安全，需要指定 etcd 的公私钥(cert-file和key-file)、Peers 通信的公私钥和 CA 证书(peer-cert-file、peer-key-file、peer-trusted-ca-file)、客户端的CA证书（trusted-ca-file）；
++ 为了保证通信安全，需要指定 etcd 的公私钥(cert-file 和 key-file)、Peers 通信的公私钥和 CA 证书(peer-cert-file、peer-key-file、peer-trusted-ca-file)、客户端的CA证书（trusted-ca-file）；
 + `--initial-cluster-state` 值为 `new` 时，`--name` 的参数值必须位于 `--initial-cluster` 列表中；
 
 完整 unit 文件见：[etcd.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/etcd.service)
@@ -136,7 +139,8 @@ $ sudo mv etcd.service /etc/systemd/system/
 $ sudo systemctl daemon-reload
 $ sudo systemctl enable etcd
 $ sudo systemctl start etcd
-$ systemctl status etcd
+$ sudo systemctl status etcd
+$ sudo journalctl -u etcd
 $
 ```
 
@@ -150,7 +154,7 @@ $
 
 ``` bash
 $ for ip in ${NODE_IPS}; do
-  ETCDCTL_API=3 /root/local/bin/etcdctl \
+  ETCDCTL_API=3 /vagrant/bin/etcdctl \
   --endpoints=https://${ip}:2379  \
   --cacert=/etc/kubernetes/ssl/ca.pem \
   --cert=/etc/etcd/ssl/etcd.pem \
@@ -161,13 +165,9 @@ $ for ip in ${NODE_IPS}; do
 预期结果：
 
 ``` text
-2017-04-10 14:50:50.011317 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
-https://10.64.3.7:2379 is healthy: successfully committed proposal: took = 1.687897ms
-2017-04-10 14:50:50.061577 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
-https://10.64.3.8:2379 is healthy: successfully committed proposal: took = 1.246915ms
-2017-04-10 14:50:50.104718 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
-https://10.66.3.86:2379 is healthy: successfully committed proposal: took = 1.509229ms
+https://10.64.3.1:2379 is healthy: successfully committed proposal: took = 14.29208ms
+https://10.64.3.2:2379 is healthy: successfully committed proposal: took = 4.959493ms
+https://10.64.3.3:2379 is healthy: successfully committed proposal: took = 4.145877ms
 ```
 
-三台 etcd 的输出均为 healthy 时表示集群服务正常（忽略 warning 信息）。
-
+三台 etcd 的输出均为 healthy 时表示集群服务正常。

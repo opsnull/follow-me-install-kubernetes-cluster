@@ -293,7 +293,7 @@ $ cat kube-proxy-csr.json
 ```
 
 + CN 指定该证书的 User 为 `system:kube-proxy`；
-+ `kube-apiserver` 预定义的 RoleBinding `system:node-proxier` 将User `system:kube-proxy` 与 Role `system:node-proxier` 绑定，该 Role 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；
++ `kube-apiserver` 预定义的 ClusterRoleBinding `system:node-proxier` 将User `system:kube-proxy` 与 ClusterRole `system:node-proxier` 绑定，该 ClusterRole 授予了调用 `kube-apiserver` Proxy 相关 API 的权限；
 + hosts 属性值为空列表；
 
 生成 kube-proxy 客户端证书和私钥：

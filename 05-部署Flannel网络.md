@@ -174,7 +174,7 @@ $ /root/local/bin/etcdctl \
   --cert-file=/etc/flanneld/ssl/flanneld.pem \
   --key-file=/etc/flanneld/ssl/flanneld-key.pem \
   get ${FLANNEL_ETCD_PREFIX}/subnets/172.30.60.0-24    ###腰根据上面查到的Pod子网信息替换该网段。
-{"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
+{"PublicIP":"192.168.0.130","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
 ```
 
 ### 确保各节点间 Pod 网段能互联互通

@@ -17,7 +17,7 @@ The connection to the server localhost:8080 was refused - did you specify the ri
 
 ## 使用的变量
 
-本文档用到的变量定义如下,添加到所有节点/root/local/bin/environment.sh中：
+本文档用到的变量定义如下,添加到master节点/root/local/bin/environment.sh中：
 
 ``` bash
 $ export MASTER_IP=10.64.3.7 # 替换为 kubernetes master 集群任一机器 IP

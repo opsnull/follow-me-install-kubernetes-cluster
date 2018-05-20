@@ -146,7 +146,7 @@ EOF
 $ sudo mv etcd.service /etc/systemd/system/
 $ sudo systemctl daemon-reload
 $ sudo systemctl enable etcd
-$ sudo systemctl start etcd
+$ sudo systemctl start etcd   ### 启动时尽量保证各节点同时启动
 $ systemctl status etcd
 $
 ```

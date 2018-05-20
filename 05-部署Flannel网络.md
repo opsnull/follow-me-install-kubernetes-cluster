@@ -164,14 +164,16 @@ $ /root/local/bin/etcdctl \
   --cert-file=/etc/flanneld/ssl/flanneld.pem \
   --key-file=/etc/flanneld/ssl/flanneld-key.pem \
   ls ${FLANNEL_ETCD_PREFIX}/subnets
-/kubernetes/network/subnets/172.30.19.0-24
+/kubernetes/network/subnets/172.30.60.0-24
+/kubernetes/network/subnets/172.30.43.0-24
+/kubernetes/network/subnets/172.30.88.0-24
 $ # 查看某一 Pod 网段对应的 flanneld 进程监听的 IP 和网络参数
 $ /root/local/bin/etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/ssl/ca.pem \
   --cert-file=/etc/flanneld/ssl/flanneld.pem \
   --key-file=/etc/flanneld/ssl/flanneld-key.pem \
-  get ${FLANNEL_ETCD_PREFIX}/subnets/172.30.19.0-24
+  get ${FLANNEL_ETCD_PREFIX}/subnets/172.30.60.0-24    ###腰根据上面查到的Pod子网信息替换该网段。
 {"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
 ```
 
@@ -186,9 +188,9 @@ $ /root/local/bin/etcdctl \
   --cert-file=/etc/flanneld/ssl/flanneld.pem \
   --key-file=/etc/flanneld/ssl/flanneld-key.pem \
   ls ${FLANNEL_ETCD_PREFIX}/subnets
-/kubernetes/network/subnets/172.30.19.0-24
-/kubernetes/network/subnets/172.30.20.0-24
-/kubernetes/network/subnets/172.30.21.0-24
+/kubernetes/network/subnets/172.30.60.0-24
+/kubernetes/network/subnets/172.30.43.0-24
+/kubernetes/network/subnets/172.30.88.0-24
 ```
 
 当前三个节点分配的 Pod 网段分别是：172.30.19.0-24、172.30.20.0-24、172.30.21.0-24。
@@ -196,8 +198,8 @@ $ /root/local/bin/etcdctl \
 在各节点上分配 ping 这三个网段的网关地址，确保能通：
 
 ``` bash
-$ ping 172.30.19.1
-$ ping 172.30.20.2
-$ ping 172.30.21.3
+$ ping 172.30.60.1
+$ ping 172.30.43.2
+$ ping 172.30.88.3
 $
 ```

@@ -1,4 +1,4 @@
-# 和我一步步部署 kubernetes 集群
+# 手动部署 kubernetes 集群
 
 ![dashboard-home](./images/dashboard-home.png)
 

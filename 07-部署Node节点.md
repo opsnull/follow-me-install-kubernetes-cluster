@@ -20,7 +20,7 @@ $ # 替换为 kubernetes master 集群任一机器 IP
 $ export MASTER_IP="192.168.0.130"
 $ export KUBE_APISERVER="https://192.168.0.130:6443"
 $ # 当前部署的节点 IP
-$ export NODE_IP=10.64.3.7
+$ export NODE_IP="192.168.0.131"
 $ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR、CLUSTER_DNS_SVC_IP、CLUSTER_DNS_DOMAIN、SERVICE_CIDR
 $ source /etc/environment
 $

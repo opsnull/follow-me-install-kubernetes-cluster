@@ -45,7 +45,7 @@ $
 ### 创建 docker 的 systemd unit 文件
 
 ``` bash
-$ cat docker.service
+$ cat > docker.service<<EOF
 [Unit]
 Description=Docker Application Container Engine
 Documentation=http://docs.docker.io
@@ -65,6 +65,7 @@ KillMode=process
 
 [Install]
 WantedBy=multi-user.target
+EOF
 ```
 
 + dockerd 运行时会调用其它 docker 命令，如 docker-proxy，所以需要将 docker 命令所在的目录加到 PATH 环境变量中；

@@ -49,7 +49,7 @@ $
 
 为了保证通信安全，客户端(如 etcdctl) 与 etcd 集群、etcd 集群之间的通信需要使用 TLS 加密，本节创建 etcd TLS 加密所需的证书和私钥。
 
-创建 etcd 证书签名请求：依然回到在master节点ssl目录中创建
+创建 etcd 证书签名请求：依然回到在master节点创建
 
 ``` bash
 $ cat > etcd-csr.json <<EOF

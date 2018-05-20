@@ -252,15 +252,15 @@ EOF
 
 + `--address` 值必须为 `127.0.0.1`，因为当前 kube-apiserver 期望 scheduler 和 controller-manager 在同一台机器，否则：
 
-    ``` bash
-    $ kubectl get componentstatuses
+``` bash
+$ kubectl get componentstatuses
 NAME                 STATUS      MESSAGE                                                                                        ERROR
 controller-manager   Unhealthy   Get http://127.0.0.1:10252/healthz: dial tcp 127.0.0.1:10252: getsockopt: connection refused   
 scheduler            Unhealthy   Get http://127.0.0.1:10251/healthz: dial tcp 127.0.0.1:10251: getsockopt: connection refused   
 etcd-0               Healthy     {"health": "true"}                                                                             
 etcd-1               Healthy     {"health": "true"}                                                                             
 etcd-2               Healthy     {"health": "true"}
-    ```
+```
 
     参考：https://github.com/kubernetes-incubator/bootkube/issues/64
 

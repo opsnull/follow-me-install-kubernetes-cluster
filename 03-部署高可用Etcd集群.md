@@ -181,4 +181,12 @@ https://192.168.0.130:2379 is healthy: successfully committed proposal: took = 3
 ```
 
 三台 etcd 的输出均为 healthy 时表示集群服务正常（忽略 warning 信息）。
-
+``` bash
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem   --key-file=/etc/etcd/ssl/etcd-key.pem  --endpoints=https://192.168.0.130:2379,https://192.168.0.131:2379,https://192.168.0.132:2379 cluster-health 
+2018-05-20 04:05:13.627180 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+2018-05-20 04:05:13.628084 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+member 7385f1f0c11ca6df is healthy: got healthy result from https://192.168.0.131:2379
+member acb495c34a15a7fc is healthy: got healthy result from https://192.168.0.130:2379
+member c8ebe05934a3ce2e is healthy: got healthy result from https://192.168.0.132:2379
+cluster is healthy
+``` 

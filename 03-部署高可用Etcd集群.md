@@ -6,9 +6,9 @@ tags: etcd
 
 kuberntes 系统使用 etcd 存储所有数据，本文档介绍部署一个三节点高可用 etcd 集群的步骤，这三个节点复用 kubernetes master 机器，分别命名为`etcd-host0`、`etcd-host1`、`etcd-host2`：
 
-+ etcd-host0：10.64.3.7
-+ etcd-host1：10.64.3.8
-+ etcd-host2：10.66.3.86
++ etcd-host0：10.64.3.7 >192.168.0.130
++ etcd-host1：10.64.3.8 >192.168.0.131
++ etcd-host2：10.66.3.86 >192.168.0.132
 
 ## 使用的变量
 

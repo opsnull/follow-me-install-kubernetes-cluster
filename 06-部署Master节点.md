@@ -36,7 +36,7 @@ $
 
 有两种下载方式：
 
-1. 从 [github release 页面](https://github.com/kubernetes/kubernetes/releases) 下载发布版 tarball，解压后再执行下载脚本
+1. 从 [github release 页面](https://github.com/kubernetes/kubernetes/releases) 下载发布版源码包，解压后再执行下载脚本
 
     ``` shell
     $ wget https://github.com/kubernetes/kubernetes/releases/download/v1.6.2/kubernetes.tar.gz
@@ -47,7 +47,7 @@ $
     ...
     ```
 
-1. 从 [`CHANGELOG`页面](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md) 下载 `client` 或 `server` tarball 文件
+1. 从 [`CHANGELOG`页面](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md) 下载 `client` 或 `server` 源码包 文件
 
     `server` 的 tarball `kubernetes-server-linux-amd64.tar.gz` 已经包含了 `client`(`kubectl`) 二进制文件，所以不用单独下载`kubernetes-client-linux-amd64.tar.gz`文件；
 

@@ -78,7 +78,7 @@ EOF
 
 + hosts 字段指定授权使用该证书的 etcd 节点 IP；
 
-生成 etcd 证书和私钥：
+生成 etcd 证书和私钥并分发至各etcd节点：
 
 ``` bash
 $ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
@@ -87,12 +87,14 @@ $ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
   -profile=kubernetes etcd-csr.json | cfssljson -bare etcd
 $ ls etcd*
 etcd.csr  etcd-csr.json  etcd-key.pem etcd.pem
-$ sudo mkdir -p /etc/etcd/ssl
+$ sudo mkdir -p /etc/etcd/ssl      ### 各etcd节点都创建
 $ sudo mv etcd*.pem /etc/etcd/ssl
+$ scp /etc/etcd/ssl/etcd*.pem 192.168.0.131:/etc/etcd/ssl   ### 拷贝至其他节点
+$ scp /etc/etcd/ssl/etcd*.pem 192.168.0.132:/etc/etcd/ssl
 $ rm etcd.csr  etcd-csr.json
 ```
 
-## 创建 etcd 的 systemd unit 文件
+## 创建 etcd 的 systemd unit 文件——各节点
 
 ``` bash
 $ sudo mkdir -p /var/lib/etcd  # 必须先创建工作目录

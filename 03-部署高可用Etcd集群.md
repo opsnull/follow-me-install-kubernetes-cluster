@@ -15,14 +15,20 @@ kuberntes 系统使用 etcd 存储所有数据，本文档介绍部署一个三�
 本文档用到的变量定义如下：写在/etc/environment文件中
 
 ``` bash
-$ export NODE_NAME=etcd-host0 # 当前部署的机器名称(随便定义，只要能区分不同机器即可)
-$ export NODE_IP=10.64.3.7 # 当前部署的机器 IP
-$ export NODE_IPS="10.64.3.7 10.64.3.8 10.66.3.86" # etcd 集群所有机器 IP
-$ # etcd 集群间通信的IP和端口
-$ export ETCD_NODES=etcd-host0=https://10.64.3.7:2380,etcd-host1=https://10.64.3.8:2380,etcd-host2=https://10.66.3.86:2380
-$ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR
-$ source /root/local/bin/environment.sh
-$
+# 当前部署的机器名称(随便定义,只要能区分不同机器即可)
+export NODE_NAME=etcd-host0
+
+# 当前部署的机器 IP
+export NODE_IP=192.168.0.130
+
+# etcd 集群所有机器 IP
+export NODE_IPS="192.168.0.130 192.168.0.131 192.168.0.132"
+
+# etcd 集群间通信的IP和端口
+export ETCD_NODES=etcd-host0=https://192.168.0.130:2380,etcd-host1=https://192.168.0.131:2380,etcd-host2=https://192.168.0.132:2380
+
+# 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR
+source /root/local/bin/environment.sh
 ```
 
 ## 下载二进制文件

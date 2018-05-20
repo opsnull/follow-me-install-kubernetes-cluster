@@ -265,6 +265,33 @@ $ ls -l /etc/kubernetes/ssl/kubelet*
 -rw------- 1 root root 1675 Apr  7 02:07 /etc/kubernetes/ssl/kubelet.key
 ```
 
+查询etcd中写入的flannel子网信息。
+``` bash
+$ etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem    --key-file=/etc/etcd/ssl/etcd-key.pem  --endpoints=https://192.168.0.130:2379,https://192.168.0.131:2379,https://192.168.0.132:2379 ls
+2018-05-20 09:10:30.514597 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+/kubernetes
+$ etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem    --key-file=/etc/etcd/ssl/etcd-key.pem  --endpoints=https://192.168.0.130:2379,https://192.168.0.131:2379,https://192.168.0.132:2379 ls /kubernetes
+2018-05-20 09:10:37.592926 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+/kubernetes/network
+$ etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem    --key-file=/etc/etcd/ssl/etcd-key.pem  --endpoints=https://192.168.0.130:2379,https://192.168.0.131:2379,https://192.168.0.132:2379 ls /kubernetes/network
+2018-05-20 09:10:44.514071 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+/kubernetes/network/config
+/kubernetes/network/subnets
+$ etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem    --key-file=/etc/etcd/ssl/etcd-key.pem  --endpoints=https://192.168.0.130:2379,https://192.168.0.131:2379,https://192.168.0.132:2379 ls /kubernetes/network/subnets
+2018-05-20 09:10:50.278474 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+/kubernetes/network/subnets/172.30.43.0-24
+/kubernetes/network/subnets/172.30.88.0-24
+/kubernetes/network/subnets/172.30.60.0-24
+```
+
+在其中任意一个节点ping三个节点的docker0 ip均可通信。
+
+``` bash
+$ ping 172.30.60.1
+$ ping 172.30.43.2
+$ ping 172.30.88.3
+```
+
 ## 配置 kube-proxy
 
 ### 创建 kube-proxy 证书

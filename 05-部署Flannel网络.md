@@ -45,7 +45,7 @@ $ cat > flanneld-csr.json <<EOF
 EOF
 ```
 
-+ hosts 字段为空；
++ hosts 字段为空；所有主机都可以使用。
 
 生成 flanneld 证书和私钥：
 
@@ -56,8 +56,10 @@ $ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
   -profile=kubernetes flanneld-csr.json | cfssljson -bare flanneld
 $ ls flanneld*
 flanneld.csr  flanneld-csr.json  flanneld-key.pem flanneld.pem
-$ sudo mkdir -p /etc/flanneld/ssl
-$ sudo mv flanneld*.pem /etc/flanneld/ssl
+$ sudo mkdir -p /etc/flanneld/ssl     ### 每个节点都创建；
+$ sudo mv flanneld*.pem /etc/flanneld/ssl  
+$ scp /etc/flanneld/ssl/flanneld*.pem 192.168.0.131:/etc/flanneld/ssl/    ### 拷贝至另外两个节点上。
+$ scp /etc/flanneld/ssl/flanneld*.pem 192.168.0.132:/etc/flanneld/ssl/
 $ rm flanneld.csr  flanneld-csr.json
 ```
 

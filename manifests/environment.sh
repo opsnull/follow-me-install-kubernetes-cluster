@@ -28,3 +28,7 @@ export CLUSTER_DNS_SVC_IP="10.254.0.2"
 
 # 集群 DNS 域名
 export CLUSTER_DNS_DOMAIN="cluster.local."
++###ubuntu显示中文乱码解决，vim  /etc/environment 
++###LANG="zh_CN.UTF-8"
++###保存并退出
++###sources /etc/environment

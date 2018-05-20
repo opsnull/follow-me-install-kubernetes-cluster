@@ -128,7 +128,9 @@ EOF
 ### 启动 flanneld
 
 ``` bash
-$ sudo cp flanneld.service /etc/systemd/system/
+$ sudo mv flanneld.service /etc/systemd/system/
+$ scp /etc/systemd/system/flanneld.service  192.168.0.131:/etc/systemd/system/   ###拷贝至其他节点
+$ scp /etc/systemd/system/flanneld.service  192.168.0.132:/etc/systemd/system/
 $ sudo systemctl daemon-reload
 $ sudo systemctl enable flanneld
 $ sudo systemctl start flanneld

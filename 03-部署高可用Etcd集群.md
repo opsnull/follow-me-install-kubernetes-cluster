@@ -29,6 +29,9 @@ export ETCD_NODES=etcd-host0=https://192.168.0.130:2380,etcd-host1=https://192.1
 
 # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR
 source /root/local/bin/environment.sh
+
+保存退出后重新加载本机变量
+$ sources /etc/environment
 ```
 
 ## 下载二进制文件

@@ -73,10 +73,9 @@ $ cat > etcd-csr.json <<EOF
 EOF
 ```
 
-+ hosts 字段指定授权使用该证书的 etcd 节点 IP；
-注意：创建时替换${NODE_IP}的值为etcd 节点ip。创建几个文件就改几次。
++ hosts 字段指定授权使用该证书的 etcd 节点 IP；会直接应用变量的值。
 
-生成 etcd 证书和私钥并分发至各etcd节点：
+在各个etcd节点生成 etcd 证书和私钥：
 
 ``` bash
 $ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \

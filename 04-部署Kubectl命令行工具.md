@@ -45,7 +45,7 @@ kubectl 与 kube-apiserver 的安全端口通信，需要为安全通信提供 T
 创建 admin 证书签名请求
 
 ``` bash
-$ cat admin-csr.json
+$ cat > admin-csr.json<<EOF
 {
   "CN": "admin",
   "hosts": [],
@@ -63,6 +63,7 @@ $ cat admin-csr.json
     }
   ]
 }
+EOF
 ```
 
 + 后续 `kube-apiserver` 使用 `RBAC` 对客户端(如 `kubelet`、`kube-proxy`、`Pod`)请求进行授权；

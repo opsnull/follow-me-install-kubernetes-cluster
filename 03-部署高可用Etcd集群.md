@@ -157,7 +157,7 @@ $ for ip in ${NODE_IPS}; do
   --key=/etc/etcd/ssl/etcd-key.pem \
   endpoint health; done
 ```
-
+###${ip}替换为本机ip
 预期结果：
 
 ``` text

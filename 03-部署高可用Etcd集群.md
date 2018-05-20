@@ -167,7 +167,7 @@ $ for ip in ${NODE_IPS}; do
   --cert=/etc/etcd/ssl/etcd.pem \
   --key=/etc/etcd/ssl/etcd-key.pem \
   endpoint health; done
-  ###${ip}替换为本机ip
+  ###${ip}替换为执行此命令的etcd主机地址。
 ```
 
 预期结果：

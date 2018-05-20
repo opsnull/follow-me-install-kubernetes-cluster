@@ -17,12 +17,12 @@ kubernetes Node 节点包含如下组件：
 
 ``` bash
 $ # 替换为 kubernetes master 集群任一机器 IP
-$ export MASTER_IP=10.64.3.7
-$ export KUBE_APISERVER="https://${MASTER_IP}:6443"
+$ export MASTER_IP="192.168.0.130"
+$ export KUBE_APISERVER="https://192.168.0.130:6443"
 $ # 当前部署的节点 IP
 $ export NODE_IP=10.64.3.7
 $ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR、CLUSTER_DNS_SVC_IP、CLUSTER_DNS_DOMAIN、SERVICE_CIDR
-$ source /root/local/bin/environment.sh
+$ source /etc/environment
 $
 ```
 
@@ -143,7 +143,7 @@ $ sudo cp -r ./server/bin/{kube-proxy,kubelet} /root/local/bin/
 $
 ```
 
-## 创建 kubelet bootstrapping kubeconfig 文件
+## 创建 kubelet bootstrapping kubeconfig 文件(每个kubelet节点都执行)
 
 ``` bash
 $ # 设置集群参数
@@ -230,7 +230,7 @@ $ systemctl status kubelet
 $
 ```
 
-### 通过 kubelet 的 TLS 证书请求
+### master节点通过 kubelet 的 TLS 证书请求
 
 kubelet 首次启动时向 kube-apiserver 发送证书签名请求，必须通过后 kubernetes 系统才会将该 Node 加入到集群。
 

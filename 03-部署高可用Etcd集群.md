@@ -46,7 +46,7 @@ $
 
 为了保证通信安全，客户端(如 etcdctl) 与 etcd 集群、etcd 集群之间的通信需要使用 TLS 加密，本节创建 etcd TLS 加密所需的证书和私钥。
 
-创建 etcd 证书签名请求：依然回到在master节点创建
+创建 etcd 证书签名请求：在各个etcd 节点上创建，需要安装cfssl工具。
 
 ``` bash
 $ cat > etcd-csr.json <<EOF
@@ -74,6 +74,7 @@ EOF
 ```
 
 + hosts 字段指定授权使用该证书的 etcd 节点 IP；
+注意：创建时替换${NODE_IP}的值为etcd 节点ip。创建几个文件就改几次。
 
 生成 etcd 证书和私钥并分发至各etcd节点：
 
@@ -86,8 +87,6 @@ $ ls etcd*
 etcd.csr  etcd-csr.json  etcd-key.pem etcd.pem
 $ sudo mkdir -p /etc/etcd/ssl      ### 各etcd节点都创建
 $ sudo mv etcd*.pem /etc/etcd/ssl
-$ scp /etc/etcd/ssl/etcd*.pem 192.168.0.131:/etc/etcd/ssl   ### 拷贝至其他节点
-$ scp /etc/etcd/ssl/etcd*.pem 192.168.0.132:/etc/etcd/ssl
 $ rm etcd.csr  etcd-csr.json
 ```
 

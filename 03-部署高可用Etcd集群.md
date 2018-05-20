@@ -173,12 +173,12 @@ $ for ip in ${NODE_IPS}; do
 预期结果：
 
 ``` text
-2017-04-10 14:50:50.011317 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
-https://10.64.3.7:2379 is healthy: successfully committed proposal: took = 1.687897ms
-2017-04-10 14:50:50.061577 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
-https://10.64.3.8:2379 is healthy: successfully committed proposal: took = 1.246915ms
-2017-04-10 14:50:50.104718 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
-https://10.66.3.86:2379 is healthy: successfully committed proposal: took = 1.509229ms
+2018-05-19 22:21:04.686257 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+https://192.168.0.130:2379 is healthy: successfully committed proposal: took = 13.583649ms
+2018-05-19 22:21:04.828925 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+https://192.168.0.130:2379 is healthy: successfully committed proposal: took = 5.499964ms
+2018-05-19 22:21:04.933399 I | warning: ignoring ServerName for user-provided CA for backwards compatibility is deprecated
+https://192.168.0.130:2379 is healthy: successfully committed proposal: took = 32.749898ms
 ```
 
 三台 etcd 的输出均为 healthy 时表示集群服务正常（忽略 warning 信息）。

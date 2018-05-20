@@ -27,8 +27,6 @@ export NODE_IPS="192.168.0.130 192.168.0.131 192.168.0.132"
 # etcd 集群间通信的IP和端口
 export ETCD_NODES=etcd-host0=https://192.168.0.130:2380,etcd-host1=https://192.168.0.131:2380,etcd-host2=https://192.168.0.132:2380
 
-# 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR
-source /root/local/bin/environment.sh
 source /etc/environment
 
 ```

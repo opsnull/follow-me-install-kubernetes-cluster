@@ -54,7 +54,9 @@ $ cat > etcd-csr.json <<EOF
   "CN": "etcd",
   "hosts": [
     "127.0.0.1",
-    "${NODE_IP}"
+    "192.168.0.130",
+    "192.168.0.131",
+    "192.168.0.132"
   ],
   "key": {
     "algo": "rsa",
@@ -86,6 +88,8 @@ $ ls etcd*
 etcd.csr  etcd-csr.json  etcd-key.pem etcd.pem
 $ sudo mkdir -p /etc/etcd/ssl      ### 各etcd节点都创建
 $ sudo mv etcd*.pem /etc/etcd/ssl
+$ scp  /etc/etcd/ssl/*  192.168.0.131:/etc/etcd/ssl/   ### 拷贝至其他节点
+$ scp  /etc/etcd/ssl/*  192.168.0.132:/etc/etcd/ssl/
 $ rm etcd.csr  etcd-csr.json
 ```
 

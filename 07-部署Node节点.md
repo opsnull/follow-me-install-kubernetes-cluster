@@ -299,7 +299,7 @@ $ ping 172.30.88.3
 创建 kube-proxy 证书签名请求：
 
 ``` bash
-$ cat kube-proxy-csr.json
+$ cat > kube-proxy-csr.json<<EOF
 {
   "CN": "system:kube-proxy",
   "hosts": [],
@@ -317,6 +317,7 @@ $ cat kube-proxy-csr.json
     }
   ]
 }
+EOF
 ```
 
 + CN 指定该证书的 User 为 `system:kube-proxy`；

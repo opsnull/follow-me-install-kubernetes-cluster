@@ -3,9 +3,9 @@ Description=Kubernetes Controller Manager
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-ExecStart=/vagrant/bin/kube-controller-manager \
+ExecStart=/opt/k8s/bin/kube-controller-manager \
   --address=127.0.0.1 \
-  --master=http://10.64.3.1:8080 \
+  --master=http://172.27.129.80:8080 \
   --allocate-node-cidrs=true \
   --service-cluster-ip-range=10.254.0.0/16 \
   --cluster-cidr=172.30.0.0/16 \

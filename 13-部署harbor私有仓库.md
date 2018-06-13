@@ -17,9 +17,9 @@ $
 
 ``` bash
 $ wget https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64
-$ mv ~/docker-compose-Linux-x86_64 /vagrant/bin/docker-compose
-$ chmod a+x  /vagrant/bin/docker-compose
-$ export PATH=/root/local/bin:$PATH
+$ mv ~/docker-compose-Linux-x86_64 /opt/k8s/bin/docker-compose
+$ chmod a+x  /opt/k8s/bin/docker-compose
+$ export PATH=/opt/k8s/bin:$PATH
 $
 ```
 
@@ -75,10 +75,10 @@ EOF
 生成 harbor 证书和私钥：
 
 ``` bash
-$ sudo /vagrant/bin/cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
+$ sudo /opt/k8s/bin/cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
   -ca-key=/etc/kubernetes/ssl/ca-key.pem \
   -config=/etc/kubernetes/ssl/ca-config.json \
-  -profile=kubernetes harbor-csr.json | /vagrant/bin/cfssljson -bare harbor
+  -profile=kubernetes harbor-csr.json | /opt/k8s/bin/cfssljson -bare harbor
 $ ls harbor*
 harbor.csr  harbor-csr.json  harbor-key.pem harbor.pem
 $ sudo mkdir -p /etc/harbor/ssl
@@ -93,7 +93,7 @@ $ cp harbor.cfg{,.bak}
 $ vim harbor.cfg
 $ diff harbor.cfg{,.bak}
 7c7
-< hostname = 10.64.3.2
+< hostname = 172.27.129.81
 ---
 > hostname = reg.mydomain.com
 11c11
@@ -189,7 +189,7 @@ Creating nginx              ... done
 
 ✔ ----Harbor has been installed and started successfully.----
 
-Now you should be able to visit the admin portal at https://10.64.3.2.
+Now you should be able to visit the admin portal at https://172.27.129.81.
 For more details, please visit https://github.com/vmware/harbor .
 ```
 
@@ -211,7 +211,7 @@ redis                docker-entrypoint.sh redis ...   Up             6379/tcp
 registry             /entrypoint.sh serve /etc/ ...   Up (healthy)   5000/tcp
 ```
 
-浏览器访问 `https://${NODE_IP}`，示例的是 `https://10.64.3.2`；
+浏览器访问 `https://${NODE_IP}`，示例的是 `https://172.27.129.81`；
 
 由于是在 virtualbox 虚机 kube-node2 中运行，所以需要做下端口转发，Vagrant 文件中已经指定 host 端口为 4443，也可以在 virtualbox 的 GUI 中直接添加端口转发：
 
@@ -236,18 +236,18 @@ ca_download  config  database  job_logs registry  secretkey
 
 ## docker 客户端登陆
 
-将签署 harbor 证书的 CA 证书拷贝到 `/etc/docker/certs.d/10.64.3.2` 目录下
+将签署 harbor 证书的 CA 证书拷贝到 `/etc/docker/certs.d/172.27.129.81` 目录下
 
 ``` bash
-$ sudo mkdir -p /etc/docker/certs.d/10.64.3.2
-$ sudo cp /etc/kubernetes/ssl/ca.pem /etc/docker/certs.d/10.64.3.2/ca.crt
+$ sudo mkdir -p /etc/docker/certs.d/172.27.129.81
+$ sudo cp /etc/kubernetes/ssl/ca.pem /etc/docker/certs.d/172.27.129.81/ca.crt
 $
 ```
 
 登陆 harbor
 
 ``` bash
-$ docker login 10.64.3.2
+$ docker login 172.27.129.81
 Username: admin
 Password:
 ```

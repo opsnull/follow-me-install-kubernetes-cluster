@@ -4,13 +4,13 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
 
 [Service]
-ExecStart=/vagrant/bin/kube-apiserver \
+ExecStart=/opt/k8s/bin/kube-apiserver \
   --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
   --anonymous-auth=false \
   --experimental-encryption-provider-config=/etc/kubernetes/encryption-config.yaml \
-  --advertise-address=10.64.3.1 \
-  --bind-address=10.64.3.1 \
-  --insecure-bind-address=10.64.3.1 \
+  --advertise-address=172.27.129.80 \
+  --bind-address=172.27.129.80 \
+  --insecure-bind-address=172.27.129.80 \
   --authorization-mode=Node,RBAC \
   --runtime-config=api/all \
   --kubelet-https=true \
@@ -24,7 +24,7 @@ ExecStart=/vagrant/bin/kube-apiserver \
   --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
   --etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem \
   --etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem \
-  --etcd-servers=https://10.64.3.1:2379,https://10.64.3.2:2379,https://10.64.3.3:2379 \
+  --etcd-servers=https://172.27.129.80:2379,https://172.27.129.81:2379,https://172.27.129.82:2379 \
   --enable-swagger-ui=true \
   --allow-privileged=true \
   --apiserver-count=3 \

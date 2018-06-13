@@ -6,7 +6,7 @@ Requires=docker.service
 
 [Service]
 WorkingDirectory=/var/lib/kubelet
-ExecStart=/vagrant/bin/kubelet \
+ExecStart=/opt/k8s/bin/kubelet \
   --config=/etc/kubernetes/kubelet.config.json \
   --hostname-override=kube-node1 \
   --pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest \

@@ -14,8 +14,17 @@ CLUSTER_CIDR="172.30.0.0/16"
 # 服务端口范围 (NodePort Range)
 export NODE_PORT_RANGE="8400-9000"
 
+# 集群所有机器 IP
+export NODE_IPS=(172.27.129.105 172.27.129.111 172.27.129.112)
+
+# 集群各 IP 对应的 主机名
+export NODE_NAMES=(kube-node1 kube-node2 kube-node3)
+
 # etcd 集群服务地址列表
-export ETCD_ENDPOINTS="https://10.64.3.1:2379,https://10.64.3.2:2379,https://10.64.3.3:2379"
+export ETCD_ENDPOINTS="https://172.27.129.105:2379,https://172.27.129.111:2379,https://172.27.129.112:2379"
+
+# etcd 集群间通信的IP和端口
+export ETCD_NODES="kube-node1=https://172.27.129.105:2380,kube-node2=https://172.27.129.111:2380,kube-node3=https://172.27.129.112:2380"
 
 # flanneld 网络配置前缀
 export FLANNEL_ETCD_PREFIX="/kubernetes/network"
@@ -28,3 +37,6 @@ export CLUSTER_DNS_SVC_IP="10.254.0.2"
 
 # 集群 DNS 域名
 export CLUSTER_DNS_DOMAIN="cluster.local."
+
+# 将二进制目录 /opt/k8s/bin 加入到 PATH 中
+export PATH=/opt/k8s/bin:$PATH

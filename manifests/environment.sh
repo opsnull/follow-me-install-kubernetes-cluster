@@ -20,6 +20,12 @@ export NODE_IPS=(172.27.129.105 172.27.129.111 172.27.129.112)
 # 集群各 IP 对应的 主机名
 export NODE_NAMES=(kube-node1 kube-node2 kube-node3)
 
+# kube-apiserver 节点 IP
+export MASTER_NODE=172.27.129.105
+
+# kube-apiserver https 地址
+export KUBE_APISERVER="https://${MASTER_NODE}:6443"
+
 # etcd 集群服务地址列表
 export ETCD_ENDPOINTS="https://172.27.129.105:2379,https://172.27.129.111:2379,https://172.27.129.112:2379"
 

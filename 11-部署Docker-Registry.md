@@ -120,7 +120,6 @@ $ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
 $ cp registry.pem registry-key.pem registry/certs
 $
 ```
-
 + 这里复用以前创建的 CA 证书和秘钥文件；
 + hosts 字段指定 registry 的 NodeIP；
 

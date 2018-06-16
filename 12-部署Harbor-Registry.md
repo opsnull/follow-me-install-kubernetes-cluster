@@ -1,6 +1,6 @@
 # 部署 harbor 私有仓库
 
-本文档介绍使用 docker-compose 部署 harbor 私有仓库的步骤，你也可以使用 docker 官方的 registry 镜像部署私有仓库([部署 Docker Registry](12-部署Docker-Registry.md))。
+本文档介绍使用 docker-compose 部署 harbor 私有仓库的步骤，你也可以使用 docker 官方的 registry 镜像部署私有仓库([部署 Docker Registry](11-部署Docker-Registry.md))。
 
 ## 使用的变量
 
@@ -26,8 +26,8 @@ $
 从 harbor [发布页面](https://github.com/vmware/harbor/releases)下载最新的 harbor 离线安装包
 
 ``` bash
-$ wget  --continue https://storage.googleapis.com/harbor-releases/release-1.5.0/harbor-offline-installer-v1.5.0.tgz
-$ tar -xzvf harbor-offline-installer-v1.5.0.tgz
+$ wget  --continue https://storage.googleapis.com/harbor-releases/release-1.5.0/harbor-offline-installer-v1.5.1.tgz
+$ tar -xzvf harbor-offline-installer-v1.5.1.tgz
 $
 ```
 
@@ -37,7 +37,7 @@ $
 
 ``` bash
 $ cd harbor
-$ docker load -i harbor.v1.5.0.tar.gz
+$ docker load -i harbor.v1.5.1.tar.gz
 $
 ```
 
@@ -75,12 +75,14 @@ EOF
 生成 harbor 证书和私钥：
 
 ``` bash
-$ sudo /opt/k8s/bin/cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
+$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
   -ca-key=/etc/kubernetes/ssl/ca-key.pem \
   -config=/etc/kubernetes/ssl/ca-config.json \
-  -profile=kubernetes harbor-csr.json | /opt/k8s/bin/cfssljson -bare harbor
+  -profile=kubernetes harbor-csr.json | cfssljson -bare harbor
+
 $ ls harbor*
 harbor.csr  harbor-csr.json  harbor-key.pem harbor.pem
+
 $ sudo mkdir -p /etc/harbor/ssl
 $ sudo mv harbor*.pem /etc/harbor/ssl
 $ rm harbor.csr  harbor-csr.json
@@ -118,12 +120,11 @@ $ diff prepare{,.bak}
 >     empty_subj = "/C=/ST=/L=/O=/CN=/"
 
 ```
-
 + 需要修改 prepare 脚本的 empyt_subj 参数，否则后续 install 时出错退出：
-  Fail to generate key file: ./common/config/ui/private_key.pem, cert file: ./common/config/registry/root.crt
+  
+    Fail to generate key file: ./common/config/ui/private_key.pem, cert file: ./common/config/registry/root.crt
 
 参考：https://github.com/vmware/harbor/issues/2920
-
 
 ## 加载和启动 harbor 镜像
 
@@ -140,21 +141,21 @@ Note: docker version: 18.03.0
 Note: docker-compose version: 1.21.2
 
 [Step 1]: loading Harbor images ...
-Loaded image: vmware/clair-photon:v2.0.1-v1.5.0
-Loaded image: vmware/postgresql-photon:v1.5.0
-Loaded image: vmware/harbor-adminserver:v1.5.0
-Loaded image: vmware/registry-photon:v2.6.2-v1.5.0
+Loaded image: vmware/clair-photon:v2.0.1-v1.5.1
+Loaded image: vmware/postgresql-photon:v1.5.1
+Loaded image: vmware/harbor-adminserver:v1.5.1
+Loaded image: vmware/registry-photon:v2.6.2-v1.5.1
 Loaded image: vmware/photon:1.0
-Loaded image: vmware/harbor-migrator:v1.5.0
-Loaded image: vmware/harbor-ui:v1.5.0
-Loaded image: vmware/redis-photon:v1.5.0
-Loaded image: vmware/nginx-photon:v1.5.0
-Loaded image: vmware/mariadb-photon:v1.5.0
-Loaded image: vmware/notary-signer-photon:v0.5.1-v1.5.0
-Loaded image: vmware/harbor-log:v1.5.0
-Loaded image: vmware/harbor-db:v1.5.0
-Loaded image: vmware/harbor-jobservice:v1.5.0
-Loaded image: vmware/notary-server-photon:v0.5.1-v1.5.0
+Loaded image: vmware/harbor-migrator:v1.5.1
+Loaded image: vmware/harbor-ui:v1.5.1
+Loaded image: vmware/redis-photon:v1.5.1
+Loaded image: vmware/nginx-photon:v1.5.1
+Loaded image: vmware/mariadb-photon:v1.5.1
+Loaded image: vmware/notary-signer-photon:v0.5.1-v1.5.1
+Loaded image: vmware/harbor-log:v1.5.1
+Loaded image: vmware/harbor-db:v1.5.1
+Loaded image: vmware/harbor-jobservice:v1.5.1
+Loaded image: vmware/notary-server-photon:v0.5.1-v1.5.1
 
 
 [Step 2]: preparing environment ...

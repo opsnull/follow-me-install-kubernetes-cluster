@@ -41,9 +41,9 @@
     1. [09-3.heapster插件](09-3.heapster插件.md)
     1. [09-4.metrics-server插件](09-4.metrics-server插件.md)
     1. [09-5.EFK插件](09-5.EFK插件.md)			
-1. [10.部署Docker-Registry](10-部署Docker-Registry.md)	
-1. [11.部署Harbor-Registry](11-部署Harbor-Registry.md)	
-1. [12.清理集群](12-清理集群.md)
+1. [10.部署Docker-Registry](10.部署Docker-Registry.md)	
+1. [11.部署Harbor-Registry](11.部署Harbor-Registry.md)	
+1. [12.清理集群](12.清理集群.md)
 1. [A.浏览器访问apiserver安全端口](A.浏览器访问kube-apiserver安全端口.md)
 
 ## 在线阅读

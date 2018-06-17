@@ -1,4 +1,4 @@
-# 浏览器访问 kube-apiserver 安全端口
+# A.浏览器访问 kube-apiserver 安全端口
 
 浏览器访问 kube-apiserver 的安全端口 6443 时，提示证书不被信任：
 ![ssl-failed](images/ssl-failed.png)

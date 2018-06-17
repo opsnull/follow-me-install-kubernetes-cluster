@@ -2,7 +2,7 @@
 
 ![dashboard-home](./images/dashboard-home.png)
 
-本系列文档介绍使用二进制部署最新 `kubernetes v1.10.2` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群。
+本系列文档介绍使用二进制部署最新 `kubernetes v1.10.4` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群。
 
 在部署的过程中，将详细列出各组件的启动参数，它们的含义和可能遇到的问题。
 
@@ -12,24 +12,38 @@
 
 本系列系文档适用于 `CentOS 7`、`Ubuntu 16.04` 及以上版本系统，**随着各组件的更新而更新**，有任何问题欢迎提 issue！
 
-由于启用了 `TLS` 双向认证、`RBAC` 授权等严格的安全机制，建议**从头开始部署**，否则可能会认证、授权等失败！
+由于启用了 `x509` 证书双向认证、`RBAC` 授权等严格的安全机制，建议**从头开始部署**，否则可能会认证、授权等失败！
+
+## 历史版本
+
+[v1.6.2](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.6.2)
 
 ## 步骤列表
 
-1. [组件版本和集群环境](01-组件版本和集群环境.md)
-1. [创建 CA 证书和秘钥](02-创建CA证书和秘钥.md)
-1. [部署高可用 Etcd 集群](03-部署高可用Etcd集群.md)
-1. [下载和配置 Kubectl 命令行工具](04-部署Kubectl命令行工具.md)
-1. [配置 flannel 网络](05-部署Flannel网络.md)
-1. [部署 Master 节点](06-部署Master节点.md)
-1. [部署 Node 节点](07-部署Node节点.md)
-1. [部署 DNS 插件](08-部署DNS插件.md)
-1. [部署 Dashboard 插件](09-部署Dashboard插件.md)
-1. [部署 Heapster 插件](10-部署Heapster插件.md)
-1. [部署 EFK 插件](11-部署EFK插件.md)
-1. [部署 Docker Registry](12-部署Docker-Registry.md)
-1. [部署 Harbor 私有仓库](13-部署harbor私有仓库.md)
-1. [清理集群](14-清理集群.md)
+1. [组件版本和集群环境](00.组件版本和集群环境.md)
+1. [系统初始化和全局变量](01.系统初始化和全局变量.md)
+1. [创建CA证书和秘钥](02.创建CA证书和秘钥.md)			
+1. [部署kubectl命令行工具](03.部署kubectl命令行工具.md)			
+1. [部署etcd集群](04.部署etcd集群.md)				
+1. [部署flannel网络](05.部署flannel网络.md)			
+1. [部署master节点](06-0.部署master节点.md)				
+    1. [api-server](06-1.api-server.md)	
+    1. [controller-manager集群](06-2.controller-manager集群.md)
+    1. [scheduler集群](06-3.scheduler集群.md)		
+1. [部署worker节点](07-0.部署worker节点.md)
+    1. [docker](07-1.docker.md)					
+    1. [kubelet](07-2.kubelet.md)				
+    1. [kube-proxy](07-3.kube-proxy.md)			
+1. [验证集群功能](08-验证集群功能.md)			
+1. [部署集群插件](09-0.部署集群插件.md)
+    1. [dns插件](09-1.dns插件.md)
+    1. [dashboard插件](09-2.dashboard插件.md)
+    1. [heapster插件](09-3.heapster插件.md)
+    1. [metrics-server插件](09-4.metrics-server插件.md)
+	  1. [EFK插件](09-5.EFK插件.md)			
+1. [部署Docker-Registry](10-部署Docker-Registry.md)	
+1. [部署Harbor-Registry](11-部署Harbor-Registry.md)	
+1. [清理集群](12-清理集群.md)			
 
 ## 在线阅读
 
@@ -45,9 +59,7 @@
 
 Copyright 2017-2018 zhangjun (geekard@qq.com)
 
-Apache License 2.0，详情见 [LICENSE](LICENSE) 文件。
-
-转载时请保证内容完整，并注明来源！
+CC BY-NC-SA 4.0，详情见 [LICENSE](LICENSE) 文件。
 
 ## 打赏
 

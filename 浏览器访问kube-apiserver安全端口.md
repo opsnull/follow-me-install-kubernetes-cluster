@@ -3,13 +3,15 @@
 浏览器访问 kube-apiserver 的安全端口 6443 时，提示证书不被信任：
 ![ssl-failed](images/ssl-failed.png)
 
-这是因为 kube-apiserver 的 server 证书是由我们自签名的根证书 ca.pem 签名的，需要将根证书 ca.pem 导入系统，并设置永久信任。对于 Mac，操作如下：
+这是因为 kube-apiserver 的 server 证书是我们创建的根证书 ca.pem 签名的，需要将根证书 ca.pem 导入操作系统，并设置永久信任。对于 Mac，操作如下：
 
 ![ssl-failed](images/keychain.png)
 
-再次访问 https://172.27.129.105:6443/，已信任，但是提示 401，未授权的访问：
+再次访问 https://172.27.129.105:6443/，已信任，但提示 401，未授权的访问：
 
 ![ssl-success](images/ssl-success.png)
+
+我们需要给浏览器生成一个 client 证书，访问 apiserver 的 6443 https 端口时使用。
 
 这里使用部署 kubectl 命令行工具时创建的 admin 证书、私钥和上面的 ca 证书，创建一个浏览器可以使用 PKCS#12/PFX 格式的证书：
 
@@ -17,7 +19,7 @@
 [k8s@kube-node1 ~]$ openssl pkcs12 -export -out admin.pfx -inkey admin-key.pem -in admin.pem -certfile ca.pem
 ```
 
-然后将创建的 admin.pfx 导入到系统的证书中。对于 Mac，操作如下：
+将创建的 admin.pfx 导入到系统的证书中。对于 Mac，操作如下：
 
 ![admin-cert](images/admin-cert.png)
 

@@ -1,6 +1,8 @@
 {
   "title": "和我一步步部署kubernetes集群",
   "description": "和我一步步部署kubernetes集群",
+  "gitbook": ">= 3.2.2",
+  "language": "zh-cn",
   "plugins": [
     "expandable-chapters",
     "anchors",
@@ -20,6 +22,11 @@
     "tags",
     "multipart"
   ],
+  "pdf": {
+    "toc": true,
+    "pageNumbers": true,
+    "fontSize": 11
+  },
   "pluginsConfig": {
     "image-captions": {
           "caption": "图片 - _CAPTION_"

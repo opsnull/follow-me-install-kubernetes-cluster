@@ -31,18 +31,18 @@ vagrant@kube-node1:/opt/k8s/kubernetes/cluster/addons/metrics-server$ cat metric
   ]
 }
 
-vagrant@kube-node1:/opt/k8s/kubernetes/cluster/addons/metrics-server$ sudo /opt/k8s/bin/cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem   -ca-key=/etc/kubernetes/ssl/ca-key.pem   -config=/etc/kubernetes/ssl/ca-config.json   -profile=kubernetes metrics-server-csr.json| sudo /opt/k8s/bin/cfssljson -bare metrics-server
+vagrant@kube-node1:/opt/k8s/kubernetes/cluster/addons/metrics-server$ sudo /opt/k8s/bin/cfssl gencert -ca=/etc/kubernetes/cert/ca.pem   -ca-key=/etc/kubernetes/cert/ca-key.pem   -config=/etc/kubernetes/cert/ca-config.json   -profile=kubernetes metrics-server-csr.json| sudo /opt/k8s/bin/cfssljson -bare metrics-server
 
-sudo cp metrics-server-key.pem metrics-server.pem /etc/kubernetes/ssl/
+sudo cp metrics-server-key.pem metrics-server.pem /etc/kubernetes/cert/
 
 修改 kube-apiserver.service，添加如下配置：
   --requestheader-allowed-names="aggregator" \
   --requestheader-extra-headers-prefix="X-Remote-Extra-" \
   --requestheader-group-headers=X-Remote-Group \
   --requestheader-username-headers=X-Remote-User \
-  --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem \
-  --proxy-client-cert-file=/etc/kubernetes/ssl/metrics-server.pem \
-  --proxy-client-key-file=/etc/kubernetes/ssl/metrics-server-key.pem \
+  --requestheader-client-ca-file=/etc/kubernetes/cert/ca.pem \
+  --proxy-client-cert-file=/etc/kubernetes/cert/metrics-server.pem \
+  --proxy-client-key-file=/etc/kubernetes/cert/metrics-server-key.pem \
 
 注意：--proxy-client-cert-file 证书的 CN 应该与  --requestheader-allowed-names="aggregator" 一致。且 --proxy-client-cert-file 应该被 --requestheader-client-ca-file 签名。
 

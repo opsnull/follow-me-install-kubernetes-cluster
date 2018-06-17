@@ -4,12 +4,12 @@
 
 [k8s@kube-node1 system]$ /opt/k8s/bin/kube-controller-manager \
     --bind-address=127.0.0.1   --port=0   --secure-port=10252 --master="https://172.27.129.105:6443" \
-    --service-cluster-ip-range=10.254.0.0/16   --cluster-name=kubernetes   --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem \
-    --cluster-signing-key-file=/etc/kubernetes/ssl/ca-key.pem   --service-account-private-key-file=/etc/kubernetes/ssl/ca-key.pem \
-    --root-ca-file=/etc/kubernetes/ssl/ca.pem   --leader-elect=true   --feature-gates=RotateKubeletServerCertificate=true   \
+    --service-cluster-ip-range=10.254.0.0/16   --cluster-name=kubernetes   --cluster-signing-cert-file=/etc/kubernetes/cert/ca.pem \
+    --cluster-signing-key-file=/etc/kubernetes/cert/ca-key.pem   --service-account-private-key-file=/etc/kubernetes/cert/ca-key.pem \
+    --root-ca-file=/etc/kubernetes/cert/ca.pem   --leader-elect=true   --feature-gates=RotateKubeletServerCertificate=true   \
     --controllers=*,bootstrapsigner,tokencleaner   --horizontal-pod-autoscaler-use-rest-clients=true   --horizontal-pod-autoscaler-sync-period=10s \
-    --tls-ca-file=/etc/kubernetes/ssl/ca.pem --tls-cert-file=/etc/kubernetes/ssl/kube-controller-manager.pem   \
-    --tls-private-key-file=/etc/kubernetes/ssl/kube-controller-manager-key.pem   --v=2
+    --tls-ca-file=/etc/kubernetes/cert/ca.pem --tls-cert-file=/etc/kubernetes/cert/kube-controller-manager.pem   \
+    --tls-private-key-file=/etc/kubernetes/cert/kube-controller-manager-key.pem   --v=2
 
 Jun 12 14:01:31 kube-node1 kube-controller-manager[24827]: Flag --tls-ca-file has been deprecated, This flag has no effect.
 Jun 12 14:01:31 kube-node1 systemd[1]: Starting Kubernetes Controller Manager...

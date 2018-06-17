@@ -10,10 +10,10 @@ ExecStart=/opt/k8s/bin/kube-controller-manager \
   --service-cluster-ip-range=10.254.0.0/16 \
   --cluster-cidr=172.30.0.0/16 \
   --cluster-name=kubernetes \
-  --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem \
-  --cluster-signing-key-file=/etc/kubernetes/ssl/ca-key.pem \
-  --service-account-private-key-file=/etc/kubernetes/ssl/ca-key.pem \
-  --root-ca-file=/etc/kubernetes/ssl/ca.pem \
+  --cluster-signing-cert-file=/etc/kubernetes/cert/ca.pem \
+  --cluster-signing-key-file=/etc/kubernetes/cert/ca-key.pem \
+  --service-account-private-key-file=/etc/kubernetes/cert/ca-key.pem \
+  --root-ca-file=/etc/kubernetes/cert/ca.pem \
   --leader-elect=true \
   --feature-gates=RotateKubeletServerCertificate=true \
   --controllers=*,bootstrapsigner,tokencleaner \

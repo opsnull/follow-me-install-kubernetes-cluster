@@ -88,7 +88,7 @@ $ radosgw-admin key create --subuser=demo:swift --key-type=swift --gen-secret
 
 ## 创建 docker registry
 
-创建 registry 使用的 TLS 证书
+创建 registry 使用的 x509 证书
 
 ``` bash
 $ mdir -p registry/{auth,certs}
@@ -113,9 +113,9 @@ $ cat registry-csr.json
     }
   ]
 }
-$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
-    -ca-key=/etc/kubernetes/ssl/ca-key.pem \
-    -config=/etc/kubernetes/ssl/ca-config.json \
+$ cfssl gencert -ca=/etc/kubernetes/cert/ca.pem \
+    -ca-key=/etc/kubernetes/cert/ca-key.pem \
+    -config=/etc/kubernetes/cert/ca-config.json \
     -profile=kubernetes registry-csr.json | cfssljson -bare registry
 $ cp registry.pem registry-key.pem registry/certs
 $
@@ -200,7 +200,7 @@ $ docker run -d -p 8000:8000 \
 
 ``` bash
 $ sudo mkdir -p /etc/docker/certs.d/10.64.3.7:8000
-$ sudo cp /etc/kubernetes/ssl/ca.pem /etc/docker/certs.d/10.64.3.7:8000/ca.crt
+$ sudo cp /etc/kubernetes/cert/ca.pem /etc/docker/certs.d/10.64.3.7:8000/ca.crt
 $
 ```
 

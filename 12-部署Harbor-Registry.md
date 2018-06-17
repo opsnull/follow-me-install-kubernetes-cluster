@@ -41,7 +41,7 @@ $ docker load -i harbor.v1.5.1.tar.gz
 $
 ```
 
-## 创建 harbor nginx 服务器使用的 TLS 证书
+## 创建 harbor nginx 服务器使用的 x509 证书
 
 创建 harbor 证书签名请求：
 
@@ -75,9 +75,9 @@ EOF
 生成 harbor 证书和私钥：
 
 ``` bash
-$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
-  -ca-key=/etc/kubernetes/ssl/ca-key.pem \
-  -config=/etc/kubernetes/ssl/ca-config.json \
+$ cfssl gencert -ca=/etc/kubernetes/cert/ca.pem \
+  -ca-key=/etc/kubernetes/cert/ca-key.pem \
+  -config=/etc/kubernetes/cert/ca-config.json \
   -profile=kubernetes harbor-csr.json | cfssljson -bare harbor
 
 $ ls harbor*
@@ -241,7 +241,7 @@ ca_download  config  database  job_logs registry  secretkey
 
 ``` bash
 $ sudo mkdir -p /etc/docker/certs.d/172.27.129.81
-$ sudo cp /etc/kubernetes/ssl/ca.pem /etc/docker/certs.d/172.27.129.81/ca.crt
+$ sudo cp /etc/kubernetes/cert/ca.pem /etc/docker/certs.d/172.27.129.81/ca.crt
 $
 ```
 

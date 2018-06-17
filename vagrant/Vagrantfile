@@ -1,33 +1,21 @@
-Vagrant.require_version ">= 1.7.0"
-
-$os_image = (ENV['OS_IMAGE'] || "ubuntu16").to_sym
-
 Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/bionic64"
+  config.vm.box_check_update = false
   config.vm.provider "virtualbox"
 
-  def set_vbox(vb, config)
-    vb.gui = false
-    vb.memory = 2048
-    vb.cpus = 2
-
-    case $os_image
-    when :centos7
-      config.vm.box = "bento/centos-7.3"
-    when :ubuntu16
-      config.vm.box = "bento/ubuntu-16.04"
-    end
-  end
-
-  ips = ["10.64.3.7", "10.64.3.8", "10.66.3.86"]
-  (0..2).each do |id|
-    mid = id + 1
-    config.vm.define "kube-node#{mid}" do |node|
-      node.vm.hostname = "kube-node#{mid}"
-      node.vm.network :private_network, ip: "#{ips[id]}",  auto_config: true
-
+  $num_vms = 3
+  (1..$num_vms).each do |id|
+    config.vm.define "kube-node#{id}" do |node|
+      node.vm.hostname = "kube-node#{id}"
+      node.vm.network :private_network, ip: "10.64.3.#{id}",  auto_config: true
+      config.vm.network "forwarded_port", guest: 8080, host: 8080 # kube-apiserver
+      config.vm.network "forwarded_port", guest: 8086, host: 8086 # kubectl proxy
+      config.vm.network "forwarded_port", guest: 443, host: 4443 # harbor
       node.vm.provider :virtualbox do |vb, override|
-        vb.name = "kube-node#{mid}"
-        set_vbox(vb, override)
+        vb.name = "kube-node#{id}"
+        vb.gui = false
+        vb.memory = 2048
+        vb.cpus = 1
       end
     end
   end

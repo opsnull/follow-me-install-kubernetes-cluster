@@ -4,10 +4,11 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
 
 [Service]
-ExecStart=/root/local/bin/kube-proxy \
-  --bind-address=10.64.3.7 \
+WorkingDirectory=/var/lib/kube-proxy
+ExecStart=/opt/k8s/bin/kube-proxy \
+  --bind-address=172.27.129.80 \
+  --hostname-override=kube-node1 \
   --cluster-cidr=172.30.0.0/16 \
-  --hostname-override=10.64.3.7 \
   --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig \
   --logtostderr=true \
   --v=2

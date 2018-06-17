@@ -6,23 +6,23 @@ Wants=network-online.target
 Documentation=https://github.com/coreos
 
 [Service]
+User=k8s
 Type=notify
 WorkingDirectory=/var/lib/etcd/
-EnvironmentFile=-/etc/etcd/etcd.conf
-ExecStart=/root/local/bin/etcd \
-  --name=etcd-host0 \
-  --cert-file=/etc/etcd/ssl/etcd.pem \
-  --key-file=/etc/etcd/ssl/etcd-key.pem \
-  --peer-cert-file=/etc/etcd/ssl/etcd.pem \
-  --peer-key-file=/etc/etcd/ssl/etcd-key.pem \
-  --trusted-ca-file=/etc/kubernetes/ssl/ca.pem \
-  --peer-trusted-ca-file=/etc/kubernetes/ssl/ca.pem \
-  --initial-advertise-peer-urls=https://10.64.3.7:2380 \
-  --listen-peer-urls=https://10.64.3.7:2380 \
-  --listen-client-urls=https://10.64.3.7:2379,http://127.0.0.1:2379 \
-  --advertise-client-urls=https://10.64.3.7:2379 \
+ExecStart=/opt/k8s/bin/etcd \
+  --name=kube-node1 \
+  --cert-file=/etc/etcd/cert/etcd.pem \
+  --key-file=/etc/etcd/cert/etcd-key.pem \
+  --peer-cert-file=/etc/etcd/cert/etcd.pem \
+  --peer-key-file=/etc/etcd/cert/etcd-key.pem \
+  --trusted-ca-file=/etc/kubernetes/cert/ca.pem \
+  --peer-trusted-ca-file=/etc/kubernetes/cert/ca.pem \
+  --initial-advertise-peer-urls=https://172.27.129.105:2380 \
+  --listen-peer-urls=https://172.27.129.105:2380 \
+  --listen-client-urls=https://172.27.129.105:2379,http://127.0.0.1:2379 \
+  --advertise-client-urls=https://172.27.129.105:2379 \
   --initial-cluster-token=etcd-cluster-0 \
-  --initial-cluster=etcd-host0=https://10.64.3.7:2380,etcd-host1=https://10.64.3.8:2380,etcd-host2=https://10.66.3.86:2380 \
+  --initial-cluster=kube-node1=https://172.27.129.105:2380,kube-node2=https://172.27.129.111:2380,kube-node3=https://172.27.129.112:2380 \
   --initial-cluster-state=new \
   --data-dir=/var/lib/etcd
 Restart=on-failure

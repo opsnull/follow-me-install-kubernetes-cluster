@@ -26,6 +26,7 @@
 * [10.部署Docker-Registry](10-部署Docker-Registry.md)	
 * [11.部署Harbor-Registry](11-部署Harbor-Registry.md)	
 * [12.清理集群](12-清理集群.md)	
+* [13.浏览器访问apiserver安全端口](A.浏览器访问kube-apiserver安全端口.md)
 
 ## 标签集合
 

@@ -9,12 +9,12 @@ Before=docker.service
 [Service]
 Type=notify
 ExecStart=/opt/k8s/bin/flanneld \
-  -etcd-cafile=/etc/kubernetes/cert/ca.pem \
+  -etcd-cafile=/etc/kubernetes/ssl/ca.pem \
   -etcd-certfile=/etc/flanneld/ssl/flanneld.pem \
   -etcd-keyfile=/etc/flanneld/ssl/flanneld-key.pem \
-  -etcd-endpoints=https://172.27.129.80:2379,https://172.27.129.81:2379,https://172.27.129.82:2379 \
+  -etcd-endpoints=https://172.27.129.105:2379,https://172.27.129.111:2379,https://172.27.129.112:2379 \
   -etcd-prefix=/kubernetes/network \
-  -iface=enp0s8
+  -iface=eth0
 ExecStartPost=/opt/k8s/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
 Restart=on-failure
 

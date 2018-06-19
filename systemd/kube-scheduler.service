@@ -5,11 +5,12 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 [Service]
 ExecStart=/opt/k8s/bin/kube-scheduler \
   --address=127.0.0.1 \
-  --master=http://172.27.129.80:8080 \
+  --kubeconfig=/etc/kubernetes/scheduler.kubeconfig \
   --leader-elect=true \
   --v=2
 Restart=on-failure
 RestartSec=5
+User=k8s
 
 [Install]
 WantedBy=multi-user.target

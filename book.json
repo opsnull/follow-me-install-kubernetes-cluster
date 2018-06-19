@@ -12,7 +12,6 @@
     "-lunr", "-search", "search-plus",
     "baidu",
     "codesnippet",
-    "ga",
     "splitter",
     "sitemap",
     "page-toc-button",
@@ -48,9 +47,6 @@
     },
     "baidu": {
         "token": "18c1967ba7abeaf5be1330bb512f0617"
-    },
-    "ga": {
-        "token": "UA-79732341-1"
     },
     "sitemap": {
         "hostname": "http://k8s.opsnull.com"

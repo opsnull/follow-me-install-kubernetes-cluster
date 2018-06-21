@@ -24,7 +24,7 @@
   "port": 10250,
   "readOnlyPort": 0,
   "cgroupDriver": "cgroupfs",
-  "hairpinMode": "promiscuous-veth",
+  "hairpinMode": "promiscuous-bridge",
   "serializeImagePulls": false,
   "featureGates": {
     "RotateKubeletClientCertificate": true,

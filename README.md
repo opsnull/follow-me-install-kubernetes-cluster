@@ -64,14 +64,6 @@
   <img src="https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/images/weixin_qr.jpg?raw=true" alt="weixin_qr.jpg"/>
 </p>
 
-## 技术咨询
-
-有问题，欢迎在 Github 提 issue！如果想获得更及时、专业、一对一的咨询服务，请先用微信扫描下方的二维码，然后加 QQ 574419270 进行咨询(请注明：K8S 技术咨询)，谢谢！
-
-<p align="center">
-  <img src="https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/images/weixin_question_v2.jpg?raw=true" alt="weixin_question_v2.jpg"/>
-</p>
-
 ## 版权
 
 Copyright 2017-2018 zhangjun (geekard@qq.com)

@@ -7,7 +7,7 @@
 本文档用到的变量定义如下：
 
 ``` bash
-$ export NODE_IP=10.64.3.7 # 当前部署 harbor 的节点 IP
+$ export NODE_IP=172.27.132.65 # 当前部署 harbor 的节点 IP
 $
 ```
 
@@ -93,7 +93,7 @@ $ diff harbor.cfg.orig harbor.cfg
 5c5
 < hostname = reg.mydomain.com
 ---
-> hostname = 10.64.3.7
+> hostname = 172.27.132.65
 9c9
 < ui_url_protocol = http
 ---
@@ -159,13 +159,13 @@ Creating nginx
 
 ✔ ----Harbor has been installed and started successfully.----
 
-Now you should be able to visit the admin portal at https://10.64.3.7.
+Now you should be able to visit the admin portal at https://172.27.132.65.
 For more details, please visit https://github.com/vmware/harbor .
 ```
 
 ## 访问管理界面
 
-浏览器访问 `https://${NODE_IP}`，示例的是 `https://10.64.3.7`
+浏览器访问 `https://${NODE_IP}`，示例的是 `https://172.27.132.65`
 
 用账号 `admin` 和 harbor.cfg 配置文件中的默认密码 `Harbor12345` 登陆系统：
 
@@ -184,18 +184,18 @@ ca_download  config  database  job_logs registry  secretkey
 
 ## docker 客户端登陆
 
-将签署 harbor 证书的 CA 证书拷贝到 `/etc/docker/certs.d/10.64.3.7` 目录下
+将签署 harbor 证书的 CA 证书拷贝到 `/etc/docker/certs.d/172.27.132.65` 目录下
 
 ``` bash
-$ sudo mkdir -p /etc/docker/certs.d/10.64.3.7
-$ sudo cp /etc/kubernetes/ssl/ca.pem /etc/docker/certs.d/10.64.3.7/ca.crt
+$ sudo mkdir -p /etc/docker/certs.d/172.27.132.65
+$ sudo cp /etc/kubernetes/ssl/ca.pem /etc/docker/certs.d/172.27.132.65/ca.crt
 $
 ```
 
 登陆 harbor
 
 ``` bash
-$ docker login 10.64.3.7
+$ docker login 172.27.132.65
 Username: admin
 Password:
 ```

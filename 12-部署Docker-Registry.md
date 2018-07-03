@@ -11,7 +11,7 @@ tags: registry, ceph
 示例两台机器 IP 如下：
 
 + ceph rgw: 10.64.3.9
-+ docker registry: 10.64.3.7
++ docker registry: 172.27.132.65
 
 ## 部署 ceph RGW 节点
 
@@ -97,7 +97,7 @@ $ cat registry-csr.json
   "CN": "registry",
   "hosts": [
       "127.0.0.1",
-      "10.64.3.7"
+      "172.27.132.65"
   ],
   "key": {
     "algo": "rsa",
@@ -193,22 +193,22 @@ $ docker run -d -p 8000:8000 \
     --name registry registry:2
 ```
 
-+ 执行该 docker run 命令的机器 IP 为 10.64.3.7；
++ 执行该 docker run 命令的机器 IP 为 172.27.132.65；
 
 ## 向 registry push image
 
-将签署 registry 证书的 CA 证书拷贝到 `/etc/docker/certs.d/10.64.3.7:8000` 目录下
+将签署 registry 证书的 CA 证书拷贝到 `/etc/docker/certs.d/172.27.132.65:8000` 目录下
 
 ``` bash
-$ sudo mkdir -p /etc/docker/certs.d/10.64.3.7:8000
-$ sudo cp /etc/kubernetes/ssl/ca.pem /etc/docker/certs.d/10.64.3.7:8000/ca.crt
+$ sudo mkdir -p /etc/docker/certs.d/172.27.132.65:8000
+$ sudo cp /etc/kubernetes/ssl/ca.pem /etc/docker/certs.d/172.27.132.65:8000/ca.crt
 $
 ```
 
 登陆私有 registry
 
 ``` bash
-$ docker login 10.64.3.7:8000
+$ docker login 172.27.132.65:8000
 Username: foo
 Password:
 Login Succeeded
@@ -220,7 +220,7 @@ Login Succeeded
 $ cat ~/.docker/config.json
 {
         "auths": {
-                "10.64.3.7:8000": {
+                "172.27.132.65:8000": {
                         "auth": "Zm9vOmZvbzEyMw=="
                 }
         }
@@ -230,17 +230,17 @@ $ cat ~/.docker/config.json
 将本地的 image 打上私有 registry 的 tag
 
 ``` bash
-$ docker tag docker.io/kubernetes/pause 10.64.3.7:8000/zhangjun3/pause
+$ docker tag docker.io/kubernetes/pause 172.27.132.65:8000/zhangjun3/pause
 $ docker images |grep pause
 docker.io/kubernetes/pause                            latest              f9d5de079539        2 years ago         239.8 kB
-10.64.3.7:8000/zhangjun3/pause                        latest              f9d5de079539        2 years ago         239.8 kB
+172.27.132.65:8000/zhangjun3/pause                        latest              f9d5de079539        2 years ago         239.8 kB
 ```
 
 将 image push 到私有 registry
 
 ``` bash
-$ docker push 10.64.3.7:8000/zhangjun3/pause
-The push refers to a repository [10.64.3.7:8000/zhangjun3/pause]
+$ docker push 172.27.132.65:8000/zhangjun3/pause
+The push refers to a repository [172.27.132.65:8000/zhangjun3/pause]
 5f70bf18a086: Pushed
 e16a89738269: Pushed
 latest: digest: sha256:9a6b437e896acad3f5a2a8084625fdd4177b2e7124ee943af642259f2f283359 size: 916
@@ -276,14 +276,14 @@ $ rados --pool default.rgw.buckets.data ls|grep pause
 ### 查询私有镜像中的 images
 
 ``` bash
-$ curl  --user zhangjun3:xxx --cacert /etc/docker/certs.d/10.64.3.7\:8000/ca.crt https://10.64.3.7:8000/v2/_catalog
+$ curl  --user zhangjun3:xxx --cacert /etc/docker/certs.d/172.27.132.65\:8000/ca.crt https://172.27.132.65:8000/v2/_catalog
 {"repositories":["library/redis","zhangjun3/busybox","zhangjun3/pause","zhangjun3/pause2"]}
 ```
 
 ### 查询某个镜像的 tags 列表
 
 ``` bash
-$ curl  --user zhangjun3:xxx --cacert /etc/docker/certs.d/10.64.3.7\:8000/ca.crt https://10.64.3.7:8000/v2/zhangjun3/busybox/tags/list
+$ curl  --user zhangjun3:xxx --cacert /etc/docker/certs.d/172.27.132.65\:8000/ca.crt https://172.27.132.65:8000/v2/zhangjun3/busybox/tags/list
 {"name":"zhangjun3/busybox","tags":["latest"]}
 ```
 
@@ -294,11 +294,11 @@ $ curl  --user zhangjun3:xxx --cacert /etc/docker/certs.d/10.64.3.7\:8000/ca.crt
 注意，必须包含请求头：`Accept: application/vnd.docker.distribution.manifest.v2+json`：
 
 ``` bash
-$ curl -v -H "Accept: application/vnd.docker.distribution.manifest.v2+json" --user zhangjun3:xxx --cacert /etc/docker/certs.d/10.64.3.7\:8000/ca.crt https://10.64.3.7:8000/v2/zhangjun3/busybox/manifests/latest
+$ curl -v -H "Accept: application/vnd.docker.distribution.manifest.v2+json" --user zhangjun3:xxx --cacert /etc/docker/certs.d/172.27.132.65\:8000/ca.crt https://172.27.132.65:8000/v2/zhangjun3/busybox/manifests/latest
 
 > GET /v2/zhangjun3/busybox/manifests/latest HTTP/1.1
 > User-Agent: curl/7.29.0
-> Host: 10.64.3.7:8000
+> Host: 172.27.132.65:8000
 > Accept: application/vnd.docker.distribution.manifest.v2+json
 >
 < HTTP/1.1 200 OK
@@ -333,7 +333,7 @@ $ curl -v -H "Accept: application/vnd.docker.distribution.manifest.v2+json" --us
 向 `/v2/<name>/manifests/<reference>` 发送 DELETE 请求，reference 为上一步返回的 Docker-Content-Digest 字段内容：
 
 ``` bash
-$ curl -X DELETE  --user zhangjun3:xxx --cacert /etc/docker/certs.d/10.64.3.7\:8000/ca.crt https://10.64.3.7:8000/v2/zhangjun3/busybox/manifests/sha256:68effe31a4ae8312e47f54bec52d1fc925908009ce7e6f734e1b54a4169081c5
+$ curl -X DELETE  --user zhangjun3:xxx --cacert /etc/docker/certs.d/172.27.132.65\:8000/ca.crt https://172.27.132.65:8000/v2/zhangjun3/busybox/manifests/sha256:68effe31a4ae8312e47f54bec52d1fc925908009ce7e6f734e1b54a4169081c5
 $
 ```
 
@@ -342,7 +342,7 @@ $
 向 `/v2/<name>/blobs/<digest>`发送 DELETE 请求，其中 digest 是上一步返回的 `fsLayers.blobSum` 字段内容：
 
 ``` bash
-$ curl -X DELETE  --user zhangjun3:xxx --cacert /etc/docker/certs.d/10.64.3.7\:8000/ca.crt https://10.64.3.7:8000/v2/zhangjun3/busybox/blobs/sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4
-$ curl -X DELETE  --cacert /etc/docker/certs.d/10.64.3.7\:8000/ca.crt https://10.64.3.7:8000/v2/zhangjun3/busybox/blobs/sha256:04176c8b224aa0eb9942af765f66dae866f436e75acef028fe44b8a98e045515
+$ curl -X DELETE  --user zhangjun3:xxx --cacert /etc/docker/certs.d/172.27.132.65\:8000/ca.crt https://172.27.132.65:8000/v2/zhangjun3/busybox/blobs/sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4
+$ curl -X DELETE  --cacert /etc/docker/certs.d/172.27.132.65\:8000/ca.crt https://172.27.132.65:8000/v2/zhangjun3/busybox/blobs/sha256:04176c8b224aa0eb9942af765f66dae866f436e75acef028fe44b8a98e045515
 $
 ```

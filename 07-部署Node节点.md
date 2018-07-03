@@ -17,10 +17,10 @@ kubernetes Node 节点包含如下组件：
 
 ``` bash
 $ # 替换为 kubernetes master 集群任一机器 IP
-$ export MASTER_IP=10.64.3.7
+$ export MASTER_IP=172.27.132.65
 $ export KUBE_APISERVER="https://${MASTER_IP}:6443"
 $ # 当前部署的节点 IP
-$ export NODE_IP=10.64.3.7
+$ export NODE_IP=172.27.132.65
 $ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR、CLUSTER_DNS_SVC_IP、CLUSTER_DNS_DOMAIN、SERVICE_CIDR
 $ source /root/local/bin/environment.sh
 $
@@ -250,7 +250,7 @@ $ kubectl certificate approve csr-2b308
 certificatesigningrequest "csr-2b308" approved
 $ kubectl get nodes
 NAME        STATUS    AGE       VERSION
-10.64.3.7   Ready     49m       v1.6.2
+172.27.132.65   Ready     49m       v1.6.2
 ```
 
 自动生成了 kubelet kubeconfig 文件和公私钥：
@@ -440,8 +440,8 @@ daemonset "nginx-ds" created
 ``` bash
 $ kubectl get nodes
 NAME        STATUS    AGE       VERSION
-10.64.3.7   Ready     8d        v1.6.2
-10.64.3.8   Ready     8d        v1.6.2
+172.27.132.65   Ready     8d        v1.6.2
+172.27.132.66   Ready     8d        v1.6.2
 ```
 
 都为 Ready 时正常。
@@ -450,8 +450,8 @@ NAME        STATUS    AGE       VERSION
 
 ``` bash
 $ kubectl get pods  -o wide|grep nginx-ds
-nginx-ds-6ktz8              1/1       Running            0          5m        172.30.25.19   10.64.3.7
-nginx-ds-6ktz9              1/1       Running            0          5m        172.30.20.20   10.64.3.8
+nginx-ds-6ktz8              1/1       Running            0          5m        172.30.25.19   172.27.132.65
+nginx-ds-6ktz9              1/1       Running            0          5m        172.30.20.20   172.27.132.66
 ```
 
 可见，nginx-ds 的 Pod IP 分别是 `172.30.25.19`、`172.30.20.20`，在所有 Node 上分别 ping 这两个 IP，看是否连通。
@@ -483,7 +483,7 @@ $
 在所有 Node 上执行：
 
 ``` bash
-$ export NODE_IP=10.64.3.7 # 当前 Node 的 IP
+$ export NODE_IP=172.27.132.65 # 当前 Node 的 IP
 $ export NODE_PORT=8744 # `kubectl get svc |grep nginx-ds` 输出中 80 端口映射的 NodePort
 $ curl ${NODE_IP}:${NODE_PORT}
 $

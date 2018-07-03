@@ -2,29 +2,45 @@
 
 tags: flanneld
 
-# 部署 Flannel 网络
+# 05.部署 flannel 网络
 
-kubernetes 要求集群内各节点能通过 Pod 网段互联互通，本文档介绍使用 Flannel 在**所有节点** (Master、Node) 上创建互联互通的 Pod 网段的步骤。
+kubernetes 要求集群内各节点(包括 master 节点)能通过 Pod 网段互联互通。flannel 使用 vxlan 技术为各节点创建一个可以互通的 Pod 网络。
 
-## 使用的变量
+flaneel 第一次启动时，从 etcd 获取 Pod 网段信息，为本节点分配一个未使用的 `/24` 段地址，然后创建 `flannedl.1`（也可能是其它名称，如 flannel1 等） 接口。
 
-本文档用到的变量定义如下：
+flannel 将分配的 Pod 网段信息写入 `/run/flannel/docker` 文件，docker 后续使用这个文件中的环境变量设置 `docker0` 网桥。
+
+## 下载和分发 flanneld 二进制文件
+
+到 [https://github.com/coreos/flannel/releases](https://github.com/coreos/flannel/releases) 页面下载最新版本的发布包：
 
 ``` bash
-$ export NODE_IP=10.64.3.7 # 当前部署节点的 IP
-$ # 导入用到的其它全局变量：ETCD_ENDPOINTS、FLANNEL_ETCD_PREFIX、CLUSTER_CIDR
-$ source /root/local/bin/environment.sh
-$
+mkdir flannel
+wget https://github.com/coreos/flannel/releases/download/v0.10.0/flannel-v0.10.0-linux-amd64.tar.gz
+tar -xzvf flannel-v0.10.0-linux-amd64.tar.gz -C flannel
 ```
 
-## 创建 TLS 秘钥和证书
-
-etcd 集群启用了双向 TLS 认证，所以需要为 flanneld 指定与 etcd 集群通信的 CA 和秘钥。
-
-创建 flanneld 证书签名请求：
+分发 flanneld 二进制文件到集群所有节点：
 
 ``` bash
-$ cat > flanneld-csr.json <<EOF
+source /opt/k8s/bin/environment.sh
+for node_ip in ${NODE_IPS[@]}
+  do
+    echo ">>> ${node_ip}"
+    scp  flannel/{flanneld,mk-docker-opts.sh} k8s@${node_ip}:/opt/k8s/bin/
+    ssh k8s@${node_ip} "chmod +x /opt/k8s/bin/*"
+  done
+```
+
+## 创建 flannel 证书和私钥
+
+flannel 从 etcd 集群存取网段分配信息，而 etcd 集群启用了双向 x509 证书认证，所以需要为 flanneld 生成证书和私钥。
+
+创建证书签名请求：
+
+``` bash
+cd /opt/k8s/cert
+cat > flanneld-csr.json <<EOF
 {
   "CN": "flanneld",
   "hosts": [],
@@ -38,61 +54,58 @@ $ cat > flanneld-csr.json <<EOF
       "ST": "BeiJing",
       "L": "BeiJing",
       "O": "k8s",
-      "OU": "System"
+      "OU": "4Paradigm"
     }
   ]
 }
 EOF
 ```
++ 该证书只会被 kubectl 当做 client 证书使用，所以 hosts 字段为空；
 
-+ hosts 字段为空；
-
-生成 flanneld 证书和私钥：
+生成证书和私钥：
 
 ``` bash
-$ cfssl gencert -ca=/etc/kubernetes/ssl/ca.pem \
-  -ca-key=/etc/kubernetes/ssl/ca-key.pem \
-  -config=/etc/kubernetes/ssl/ca-config.json \
+cfssl gencert -ca=/etc/kubernetes/cert/ca.pem \
+  -ca-key=/etc/kubernetes/cert/ca-key.pem \
+  -config=/etc/kubernetes/cert/ca-config.json \
   -profile=kubernetes flanneld-csr.json | cfssljson -bare flanneld
-$ ls flanneld*
-flanneld.csr  flanneld-csr.json  flanneld-key.pem flanneld.pem
-$ sudo mkdir -p /etc/flanneld/ssl
-$ sudo mv flanneld*.pem /etc/flanneld/ssl
-$ rm flanneld.csr  flanneld-csr.json
+ls flanneld*pem
+```
+
+将生成的证书和私钥分发到**所有节点**（master 和 worker）：
+
+``` bash
+source /opt/k8s/bin/environment.sh
+for node_ip in ${NODE_IPS[@]}
+  do
+    echo ">>> ${node_ip}"
+    ssh root@${node_ip} "mkdir -p /etc/flanneld/cert && chown -R k8s /etc/flanneld"
+    scp flanneld*.pem k8s@${node_ip}:/etc/flanneld/cert
+  done
 ```
 
 ## 向 etcd 写入集群 Pod 网段信息
 
-注意：本步骤只需在**第一次**部署 Flannel 网络时执行，后续在其它节点上部署 Flannel 时**无需**再写入该信息！
+注意：本步骤**只需执行一次**。
 
 ``` bash
-$ /root/local/bin/etcdctl \
+source /opt/k8s/bin/environment.sh
+etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/flanneld/ssl/flanneld.pem \
-  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
+  --ca-file=/etc/kubernetes/cert/ca.pem \
+  --cert-file=/etc/flanneld/cert/flanneld.pem \
+  --key-file=/etc/flanneld/cert/flanneld-key.pem \
   set ${FLANNEL_ETCD_PREFIX}/config '{"Network":"'${CLUSTER_CIDR}'", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}'
 ```
++ flanneld **当前版本 (v0.10.0) 不支持 etcd v3**，故使用 etcd v2 API 写入配置 key 和网段数据；
++ 写入的 Pod 网段 ${CLUSTER_CIDR} 必须是 /16 段地址，必须与 kube-controller-manager 的 `--cluster-cidr` 参数值一致；
 
-+ flanneld **目前版本 (v0.7.1) 不支持 etcd v3**，故使用 etcd v2 API 写入配置 key 和网段数据；
-+ 写入的 Pod 网段(${CLUSTER_CIDR}，172.30.0.0/16) 必须与 kube-controller-manager 的 `--cluster-cidr` 选项值一致；
-
-## 安装和配置 flanneld
-
-### 下载 flanneld
+## 创建 flanneld 的 systemd unit 文件
 
 ``` bash
-$ mkdir flannel
-$ wget https://github.com/coreos/flannel/releases/download/v0.7.1/flannel-v0.7.1-linux-amd64.tar.gz
-$ tar -xzvf flannel-v0.7.1-linux-amd64.tar.gz -C flannel
-$ sudo cp flannel/{flanneld,mk-docker-opts.sh} /root/local/bin
-$
-```
-
-### 创建 flanneld 的 systemd unit 文件
-
-``` bash
-$ cat > flanneld.service << EOF
+source /opt/k8s/bin/environment.sh
+export IFACE=eth0 # 节点间互联的网络接口名称
+cat > flanneld.service << EOF
 [Unit]
 Description=Flanneld overlay address etcd agent
 After=network.target
@@ -103,13 +116,14 @@ Before=docker.service
 
 [Service]
 Type=notify
-ExecStart=/root/local/bin/flanneld \\
-  -etcd-cafile=/etc/kubernetes/ssl/ca.pem \\
-  -etcd-certfile=/etc/flanneld/ssl/flanneld.pem \\
-  -etcd-keyfile=/etc/flanneld/ssl/flanneld-key.pem \\
+ExecStart=/opt/k8s/bin/flanneld \\
+  -etcd-cafile=/etc/kubernetes/cert/ca.pem \\
+  -etcd-certfile=/etc/flanneld/cert/flanneld.pem \\
+  -etcd-keyfile=/etc/flanneld/cert/flanneld-key.pem \\
   -etcd-endpoints=${ETCD_ENDPOINTS} \\
-  -etcd-prefix=${FLANNEL_ETCD_PREFIX}
-ExecStartPost=/root/local/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
+  -etcd-prefix=${FLANNEL_ETCD_PREFIX} \\
+  -iface=${IFACE}
+ExecStartPost=/opt/k8s/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
 Restart=on-failure
 
 [Install]
@@ -117,83 +131,135 @@ WantedBy=multi-user.target
 RequiredBy=docker.service
 EOF
 ```
-
-+ mk-docker-opts.sh 脚本将分配给 flanneld 的 Pod 子网网段信息写入到 `/run/flannel/docker` 文件中，后续 docker 启动时使用这个文件中参数值设置 docker0 网桥；
-+ flanneld 使用系统缺省路由所在的接口和其它节点通信，对于有多个网络接口的机器（如，内网和公网），可以用 `--iface` 选项值指定通信接口(上面的 systemd unit 文件没指定这个选项)，如本着 Vagrant + Virtualbox，就要指定`--iface=enp0s8`；
++ `mk-docker-opts.sh` 脚本将分配给 flanneld 的 Pod 子网网段信息写入 `/run/flannel/docker` 文件，后续 docker 启动时使用这个文件中的环境变量配置 docker0 网桥；
++ flanneld 使用系统缺省路由所在的接口与其它节点通信，对于有多个网络接口（如内网和公网）的节点，可以用 `-iface` 参数指定通信接口;
++ flanneld 运行时需要 root 权限；
 
 完整 unit 见 [flanneld.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/flanneld.service)
 
-### 启动 flanneld
+## 分发 flanneld systemd unit 文件到**所有节点**
 
 ``` bash
-$ sudo cp flanneld.service /etc/systemd/system/
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable flanneld
-$ sudo systemctl start flanneld
-$ systemctl status flanneld
-$
+source /opt/k8s/bin/environment.sh
+for node_ip in ${NODE_IPS[@]}
+  do
+    echo ">>> ${node_ip}"
+    scp flanneld.service root@${node_ip}:/etc/systemd/system/
+  done
 ```
 
-### 检查 flanneld 服务
+## 启动 flanneld 服务
 
 ``` bash
-$ journalctl  -u flanneld |grep 'Lease acquired'
-$ ifconfig flannel.1
-$
+source /opt/k8s/bin/environment.sh
+for node_ip in ${NODE_IPS[@]}
+  do
+    echo ">>> ${node_ip}"
+    ssh root@${node_ip} "systemctl daemon-reload && systemctl enable flanneld && systemctl start flanneld"
+  done
 ```
 
-### 检查分配给各 flanneld 的 Pod 网段信息
+## 检查启动结果
 
 ``` bash
-$ # 查看集群 Pod 网段(/16)
-$ /root/local/bin/etcdctl \
+source /opt/k8s/bin/environment.sh
+for node_ip in ${NODE_IPS[@]}
+  do
+    echo ">>> ${node_ip}"
+    ssh k8s@${node_ip} "systemctl status flanneld|grep Active"
+  done
+```
+
+确保状态为 `active (running)`，否则查看日志，确认原因：
+
+``` bash
+$ journalctl -u flanneld
+```
+
+## 检查分配给各 flanneld 的 Pod 网段信息
+
+查看集群 Pod 网段(/16)：
+
+``` bash
+source /opt/k8s/bin/environment.sh
+etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/flanneld/ssl/flanneld.pem \
-  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
+  --ca-file=/etc/kubernetes/cert/ca.pem \
+  --cert-file=/etc/flanneld/cert/flanneld.pem \
+  --key-file=/etc/flanneld/cert/flanneld-key.pem \
   get ${FLANNEL_ETCD_PREFIX}/config
-{ "Network": "172.30.0.0/16", "SubnetLen": 24, "Backend": { "Type": "vxlan" } }
-$ # 查看已分配的 Pod 子网段列表(/24)
-$ /root/local/bin/etcdctl \
-  --endpoints=${ETCD_ENDPOINTS} \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/flanneld/ssl/flanneld.pem \
-  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
-  ls ${FLANNEL_ETCD_PREFIX}/subnets
-/kubernetes/network/subnets/172.30.19.0-24
-$ # 查看某一 Pod 网段对应的 flanneld 进程监听的 IP 和网络参数
-$ /root/local/bin/etcdctl \
-  --endpoints=${ETCD_ENDPOINTS} \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/flanneld/ssl/flanneld.pem \
-  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
-  get ${FLANNEL_ETCD_PREFIX}/subnets/172.30.19.0-24
-{"PublicIP":"10.64.3.7","BackendType":"vxlan","BackendData":{"VtepMAC":"d6:51:2e:80:5c:69"}}
 ```
 
-### 确保各节点间 Pod 网段能互联互通
+输出：
 
-在**各节点上部署完** Flannel 后，查看已分配的 Pod 子网段列表(/24)
+  `{"Network":"172.30.0.0/16", "SubnetLen": 24, "Backend": {"Type": "vxlan"}}`
+
+查看已分配的 Pod 子网段列表(/24):
 
 ``` bash
-$ /root/local/bin/etcdctl \
+source /opt/k8s/bin/environment.sh
+etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/flanneld/ssl/flanneld.pem \
-  --key-file=/etc/flanneld/ssl/flanneld-key.pem \
+  --ca-file=/etc/kubernetes/cert/ca.pem \
+  --cert-file=/etc/flanneld/cert/flanneld.pem \
+  --key-file=/etc/flanneld/cert/flanneld-key.pem \
   ls ${FLANNEL_ETCD_PREFIX}/subnets
-/kubernetes/network/subnets/172.30.19.0-24
-/kubernetes/network/subnets/172.30.20.0-24
-/kubernetes/network/subnets/172.30.21.0-24
 ```
 
-当前三个节点分配的 Pod 网段分别是：172.30.19.0-24、172.30.20.0-24、172.30.21.0-24。
-
-在各节点上分配 ping 这三个网段的网关地址，确保能通：
+输出（结果是部署情况而定，网段可能与下面不一样）：
 
 ``` bash
-$ ping 172.30.19.1
-$ ping 172.30.20.2
-$ ping 172.30.21.3
-$
+/kubernetes/network/subnets/172.30.81.0-24
+/kubernetes/network/subnets/172.30.29.0-24
+/kubernetes/network/subnets/172.30.39.0-24
+```
+
+查看某一 Pod 网段（如 172.30.81.0-24）对应的节点 IP 和 flannel 接口地址:
+
+``` bash
+source /opt/k8s/bin/environment.sh
+etcdctl \
+  --endpoints=${ETCD_ENDPOINTS} \
+  --ca-file=/etc/kubernetes/cert/ca.pem \
+  --cert-file=/etc/flanneld/cert/flanneld.pem \
+  --key-file=/etc/flanneld/cert/flanneld-key.pem \
+  get ${FLANNEL_ETCD_PREFIX}/subnets/172.30.81.0-24
+```
+
+输出（结果是部署情况而定，网段可能与下面不一样）：
+
+  `{"PublicIP":"172.27.132.65","BackendType":"vxlan","BackendData":{"VtepMAC":"12:21:93:9e:b1:eb"}}`
+
+## 验证各节点能通过 Pod 网段互通
+
+在**各节点上部署** flannel 后，检查是否创建了 flannel 接口(名称可能为 flannel0、flannel.0、flannel.1 等)：
+
+``` bash
+source /opt/k8s/bin/environment.sh
+for node_ip in ${NODE_IPS[@]}
+  do
+    echo ">>> ${node_ip}"
+    ssh ${node_ip} "/usr/sbin/ip addr show flannel.1|grep -w inet"
+  done
+```
+
+输出：
+
+``` bash
+inet 172.30.81.0/32 scope global flannel.1
+inet 172.30.29.0/32 scope global flannel.1
+inet 172.30.39.0/32 scope global flannel.1
+```
+
+在各节点上 ping 上面列出的 flannel 接口 IP，确保能通：
+
+``` bash
+source /opt/k8s/bin/environment.sh
+for node_ip in ${NODE_IPS[@]}
+  do
+    echo ">>> ${node_ip}"
+    ssh ${node_ip} "ping -c 1 172.30.81.0"
+    ssh ${node_ip} "ping -c 1 172.30.29.0"
+    ssh ${node_ip} "ping -c 1 172.30.39.0"
+  done
 ```

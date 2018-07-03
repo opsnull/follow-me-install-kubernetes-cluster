@@ -26,7 +26,7 @@ master 节点与 node 节点上的 Pods 通过 Pod 网络通信，所以需要�
 本文档用到的变量定义如下：
 
 ``` bash
-$ export MASTER_IP=10.64.3.7  # 替换为当前部署的 master 机器 IP
+$ export MASTER_IP=172.27.132.65  # 替换为当前部署的 master 机器 IP
 $ # 导入用到的其它全局变量：SERVICE_CIDR、CLUSTER_CIDR、NODE_PORT_RANGE、ETCD_ENDPOINTS、BOOTSTRAP_TOKEN
 $ source /root/local/bin/environment.sh
 $

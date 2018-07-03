@@ -61,10 +61,10 @@ DaemonSet `fluentd-es-v1.22` 只会调度到设置了标签 `beta.kubernetes.io/
 ``` bash
 $ kubectl get nodes
 NAME        STATUS    AGE       VERSION
-10.64.3.7   Ready     1d        v1.6.2
+172.27.132.65   Ready     1d        v1.6.2
 
-$ kubectl label nodes 10.64.3.7 beta.kubernetes.io/fluentd-ds-ready=true
-node "10.64.3.7" labeled
+$ kubectl label nodes 172.27.132.65 beta.kubernetes.io/fluentd-ds-ready=true
+node "172.27.132.65" labeled
 ```
 
 ## 执行定义文件
@@ -114,30 +114,30 @@ server.basePath: /api/v1/proxy/namespaces/kube-system/services/kibana-logging
 
     ``` bash
     $ kubectl cluster-info
-    Kubernetes master is running at https://10.64.3.7:6443
-    Elasticsearch is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/elasticsearch-logging
-    Heapster is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/heapster
-    Kibana is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kibana-logging
-    KubeDNS is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kube-dns
-    kubernetes-dashboard is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
-    monitoring-grafana is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/monitoring-grafana
-    monitoring-influxdb is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/monitoring-influxdb
+    Kubernetes master is running at https://172.27.132.65:6443
+    Elasticsearch is running at https://172.27.132.65:6443/api/v1/proxy/namespaces/kube-system/services/elasticsearch-logging
+    Heapster is running at https://172.27.132.65:6443/api/v1/proxy/namespaces/kube-system/services/heapster
+    Kibana is running at https://172.27.132.65:6443/api/v1/proxy/namespaces/kube-system/services/kibana-logging
+    KubeDNS is running at https://172.27.132.65:6443/api/v1/proxy/namespaces/kube-system/services/kube-dns
+    kubernetes-dashboard is running at https://172.27.132.65:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
+    monitoring-grafana is running at https://172.27.132.65:6443/api/v1/proxy/namespaces/kube-system/services/monitoring-grafana
+    monitoring-influxdb is running at https://172.27.132.65:6443/api/v1/proxy/namespaces/kube-system/services/monitoring-influxdb
     ```
 
     由于 kube-apiserver 开启了 RBAC 授权，而浏览器访问 kube-apiserver 的时候使用的是匿名证书，所以访问安全端口会导致授权失败。这里需要使用**非安全**端口访问 kube-apiserver：
 
-    浏览器访问 URL： `http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/kibana-logging`
+    浏览器访问 URL： `http://172.27.132.65:8080/api/v1/proxy/namespaces/kube-system/services/kibana-logging`
 
 1. 通过 kubectl proxy 访问：
 
     创建代理
 
     ``` bash
-    $ kubectl proxy --address='10.64.3.7' --port=8086 --accept-hosts='^*$'
-    Starting to serve on 10.64.3.7:8086
+    $ kubectl proxy --address='172.27.132.65' --port=8086 --accept-hosts='^*$'
+    Starting to serve on 172.27.132.65:8086
     ```
 
-    浏览器访问 URL：`http://10.64.3.7:8086/api/v1/proxy/namespaces/kube-system/services/kibana-logging`
+    浏览器访问 URL：`http://172.27.132.65:8086/api/v1/proxy/namespaces/kube-system/services/kibana-logging`
 
 在 Settings -> Indices 页面创建一个 index（相当于 mysql 中的一个 database），选中 `Index contains time-based events`，使用默认的 `logstash-*` pattern，点击 `Create` ;
 

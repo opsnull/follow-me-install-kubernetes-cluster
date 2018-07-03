@@ -90,14 +90,14 @@ kubernetes-dashboard-1339745653-pmn6z   1/1       Running   0          4m
 启动代理
 
 ``` bash
-$ kubectl proxy --address='10.64.3.7' --port=8086 --accept-hosts='^*$'
-Starting to serve on 10.64.3.7:8086
+$ kubectl proxy --address='172.27.132.65' --port=8086 --accept-hosts='^*$'
+Starting to serve on 172.27.132.65:8086
 ```
 
 + 需要指定 `--accept-hosts` 选项，否则浏览器访问 dashboard 页面时提示 “Unauthorized”；
 
-浏览器访问 URL：`http://10.64.3.7:8086/ui`
-自动跳转到：`http://10.64.3.7:8086/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard/#/workload?namespace=default`
+浏览器访问 URL：`http://172.27.132.65:8086/ui`
+自动跳转到：`http://172.27.132.65:8086/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard/#/workload?namespace=default`
 
 ### 通过 kube-apiserver 访问dashboard
 
@@ -105,14 +105,14 @@ Starting to serve on 10.64.3.7:8086
 
 ``` bash
 $ kubectl cluster-info
-Kubernetes master is running at https://10.64.3.7:6443
-KubeDNS is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kube-dns
-kubernetes-dashboard is running at https://10.64.3.7:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
+Kubernetes master is running at https://172.27.132.65:6443
+KubeDNS is running at https://172.27.132.65:6443/api/v1/proxy/namespaces/kube-system/services/kube-dns
+kubernetes-dashboard is running at https://172.27.132.65:6443/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
 ```
 
 由于 kube-apiserver 开启了 RBAC 授权，而浏览器访问 kube-apiserver 的时候使用的是匿名证书，所以访问安全端口会导致授权失败。这里需要使用**非安全**端口访问 kube-apiserver：
 
-浏览器访问 URL：`http://10.64.3.7:8080/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`
+浏览器访问 URL：`http://172.27.132.65:8080/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`
 
 ![kubernetes-dashboard](./images/dashboard.png)
 

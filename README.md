@@ -14,9 +14,10 @@
 
 由于启用了 `x509` 证书双向认证、`RBAC` 授权等严格的安全机制，建议**从头开始部署**，否则可能会认证、授权等失败！
 
-## 历史版本
+## 其它版本
 
 [v1.6.2](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.6.2)
+[v1.10.4](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.10.4)
 
 ## 步骤列表
 
@@ -47,24 +48,9 @@
 
 ## 在线阅读
 
-+ 建议：[GitBook](https://k8s-install.opsnull.com/)
-+ [Github](https://www.gitbook.com/book/opsnull/follow-me-install-kubernetes-cluster)
++ [Github](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.8.14)
 
 ## 电子书
 
-+ pdf 格式 [下载](https://www.gitbook.com/download/pdf/book/opsnull/follow-me-install-kubernetes-cluster)
-+ epub 格式 [下载](https://www.gitbook.com/download/epub/book/opsnull/follow-me-install-kubernetes-cluster)
-
-## 打赏
-
-如果你觉得这份文档对你有帮助，请微信扫描下方的二维码进行捐赠，加油后的 opsnull 将会和你分享更多的原创教程，谢谢！
-
-<p align="center">
-  <img src="https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/images/weixin_qr.jpg?raw=true" alt="weixin_qr.jpg"/>
-</p>
-
-## 版权
-
-Copyright 2017-2018 zhangjun (geekard@qq.com)
-
-知识共享 署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0），详情见 [LICENSE](LICENSE) 文件。
++ pdf 格式 [下载](https://legacy.gitbook.com/download/pdf/book/opsnull/follow-me-install-kubernetes-cluster/v/5a83e64476b1e5a231b183f2c147893322e168cd_1)
++ epub 格式 [下载](https://legacy.gitbook.com/download/epub/book/opsnull/follow-me-install-kubernetes-cluster/v/5a83e64476b1e5a231b183f2c147893322e168cd_1)

@@ -17,6 +17,7 @@ ExecStart=/opt/k8s/bin/flanneld \
   -iface=eth0
 ExecStartPost=/opt/k8s/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
 Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target

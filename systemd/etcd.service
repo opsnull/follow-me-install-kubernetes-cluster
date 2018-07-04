@@ -26,7 +26,10 @@ ExecStart=/opt/k8s/bin/etcd \
   --advertise-client-urls=https://172.27.132.65:2379 \
   --initial-cluster-token=etcd-cluster-0 \
   --initial-cluster=kube-node1=https://172.27.132.65:2380,kube-node2=https://172.27.132.66:2380,kube-node3=https://172.27.132.67:2380 \
-  --initial-cluster-state=new
+  --initial-cluster-state=new \
+  --auto-compaction-retention \
+  --max-request-bytes=32M \
+  --quota-backend-bytes=8GB
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65536

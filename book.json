@@ -1,17 +1,20 @@
 {
-  "title": "和我一步步部署kubernetes集群",
-  "description": "和我一步步部署kubernetes集群",
-  "plugins": [
+    "title": "和我一步步部署kubernetes集群",
+    "description": "和我一步步部署kubernetes集群",
+    "language": "zh-cn",
+    "plugins": [
     "expandable-chapters",
     "anchors",
     "disqus",
     "github",
     "editlink",
-    "prism", "-highlight",
-    "-lunr", "-search", "search-plus",
+    "prism",
+    "-highlight",
+    "-lunr",
+    "-search",
+    "search-plus",
     "baidu",
     "codesnippet",
-    "ga",
     "splitter",
     "sitemap",
     "page-toc-button",
@@ -19,55 +22,59 @@
     "page-footer-ex",
     "tags",
     "multipart"
-  ],
-  "pluginsConfig": {
+    ],
+    "pdf": {
+    "toc": true,
+    "pageNumbers": true,
+    "fontSize": 11
+    },
+    "pluginsConfig": {
     "image-captions": {
-          "caption": "图片 - _CAPTION_"
+    "caption": "图片 - _CAPTION_"
     },
     "page-toc-button": {
-      "maxTocDepth": 2,
-      "minTocSize": 2
-   	},
-    "expandable-chapters":{
+    "maxTocDepth": 2,
+    "minTocSize": 2
     },
+    "expandable-chapters": {},
     "disqus": {
-      "shortName": "knowl"
+    "shortName": "knowl"
     },
     "github": {
-      "url": "https://github.com/opsnull/follow-me-install-kubernetes-cluster"
+    "url": "https://github.com/opsnull/follow-me-install-kubernetes-cluster"
     },
     "editlink": {
-      "base": "https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/",
-      "label": "编辑本页"
+    "base": "https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/",
+    "label": "编辑本页"
     },
     "baidu": {
-        "token": "3a6c58f0013d3cc4ec3e56984c135511"
-    },
-    "ga": {
-        "token": "UA-79732341-1"
+    "token": "18c1967ba7abeaf5be1330bb512f0617"
     },
     "sitemap": {
-        "hostname": "http://k8s.opsnull.com"
+    "hostname": "http://k8s.opsnull.com"
     },
-    "page-footer-ex":{
-        "copyright":"zhangjun",
-        "update_label":"最后更新：",
-        "update_format":"YYYY-MM-DD HH:mm:ss"
+    "page-footer-ex": {
+    "copyright": "zhangjun",
+    "update_label": "最后更新：",
+    "update_format": "YYYY-MM-DD HH:mm:ss"
     },
     "tags": {
-        "placement": "bottom"
+    "placement": "bottom"
     },
     "sharing": {
-        "facebook": true,
-        "twitter": true,
-        "google": true,
-        "weibo": true,
-        "instapaper": false,
-        "vk": false,
-        "all": [
-            "facebook", "google", "twitter",
-            "weibo", "instapaper"
-        ]
+    "facebook": true,
+    "twitter": true,
+    "google": true,
+    "weibo": true,
+    "instapaper": false,
+    "vk": false,
+    "all": [
+    "facebook",
+    "google",
+    "twitter",
+    "weibo",
+    "instapaper"
+    ]
     }
-  }
-}
+    }
+    }

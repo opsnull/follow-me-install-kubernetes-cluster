@@ -8,13 +8,14 @@ Before=docker.service
 
 [Service]
 Type=notify
-ExecStart=/root/local/bin/flanneld \
-  -etcd-cafile=/etc/kubernetes/ssl/ca.pem \
-  -etcd-certfile=/etc/flanneld/ssl/flanneld.pem \
-  -etcd-keyfile=/etc/flanneld/ssl/flanneld-key.pem \
-  -etcd-endpoints=https://10.64.3.7:2379,https://10.64.3.8:2379,https://10.66.3.86:2379 \
-  -etcd-prefix=/kubernetes/network
-ExecStartPost=/root/local/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
+ExecStart=/opt/k8s/bin/flanneld \
+  -etcd-cafile=/etc/kubernetes/cert/ca.pem \
+  -etcd-certfile=/etc/flanneld/cert/flanneld.pem \
+  -etcd-keyfile=/etc/flanneld/cert/flanneld-key.pem \
+  -etcd-endpoints=https://172.27.132.65:2379,https://172.27.132.66:2379,https://172.27.132.67:2379 \
+  -etcd-prefix=/kubernetes/network \
+  -iface=eth0
+ExecStartPost=/opt/k8s/bin/mk-docker-opts.sh -k DOCKER_NETWORK_OPTIONS -d /run/flannel/docker
 Restart=on-failure
 
 [Install]

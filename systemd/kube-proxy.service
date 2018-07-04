@@ -4,12 +4,12 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
 
 [Service]
-ExecStart=/root/local/bin/kube-proxy \
-  --bind-address=10.64.3.7 \
-  --cluster-cidr=172.30.0.0/16 \
-  --hostname-override=10.64.3.7 \
-  --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig \
-  --logtostderr=true \
+WorkingDirectory=/var/lib/kube-proxy
+ExecStart=/opt/k8s/bin/kube-proxy \
+  --config=/etc/kubernetes/kube-proxy.config.yaml \
+  --logtostderr=false \
+  --alsologtostderr=true \
+  --log-dir=/var/log/kubernetes \
   --v=2
 Restart=on-failure
 RestartSec=5

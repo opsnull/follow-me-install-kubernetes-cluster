@@ -1,0 +1,20 @@
+apiVersion: componentconfig/v1alpha1
+kind: KubeProxyConfiguration
+bindAddress: 172.27.132.65
+clientConnection:
+  kubeconfig: /etc/kubernetes/kube-proxy.kubeconfig
+clusterCIDR: 172.30.0.0/16
+healthzBindAddress: 172.27.132.65:10256
+hostnameOverride: kube-node1
+kind: KubeProxyConfiguration
+metricsBindAddress: 172.27.132.65:10249
+iptables:
+  masqueradeAll: false
+  masqueradeBit: 14
+  minSyncPeriod: 0s
+  syncPeriod: 30s
+ipvs:
+  minSyncPeriod: 0s
+  scheduler: ""
+  syncPeriod: 30s
+mode: "iptables"

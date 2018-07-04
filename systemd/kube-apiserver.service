@@ -4,39 +4,44 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
 
 [Service]
-User=root
-ExecStart=/root/local/bin/kube-apiserver \
-  --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
-  --advertise-address=10.64.3.7 \
+ExecStart=/opt/k8s/bin/kube-apiserver \
+  --admission-control=NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
+  --advertise-address=172.27.132.65 \
+  --bind-address=172.27.132.65 \
+  --anonymous-auth=false \
+  --insecure-port=0 \
+  --authorization-mode=Node,RBAC \
+  --runtime-config=api/all \
+  --enable-bootstrap-token-auth \
+  --token-auth-file=/etc/kubernetes/token.csv \
+  --service-cluster-ip-range=10.254.0.0/16 \
+  --service-node-port-range=8400-9000 \
+  --kubelet-client-certificate=/etc/kubernetes/cert/kubernetes.pem \
+  --kubelet-client-key=/etc/kubernetes/cert/kubernetes-key.pem \
+  --tls-cert-file=/etc/kubernetes/cert/kubernetes.pem \
+  --tls-private-key-file=/etc/kubernetes/cert/kubernetes-key.pem \
+  --client-ca-file=/etc/kubernetes/cert/ca.pem \
+  --service-account-key-file=/etc/kubernetes/cert/ca-key.pem \
+  --etcd-cafile=/etc/kubernetes/cert/ca.pem \
+  --etcd-certfile=/etc/kubernetes/cert/kubernetes.pem \
+  --etcd-keyfile=/etc/kubernetes/cert/kubernetes-key.pem \
+  --etcd-servers=https://172.27.132.65:2379,https://172.27.132.66:2379,https://172.27.132.67:2379 \
+  --enable-swagger-ui=true \
   --allow-privileged=true \
   --apiserver-count=3 \
   --audit-log-maxage=30 \
   --audit-log-maxbackup=3 \
   --audit-log-maxsize=100 \
-  --audit-log-path=/var/lib/audit.log \
-  --authorization-mode=RBAC \
-  --bind-address=10.64.3.7 \
-  --client-ca-file=/etc/kubernetes/ssl/ca.pem \
-  --enable-swagger-ui=true \
-  --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
-  --etcd-certfile=/etc/kubernetes/ssl/kubernetes.pem \
-  --etcd-keyfile=/etc/kubernetes/ssl/kubernetes-key.pem \
-  --etcd-servers=https://10.64.3.7:2379,https://10.64.3.8:2379,https://10.66.3.86:2379 \
+  --audit-log-path=/var/log/kube-apiserver-audit.log \
   --event-ttl=1h \
-  --kubelet-https=true \
-  --insecure-bind-address=10.64.3.7 \
-  --runtime-config=rbac.authorization.k8s.io/v1alpha1 \
-  --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem \
-  --service-cluster-ip-range=10.254.0.0/16 \
-  --service-node-port-range=8400-9000 \
-  --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  --experimental-bootstrap-token-auth \
-  --token-auth-file=/etc/kubernetes/token.csv \
+  --logtostderr=false \
+  --alsologtostderr=true \
+  --log-dir=/var/log/kubernetes \
   --v=2
 Restart=on-failure
 RestartSec=5
 Type=notify
+User=k8s
 LimitNOFILE=65536
 
 [Install]

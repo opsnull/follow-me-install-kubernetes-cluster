@@ -3,13 +3,14 @@ Description=Kubernetes Scheduler
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-ExecStart=/root/local/bin/kube-scheduler \
-  --leader-elect=true \
-  --master=http://10.64.3.7:8080 \
+ExecStart=/opt/k8s/bin/kube-scheduler \
   --address=127.0.0.1 \
+  --kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig \
+  --leader-elect=true \
   --v=2
 Restart=on-failure
 RestartSec=5
+User=k8s
 
 [Install]
 WantedBy=multi-user.target

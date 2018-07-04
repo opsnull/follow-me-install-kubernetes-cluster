@@ -6,27 +6,31 @@ Requires=docker.service
 
 [Service]
 WorkingDirectory=/var/lib/kubelet
-ExecStart=/root/local/bin/kubelet \
-  --address=10.64.3.7 \
-  --hostname-override=10.64.3.7 \
+ExecStart=/opt/k8s/bin/kubelet \
+  --address=172.27.132.65 \
+  --port=10250 \
+  --read-only-port=0 \
+  --hostname-override=kube-node1 \
   --pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest \
-  --experimental-bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
-  --kubeconfig=/etc/kubernetes/kubelet-kubeconfig \
-  --require-kubeconfig \
-  --cert-dir=/etc/kubernetes/ssl \
-  --container-runtime=docker \
+  --bootstrap-kubeconfig=/etc/kubernetes/kubelet-bootstrap.kubeconfig \
+  --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+  --feature-gates=RotateKubeletClientCertificate=true,RotateKubeletServerCertificate=true \
+  --rotate-certificates=true \
+  --cert-dir=/etc/kubernetes/cert \
   --cluster-dns=10.254.0.2 \
   --cluster-domain=cluster.local. \
-  --hairpin-mode promiscuous-bridge \
+  --hairpin-mode=promiscuous-bridge \
   --allow-privileged=true \
+  --client-ca-file=/etc/kubernetes/cert/ca.pem \
+  --anonymous-auth=false \
+  --authentication-token-webhook=true \
+  --authorization-mode=Webhook \
   --serialize-image-pulls=false \
-  --register-node=true \
-  --logtostderr=true \
+  --cadvisor-port=0 \
+  --logtostderr=false \
+  --alsologtostderr=true \
+  --log-dir=/var/log/kubernetes \
   --v=2
-ExecStopPost=/sbin/iptables -A INPUT -s 10.0.0.0/8 -p tcp --dport 4194 -j ACCEPT
-ExecStopPost=/sbin/iptables -A INPUT -s 172.16.0.0/12 -p tcp --dport 4194 -j ACCEPT
-ExecStopPost=/sbin/iptables -A INPUT -s 192.168.0.0/16 -p tcp --dport 4194 -j ACCEPT
-ExecStopPost=/sbin/iptables -A INPUT -p tcp --dport 4194 -j DROP
 Restart=on-failure
 RestartSec=5
 

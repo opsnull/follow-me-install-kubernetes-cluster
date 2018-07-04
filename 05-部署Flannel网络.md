@@ -104,7 +104,7 @@ etcdctl \
 
 ``` bash
 source /opt/k8s/bin/environment.sh
-export IFACE=eth0 # 节点间互联的网络接口名称
+export IFACE=eth0
 cat > flanneld.service << EOF
 [Unit]
 Description=Flanneld overlay address etcd agent
@@ -132,7 +132,7 @@ RequiredBy=docker.service
 EOF
 ```
 + `mk-docker-opts.sh` 脚本将分配给 flanneld 的 Pod 子网网段信息写入 `/run/flannel/docker` 文件，后续 docker 启动时使用这个文件中的环境变量配置 docker0 网桥；
-+ flanneld 使用系统缺省路由所在的接口与其它节点通信，对于有多个网络接口（如内网和公网）的节点，可以用 `-iface` 参数指定通信接口;
++ flanneld 使用系统缺省路由所在的接口与其它节点通信，对于有多个网络接口（如内网和公网）的节点，可以用 `-iface` 参数指定通信接口，如上面的 eth0 接口;
 + flanneld 运行时需要 root 权限；
 
 完整 unit 见 [flanneld.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/flanneld.service)

@@ -164,10 +164,11 @@ source /opt/k8s/bin/environment.sh
 for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
-    ssh root@${node_ip} "mkdir -p /var/lib/etcd && chown -R k8s /var/lib/etcd" # 创建 etcd 数据目录和工作目录
+    ssh root@${node_ip} "mkdir -p /var/lib/etcd && chown -R k8s /var/lib/etcd" 
     scp etcd-${node_ip}.service root@${node_ip}:/etc/systemd/system/etcd.service
   done
 ```
++ 必须先创建 etcd 数据目录和工作目录；
 + 文件重命名为 etcd.service;
 
 完整 unit 文件见：[etcd.service](https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/systemd/etcd.service)
@@ -179,7 +180,7 @@ source /opt/k8s/bin/environment.sh
 for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
-    ssh root@${node_ip} "systemctl daemon-reload && systemctl enable etcd && systemctl start etcd &"
+    ssh root@${node_ip} "systemctl daemon-reload && systemctl enable etcd && systemctl restart etcd &"
   done
 ```
 + etcd 进程首次启动时会等待其它节点的 etcd 加入集群，命令 `systemctl start etcd` 会卡住一段时间，为正常现象。

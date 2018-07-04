@@ -27,7 +27,7 @@ tar -xzvf kubernetes-client-linux-amd64.tar.gz
 分发到所有使用 kubectl 的节点：
 
 ``` bash
-source /opt/k8s/bin/environment.sh # 导入 NODE_IPS 环境变量
+source /opt/k8s/bin/environment.sh
 for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
@@ -86,27 +86,23 @@ kubeconfig 为 kubectl 的配置文件，包含访问 apiserver 的所有信息�
 
 ``` bash
 source /opt/k8s/bin/environment.sh
-# 设置集群参数
 kubectl config set-cluster kubernetes \
   --certificate-authority=/etc/kubernetes/cert/ca.pem \
   --embed-certs=true \
   --server=${KUBE_APISERVER} \
   --kubeconfig=kubectl.kubeconfig
 
-# 设置客户端认证参数
 kubectl config set-credentials admin \
   --client-certificate=admin.pem \
   --client-key=admin-key.pem \
   --embed-certs=true \
   --kubeconfig=kubectl.kubeconfig
 
-# 设置上下文参数
 kubectl config set-context kubernetes \
   --cluster=kubernetes \
   --user=admin \
   --kubeconfig=kubectl.kubeconfig
   
-# 设置默认上下文
 kubectl config use-context kubernetes --kubeconfig=kubectl.kubeconfig
 ```
 + `--certificate-authority`：验证 kube-apiserver 证书的根证书；
@@ -118,7 +114,7 @@ kubectl config use-context kubernetes --kubeconfig=kubectl.kubeconfig
 分发到所有使用 `kubelet` 命令的节点：
 
 ``` bash
-source /opt/k8s/bin/environment.sh # 导入 NODE_IPS 环境变量
+source /opt/k8s/bin/environment.sh
 for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"

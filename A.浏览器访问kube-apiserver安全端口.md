@@ -5,7 +5,7 @@
 
 这是因为 kube-apiserver 的 server 证书是我们创建的根证书 ca.pem 签名的，需要将根证书 ca.pem 导入操作系统，并设置永久信任。对于 Mac，操作如下：
 
-![ssl-failed](images/keychain.png)
+![keychain](images/keychain.png)
 
 再次访问 https://172.27.129.105:6443/，已信任，但提示 401，未授权的访问：
 

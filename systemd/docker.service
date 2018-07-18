@@ -14,6 +14,9 @@ LimitNPROC=infinity
 LimitCORE=infinity
 Delegate=yes
 KillMode=process
+# Uncomment TasksMax if your systemd version supports it.
+# Only systemd 226 and above support this version.
+TasksMax=infinity
 
 [Install]
 WantedBy=multi-user.target

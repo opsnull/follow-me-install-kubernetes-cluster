@@ -24,7 +24,7 @@ export NODE_NAMES=(kube-node1 kube-node2 kube-node3)
 export MASTER_VIP=172.27.129.253
 
 # kube-apiserver VIP 地址（HA 组件 haproxy 监听 8443 端口）
-export KUBE_APISERVER="https://${MASTER_IP}:8443"
+export KUBE_APISERVER="https://${MASTER_VIP}:8443"
 
 # HA 节点，配置 VIP 的网络接口名称
 export VIP_IF="eth0"

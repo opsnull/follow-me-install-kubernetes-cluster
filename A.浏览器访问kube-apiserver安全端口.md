@@ -16,7 +16,7 @@
 这里使用部署 kubectl 命令行工具时创建的 admin 证书、私钥和上面的 ca 证书，创建一个浏览器可以使用 PKCS#12/PFX 格式的证书：
 
 ``` bash
-[k8s@kube-node1 ~]$ openssl pkcs12 -export -out admin.pfx -inkey admin-key.pem -in admin.pem -certfile ca.pem
+[k8s@m7-devops-128071 ~]$ openssl pkcs12 -export -out admin.pfx -inkey admin-key.pem -in admin.pem -certfile ca.pem
 ```
 
 将创建的 admin.pfx 导入到系统的证书中。对于 Mac，操作如下：

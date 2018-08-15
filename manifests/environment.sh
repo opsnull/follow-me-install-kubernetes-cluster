@@ -12,13 +12,13 @@ SERVICE_CIDR="10.254.0.0/16"
 CLUSTER_CIDR="172.30.0.0/16"
 
 # 服务端口范围 (NodePort Range)
-export NODE_PORT_RANGE="8400-9000"
+export NODE_PORT_RANGE="30000-32767"
 
 # 集群各机器 IP 数组
-export NODE_IPS=(172.27.129.105 172.27.129.111 172.27.129.112)
+export NODE_IPS=(172.27.128.150 172.27.128.149 172.27.128.148)
 
 # 集群各 IP 对应的 主机名数组
-export NODE_NAMES=(kube-node1 kube-node2 kube-node3)
+export NODE_NAMES=(m7-autocv-gpu01 m7-autocv-gpu02 m7-autocv-gpu03)
 
 # kube-apiserver 的 VIP（HA 组件 keepalived 发布的 IP）
 export MASTER_VIP=172.27.129.253
@@ -30,10 +30,10 @@ export KUBE_APISERVER="https://${MASTER_VIP}:8443"
 export VIP_IF="eth0"
 
 # etcd 集群服务地址列表
-export ETCD_ENDPOINTS="https://172.27.129.105:2379,https://172.27.129.111:2379,https://172.27.129.112:2379"
+export ETCD_ENDPOINTS="https://172.27.128.150:2379,https://172.27.128.149:2379,https://172.27.128.148:2379"
 
 # etcd 集群间通信的 IP 和端口
-export ETCD_NODES="kube-node1=https://172.27.129.105:2380,kube-node2=https://172.27.129.111:2380,kube-node3=https://172.27.129.112:2380"
+export ETCD_NODES="m7-autocv-gpu01=https://172.27.128.150:2380,m7-autocv-gpu02=https://172.27.128.149:2380,m7-autocv-gpu03=https://172.27.128.148:2380"
 
 # flanneld 网络配置前缀
 export FLANNEL_ETCD_PREFIX="/kubernetes/network"
@@ -44,8 +44,8 @@ export CLUSTER_KUBERNETES_SVC_IP="10.254.0.1"
 # 集群 DNS 服务 IP (从 SERVICE_CIDR 中预分配)
 export CLUSTER_DNS_SVC_IP="10.254.0.2"
 
-# 集群 DNS 域名
-export CLUSTER_DNS_DOMAIN="cluster.local."
+# 集群 DNS 域名，注意域名不以 . 结尾
+export CLUSTER_DNS_DOMAIN="cluster.local"
 
 # 将二进制目录 /opt/k8s/bin 加到 PATH 中
 export PATH=/opt/k8s/bin:$PATH

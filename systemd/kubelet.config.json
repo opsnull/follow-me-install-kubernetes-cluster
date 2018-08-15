@@ -20,7 +20,7 @@
       "cacheUnauthorizedTTL": "30s"
     }
   },
-  "address": "172.27.129.111",
+  "address": "172.27.128.149",
   "port": 10250,
   "readOnlyPort": 0,
   "cgroupDriver": "cgroupfs",
@@ -30,6 +30,6 @@
     "RotateKubeletClientCertificate": true,
     "RotateKubeletServerCertificate": true
   },
-  "clusterDomain": "cluster.local.",
+  "clusterDomain": "cluster.local",
   "clusterDNS": ["10.254.0.2"]
 }

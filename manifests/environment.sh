@@ -15,13 +15,13 @@ CLUSTER_CIDR="172.30.0.0/16"
 export NODE_PORT_RANGE="30000-32767"
 
 # 集群各机器 IP 数组
-export NODE_IPS=(172.27.128.71 172.27.128.107 172.27.128.123)
+export NODE_IPS=(172.27.128.120 172.27.128.105 172.27.128.119)
 
 # 集群各 IP 对应的 主机名数组
-export NODE_NAMES=(m7-devops-128071 m7-devops-128107 m7-devops-128123)
+export NODE_NAMES=(m7-demo-128120 m7-demo-128105 m7-demo-128119)
 
 # kube-apiserver 的 VIP（HA 组件 keepalived 发布的 IP）
-export MASTER_VIP=172.27.128.254
+export MASTER_VIP=172.27.128.251
 
 # kube-apiserver VIP 地址（HA 组件 haproxy 监听 8443 端口）
 export KUBE_APISERVER="https://${MASTER_VIP}:8443"
@@ -30,10 +30,10 @@ export KUBE_APISERVER="https://${MASTER_VIP}:8443"
 export VIP_IF="enp3s0f0"
 
 # etcd 集群服务地址列表
-export ETCD_ENDPOINTS="https://172.27.128.71:2379,https://172.27.128.107:2379,https://172.27.128.123:2379"
+export ETCD_ENDPOINTS="https://172.27.128.120:2379,https://172.27.128.105:2379,https://172.27.128.119:2379"
 
 # etcd 集群间通信的 IP 和端口
-export ETCD_NODES="m7-devops-128071=https://172.27.128.71:2380,m7-devops-128107=https://172.27.128.107:2380,m7-devops-128123=https://172.27.128.123:2380"
+export ETCD_NODES="m7-demo-128120=https://172.27.128.120:2380,m7-demo-128105=https://172.27.128.105:2380,m7-demo-128119=https://172.27.128.119:2380"
 
 # flanneld 网络配置前缀
 export FLANNEL_ETCD_PREFIX="/kubernetes/network"

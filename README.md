@@ -45,12 +45,3 @@
 1. [11.部署Harbor-Registry](11.部署Harbor-Registry.md)	
 1. [12.清理集群](12.清理集群.md)
 1. [A.浏览器访问apiserver安全端口](A.浏览器访问kube-apiserver安全端口.md)
-
-## 在线阅读
-
-+ [Github](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.8.14)
-
-## 电子书
-
-+ pdf 格式 [下载](https://legacy.gitbook.com/download/pdf/book/opsnull/follow-me-install-kubernetes-cluster/v/5a83e64476b1e5a231b183f2c147893322e168cd_1)
-+ epub 格式 [下载](https://legacy.gitbook.com/download/epub/book/opsnull/follow-me-install-kubernetes-cluster/v/5a83e64476b1e5a231b183f2c147893322e168cd_1)

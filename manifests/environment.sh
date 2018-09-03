@@ -1,5 +1,43 @@
 #!/usr/bin/bash
 
+# 集群各机器 IP 数组
+export NODE_IPS=(172.27.136.1 172.27.136.2 172.27.136.3)
+
+# 集群各 IP 对应的 主机名数组
+export NODE_NAMES=(m7-demo-136001 m7-demo-136002 m7-demo-136003)
+
+# etcd 集群服务地址列表
+export ETCD_ENDPOINTS="https://172.27.136.1:2379,https://172.27.136.2:2379,https://172.27.136.3:2379"
+
+# etcd 集群间通信的 IP 和端口
+export ETCD_NODES="m7-demo-136001=https://172.27.136.1:2380,m7-demo-136002=https://172.27.136.2:2380,m7-demo-136003=https://172.27.136.3:2380"
+
+# kube-apiserver 的 VIP（HA 组件 keepalived 发布的 IP）
+export MASTER_VIP=172.27.128.251
+
+# kube-apiserver VIP 地址（HA 组件 haproxy 监听 8443 端口）
+export KUBE_APISERVER="https://${MASTER_VIP}:8443"
+
+# HA 节点，配置 VIP 的网络接口名称
+export VIP_IF="eth0"
+
+# keepalived 的 virtual_router_id 值，位于 [0, 255] 之间
+export VIRTUAL_ROUTER_ID=80 # 从 80 开始递增
+
+# keepalived 的 router_id 值
+export ROUTER_ID=136001 # IP 后两段
+
+# etcd 数据目录
+export ETCD_DIR="/mnt/disk01/etcd"
+
+# k8s 各组件数据目录
+export K8S_DIR="/mnt/disk01/k8s"
+
+# docker 数据目录
+export DOCKER_DIR="/mnt/disk01/docker"
+
+## 以下参数一般不需要修改
+
 # TLS Bootstrapping 使用的 Token，可以使用命令 head -c 16 /dev/urandom | od -An -t x | tr -d ' ' 生成
 BOOTSTRAP_TOKEN="41f7e4ba8b7be874fcff18bf5cf41a7c"
 
@@ -13,27 +51,6 @@ CLUSTER_CIDR="172.30.0.0/16"
 
 # 服务端口范围 (NodePort Range)
 export NODE_PORT_RANGE="30000-32767"
-
-# 集群各机器 IP 数组
-export NODE_IPS=(172.27.128.120 172.27.128.105 172.27.128.119)
-
-# 集群各 IP 对应的 主机名数组
-export NODE_NAMES=(m7-demo-128120 m7-demo-128105 m7-demo-128119)
-
-# kube-apiserver 的 VIP（HA 组件 keepalived 发布的 IP）
-export MASTER_VIP=172.27.128.251
-
-# kube-apiserver VIP 地址（HA 组件 haproxy 监听 8443 端口）
-export KUBE_APISERVER="https://${MASTER_VIP}:8443"
-
-# HA 节点，配置 VIP 的网络接口名称
-export VIP_IF="enp3s0f0"
-
-# etcd 集群服务地址列表
-export ETCD_ENDPOINTS="https://172.27.128.120:2379,https://172.27.128.105:2379,https://172.27.128.119:2379"
-
-# etcd 集群间通信的 IP 和端口
-export ETCD_NODES="m7-demo-128120=https://172.27.128.120:2380,m7-demo-128105=https://172.27.128.105:2380,m7-demo-128119=https://172.27.128.119:2380"
 
 # flanneld 网络配置前缀
 export FLANNEL_ETCD_PREFIX="/kubernetes/network"

@@ -24,11 +24,11 @@ export VIP_IF="eth0"
 # keepalived 的 virtual_router_id 值，位于 [0, 255] 之间
 export VIRTUAL_ROUTER_ID=80 # 80 + 集群第一个 IP 的最后一段值
 
-# keepalived 的 router_id 值
-export ROUTER_ID=136001 # 群第一个 IP 的最后两段值
-
 # etcd 数据目录
-export ETCD_DIR="/mnt/disk01/etcd"
+export ETCD_DATA_DIR="/mnt/disk01/etcd"
+
+# etcd WAL 目录，建议是 SSD 磁盘分区，或者和 ETCD_DATA_DIR 不同的磁盘分区
+export ETCD_WAL_DIR="/mnt/disk01/etcd"
 
 # k8s 各组件数据目录
 export K8S_DIR="/mnt/disk01/k8s"

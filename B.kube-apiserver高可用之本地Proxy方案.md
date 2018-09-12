@@ -1,6 +1,6 @@
 # kube-apiserver 高可用之本地 Proxy
 
-K8S 节点上的 kublet、kube-proxy 的配置文件中静态指定了某个 kube-apiserver IP，如果该 apiserver 实例挂掉，可能会引起服务异常。
+kublet、kube-proxy 的配置文件中静态指定了某个 kube-apiserver IP，如果该 apiserver 实例挂掉，可能会引起服务异常。
 
 本文档讲解使用 nginx 4 层透明代理功能实现 K8S 节点访问 kube-apiserver 服务时高可用的方案。
 

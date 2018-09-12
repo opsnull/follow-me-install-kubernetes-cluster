@@ -1,4 +1,4 @@
-# kube-apiserver 高可用之本地 Proxy
+# kube-apiserver 高可用之本地 Proxy 方案
 
 kublet、kube-proxy 的配置文件中静态指定了某个 kube-apiserver IP，如果该 apiserver 实例挂掉，可能会引起服务异常。
 
@@ -12,12 +12,12 @@ kublet、kube-proxy 的配置文件中静态指定了某个 kube-apiserver IP，
 
 + 控制节点的 kube-controller-manager、kube-scheduler 是多实例部署，且都访问本地的 kube-apiserver，所以只要有一个控制节点工作正常，就可以保证高可用；
 + 集群内的 Pod 使用域名 kubernetes 访问 kube-apiserver 时也是高可用的：因为 kube-dns 会自动解析出多个 kube-apiserver 节点的 IP。
-+ 工作节点上的 kubelet、kube-proxy 通过本地的 kube-nginx 访问 kube-apiserver，从而实现 kube-apiserver 的高可用。
++ 工作节点上的 kubelet、kube-proxy 通过本地的 kube-nginx （监听 127.0.0.1）访问 kube-apiserver，从而实现 kube-apiserver 的高可用。
 + kube-nginx 会对所有 kube-apiserver 实例做健康检查和负载均衡；
 
 ## 为何要重新编译 nginx ？
 
-官方发布的 nginx 软件包功能完整，在安装时还需要在线安装依赖的其它软件包。而场内一般没有外网和 YUM 源，所以我们需要重新编译一个最小功能集、最低依赖的 nginx 二进制程序，部署时不需要安装额外软件包。
+官方发布的 nginx 软件包功能完整，但在安装时还需要在线安装依赖的其它软件包。而场内一般没有外网和 YUM 源，所以我们需要重新编译一个最小功能集、最低依赖的 nginx 二进制程序，部署时不需要安装额外软件包。
 
 ## 下载和编译 nginx
 
@@ -174,7 +174,10 @@ journalctl -u kube-nginx
 ## 修改 kubelet、kube-proxy 配置，使用本地 nginx proxy
 
 修改 `/etc/kubernetes/kubelet.kubeconfig` 和 `/etc/kubernetes/kubelet-bootstrap.kubeconfig` 文件中的 `cluster server` 值为 `server: https://172.0.0.1:8443`；
+
 重启 kubelet 服务：`systemctl restart kubelet`；
 
+
 修改 `/etc/kubernetes/kube-proxy.kubeconfig` 文件中的  `cluster server` 值为 `server: https://172.0.0.1:8443`；
+
 重启 kube-proxy 服务： `systemctl restart kube-proxy`；

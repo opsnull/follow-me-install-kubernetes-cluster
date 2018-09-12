@@ -1,0 +1,180 @@
+# kube-apiserver 高可用之本地 Proxy
+
+K8S 节点上的 kublet、kube-proxy 的配置文件中静态指定了某个 kube-apiserver IP，如果该 apiserver 实例挂掉，可能会引起服务异常。
+
+本文档讲解使用 nginx 4 层透明代理功能实现 K8S 节点访问 kube-apiserver 服务时高可用的方案。
+
+另一种高可用方案是通过 VIP 实现的，参考：[06-1.部署高可用组件-keepalived.md](06-1.部署高可用组件-keepalived.md)
+
+## 基于 nginx proxy 的 kube-apiserver 高可用架构
+
+![nginx-proxy-ha.png](images/nginx-proxy-ha.png)
+
++ 控制节点的 kube-controller-manager、kube-scheduler 是多实例部署，且都访问本地的 kube-apiserver，所以只要有一个控制节点工作正常，就可以保证高可用；
++ 集群内的 Pod 使用域名 kubernetes 访问 kube-apiserver 时也是高可用的：因为 kube-dns 会自动解析出多个 kube-apiserver 节点的 IP。
++ 工作节点上的 kubelet、kube-proxy 通过本地的 kube-nginx 访问 kube-apiserver，从而实现 kube-apiserver 的高可用。
++ kube-nginx 会对所有 kube-apiserver 实例做健康检查和负载均衡；
+
+## 为何要重新编译 nginx ？
+
+官方发布的 nginx 软件包功能完整，在安装时还需要在线安装依赖的其它软件包。而场内一般没有外网和 YUM 源，所以我们需要重新编译一个最小功能集、最低依赖的 nginx 二进制程序，部署时不需要安装额外软件包。
+
+## 下载和编译 nginx
+
+下载源码：
+
+``` bash
+cd /opt/k8s/work
+http://nginx.org/download/nginx-1.15.3.tar.gz
+tar -xzvf nginx-1.15.3.tar.gz
+```
+
+配置编译参数：
+
+``` bash
+cd /opt/k8s/work/nginx-1.15.3
+mkdir nginx-prefix
+./configure --with-stream --without-http --prefix=$(pwd)/nginx-prefix --without-http_uwsgi_module --without-http_scgi_module --without-http_fastcgi_module
+```
++ `--with-stream`：开启 4 层透明转发(TCP Proxy)功能；
++ `--without-xxx`：关闭所有其他功能，这样生成的动态链接二进制程序依赖最小；
+
+输出：
+
+``` bash
+Configuration summary
+  + PCRE library is not used
+  + OpenSSL library is not used
+  + zlib library is not used
+
+  nginx path prefix: "/root/tmp/nginx-1.15.3/nginx-prefix"
+  nginx binary file: "/root/tmp/nginx-1.15.3/nginx-prefix/sbin/nginx"
+  nginx modules path: "/root/tmp/nginx-1.15.3/nginx-prefix/modules"
+  nginx configuration prefix: "/root/tmp/nginx-1.15.3/nginx-prefix/conf"
+  nginx configuration file: "/root/tmp/nginx-1.15.3/nginx-prefix/conf/nginx.conf"
+  nginx pid file: "/root/tmp/nginx-1.15.3/nginx-prefix/logs/nginx.pid"
+  nginx error log file: "/root/tmp/nginx-1.15.3/nginx-prefix/logs/error.log"
+  nginx http access log file: "/root/tmp/nginx-1.15.3/nginx-prefix/logs/access.log"
+  nginx http client request body temporary files: "client_body_temp"
+  nginx http proxy temporary files: "proxy_temp"
+```
+
+编译和安装：
+
+``` bash
+cd /opt/k8s/work/nginx-1.15.3
+make && make install
+```
+
+## 验证编译的 nginx 
+
+``` bash
+$ cd /opt/k8s/work/nginx-1.15.3
+$ ./nginx-prefix/sbin/nginx -v
+nginx version: nginx/1.15.3
+
+$ ldd ./nginx-prefix/sbin/nginx
+        linux-vdso.so.1 =>  (0x00007ffc945e7000)
+        libdl.so.2 => /lib64/libdl.so.2 (0x00007f4385072000)
+        libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f4384e56000)
+        libc.so.6 => /lib64/libc.so.6 (0x00007f4384a89000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007f4385276000)
+```
++ 由于只开启了 4 层透明转发功能，所以除了依赖 libc 等操作系统核心 lib 库外，没有对其它 lib 的依赖(如 libz、libssl 等)，这样可以方便部署到各版本操作系统中；
+
+## 安装和部署 nginx
+
+创建目录结构：
+
+``` bash
+mkdir /opt/k8s/kube-nginx/{conf,logs,sbin}
+```
+
+拷贝二进制程序：
+
+``` bash
+cp /opt/k8s/work/nginx-1.15.3/nginx-prefix/sbin/nginx  /opt/k8s/kube-nginx/sbin
+chmod a+x /opt/k8s/kube-nginx/sbin/*
+```
+
+配置 nginx，开启 4 层透明转发功能：
+
+``` bash
+cat > /opt/k8s/kube-nginx/conf/kube-nginx.conf <<EOF
+worker_processes 1;
+
+events {
+    worker_connections  1024;
+}
+
+stream {
+    upstream backend {
+        hash $remote_addr consistent;
+        server 172.27.128.71:6443         max_fails=3 fail_timeout=30s;
+        server 172.27.128.107:6443         max_fails=3 fail_timeout=30s;
+        server 172.27.128.123:6443         max_fails=3 fail_timeout=30s;
+    }
+
+    server {
+        listen 127.0.0.1:8443;
+        proxy_connect_timeout 1s;
+        proxy_pass backend;
+    }
+}
+EOF
+```
++ 需要根据集群 kube-apiserver 的实际情况，替换 backend 中 server 列表；
+
+## 配置 systemd unit 文件，启动服务
+
+配置 kube-nginx systemd unit 文件：
+
+``` bash
+cat > /etc/systemd/system/kube-nginx.service <<EOF
+[Unit]
+Description=kube-apiserver nginx proxy
+After=network.target
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+ExecStartPre=/opt/k8s/kube-nginx/sbin/nginx -c /opt/k8s/kube-nginx/conf/kube-nginx.conf -p /opt/k8s/kube-nginx -t
+ExecStart=/opt/k8s/kube-nginx/sbin/nginx -c /opt/k8s/kube-nginx/conf/kube-nginx.conf -p /opt/k8s/kube-nginx
+ExecReload=/opt/k8s/kube-nginx/sbin/nginx -c /opt/k8s/kube-nginx/conf/kube-nginx.conf -p /opt/k8s/kube-nginx -s reload
+PrivateTmp=true
+Restart=always
+RestartSec=5
+StartLimitInterval=0
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+启动 kube-nginx 服务：
+
+``` bash
+systemctl daemon-reload && systemctl enable kube-nginx && systemctl restart kube-nginx
+```
+
+## 检查 kube-nginx 服务运行状态
+
+``` bash
+systemctl status kube-nginx |grep 'Active:'
+```
+
+确保状态为 `active (running)`，否则到 master 节点查看日志，确认原因：
+
+``` bash
+journalctl -u kube-nginx
+```
+
+## 修改 kubelet、kube-proxy 配置，使用本地 nginx proxy
+
+修改 `/etc/kubernetes/kubelet.kubeconfig` 和 `/etc/kubernetes/kubelet-bootstrap.kubeconfig` 文件中的 `cluster server` 值为 `server: https://172.0.0.1:8443`；
+重启 kubelet 服务：`systemctl restart kubelet`；
+
+修改 `/etc/kubernetes/kube-proxy.kubeconfig` 文件中的  `cluster server` 值为 `server: https://172.0.0.1:8443`；
+重启 kube-proxy 服务： `systemctl restart kube-proxy`；

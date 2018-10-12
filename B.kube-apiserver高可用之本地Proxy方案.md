@@ -111,8 +111,8 @@ stream {
     upstream backend {
         hash $remote_addr consistent;
         server 172.27.128.71:6443         max_fails=3 fail_timeout=30s;
-        server 172.27.128.107:6443         max_fails=3 fail_timeout=30s;
-        server 172.27.128.123:6443         max_fails=3 fail_timeout=30s;
+        server 172.27.128.107:6443        max_fails=3 fail_timeout=30s;
+        server 172.27.128.123:6443        max_fails=3 fail_timeout=30s;
     }
 
     server {
@@ -176,7 +176,6 @@ journalctl -u kube-nginx
 修改 `/etc/kubernetes/kubelet.kubeconfig` 和 `/etc/kubernetes/kubelet-bootstrap.kubeconfig` 文件中的 `cluster server` 值为 `server: https://172.0.0.1:8443`；
 
 重启 kubelet 服务：`systemctl restart kubelet`；
-
 
 修改 `/etc/kubernetes/kube-proxy.kubeconfig` 文件中的  `cluster server` 值为 `server: https://172.0.0.1:8443`；
 

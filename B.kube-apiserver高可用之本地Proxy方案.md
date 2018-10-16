@@ -25,7 +25,7 @@ kublet、kube-proxy 的配置文件中静态指定了某个 kube-apiserver IP，
 
 ``` bash
 cd /opt/k8s/work
-http://nginx.org/download/nginx-1.15.3.tar.gz
+wget http://nginx.org/download/nginx-1.15.3.tar.gz
 tar -xzvf nginx-1.15.3.tar.gz
 ```
 
@@ -69,10 +69,19 @@ make && make install
 ## 验证编译的 nginx 
 
 ``` bash
-$ cd /opt/k8s/work/nginx-1.15.3
-$ ./nginx-prefix/sbin/nginx -v
-nginx version: nginx/1.15.3
+cd /opt/k8s/work/nginx-1.15.3
+./nginx-prefix/sbin/nginx -v
+```
 
+输出：
+
+``` bash
+nginx version: nginx/1.15.3
+```
+
+查看 nginx 动态链接的库：
+
+``` bash
 $ ldd ./nginx-prefix/sbin/nginx
         linux-vdso.so.1 =>  (0x00007ffc945e7000)
         libdl.so.2 => /lib64/libdl.so.2 (0x00007f4385072000)
@@ -87,7 +96,7 @@ $ ldd ./nginx-prefix/sbin/nginx
 创建目录结构：
 
 ``` bash
-mkdir /opt/k8s/kube-nginx/{conf,logs,sbin}
+mkdir -p /opt/k8s/kube-nginx/{conf,logs,sbin}
 ```
 
 拷贝二进制程序：
@@ -110,9 +119,9 @@ events {
 stream {
     upstream backend {
         hash $remote_addr consistent;
-        server 172.27.128.71:6443         max_fails=3 fail_timeout=30s;
-        server 172.27.128.107:6443        max_fails=3 fail_timeout=30s;
-        server 172.27.128.123:6443        max_fails=3 fail_timeout=30s;
+        server 172.27.128.8:6443          max_fails=3 fail_timeout=30s;
+        server 172.27.128.51:6443         max_fails=3 fail_timeout=30s;
+        server 172.27.128.118:6443        max_fails=3 fail_timeout=30s;
     }
 
     server {

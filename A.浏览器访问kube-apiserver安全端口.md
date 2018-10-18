@@ -7,6 +7,12 @@
 
 ![keychain](images/keychain.png)
 
+对于 Windows 系统，使用以下命令导入根证书：
+
+``` bash
+keytool -import -v -trustcacerts -alias appmanagement -file "PATH...\\ca.pem" -storepass password -keystore cacerts
+```
+
 再次访问 https://172.27.129.105:6443/，已信任，但提示 401，未授权的访问：
 
 ![ssl-success](images/ssl-success.png)
@@ -40,6 +46,8 @@
 
 
 ## 参考
+
 + https://github.com/kubernetes/kubernetes/issues/31665
 + https://www.sslshopper.com/ssl-converter.html
++ https://stackoverflow.com/questions/40847638/how-chrome-browser-know-which-client-certificate-to-prompt-for-a-site
 + https://stackoverflow.com/questions/40847638/how-chrome-browser-know-which-client-certificate-to-prompt-for-a-site

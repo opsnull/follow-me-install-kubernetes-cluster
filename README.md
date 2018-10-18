@@ -47,6 +47,7 @@
 1. [11.部署Harbor-Registry](11.部署Harbor-Registry.md)	
 1. [12.清理集群](12.清理集群.md)
 1. [A.浏览器访问apiserver安全端口](A.浏览器访问kube-apiserver安全端口.md)
+1. [B.校验TLS证书](B.校验TLS证书.md)
 
 ## 在线阅读
 

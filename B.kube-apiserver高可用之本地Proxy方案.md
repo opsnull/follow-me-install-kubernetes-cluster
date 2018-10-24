@@ -182,10 +182,10 @@ journalctl -u kube-nginx
 
 ## 修改 kubelet、kube-proxy 配置，使用本地 nginx proxy
 
-修改 `/etc/kubernetes/kubelet.kubeconfig` 和 `/etc/kubernetes/kubelet-bootstrap.kubeconfig` 文件中的 `cluster server` 值为 `server: https://172.0.0.1:8443`；
+修改 `/etc/kubernetes/kubelet.kubeconfig` 和 `/etc/kubernetes/kubelet-bootstrap.kubeconfig` 文件中的 `cluster server` 值为 `server: https://127.0.0.1:8443`；
 
 重启 kubelet 服务：`systemctl restart kubelet`；
 
-修改 `/etc/kubernetes/kube-proxy.kubeconfig` 文件中的  `cluster server` 值为 `server: https://172.0.0.1:8443`；
+修改 `/etc/kubernetes/kube-proxy.kubeconfig` 文件中的  `cluster server` 值为 `server: https://127.0.0.1:8443`；
 
 重启 kube-proxy 服务： `systemctl restart kube-proxy`；

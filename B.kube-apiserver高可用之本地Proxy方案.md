@@ -102,9 +102,10 @@ mkdir -p /opt/k8s/kube-nginx/{conf,logs,sbin}
 拷贝二进制程序：
 
 ``` bash
-cp /opt/k8s/work/nginx-1.15.3/nginx-prefix/sbin/nginx  /opt/k8s/kube-nginx/sbin
+cp /opt/k8s/work/nginx-1.15.3/nginx-prefix/sbin/nginx  /opt/k8s/kube-nginx/sbin/kube-nginx
 chmod a+x /opt/k8s/kube-nginx/sbin/*
 ```
++ 进程重命名为 kube-nginx；
 
 配置 nginx，开启 4 层透明转发功能：
 
@@ -148,9 +149,9 @@ Wants=network-online.target
 
 [Service]
 Type=forking
-ExecStartPre=/opt/k8s/kube-nginx/sbin/nginx -c /opt/k8s/kube-nginx/conf/kube-nginx.conf -p /opt/k8s/kube-nginx -t
-ExecStart=/opt/k8s/kube-nginx/sbin/nginx -c /opt/k8s/kube-nginx/conf/kube-nginx.conf -p /opt/k8s/kube-nginx
-ExecReload=/opt/k8s/kube-nginx/sbin/nginx -c /opt/k8s/kube-nginx/conf/kube-nginx.conf -p /opt/k8s/kube-nginx -s reload
+ExecStartPre=/opt/k8s/kube-nginx/sbin/kube-nginx -c /opt/k8s/kube-nginx/conf/kube-nginx.conf -p /opt/k8s/kube-nginx -t
+ExecStart=/opt/k8s/kube-nginx/sbin/kube-nginx -c /opt/k8s/kube-nginx/conf/kube-nginx.conf -p /opt/k8s/kube-nginx
+ExecReload=/opt/k8s/kube-nginx/sbin/kube-nginx -c /opt/k8s/kube-nginx/conf/kube-nginx.conf -p /opt/k8s/kube-nginx -s reload
 PrivateTmp=true
 Restart=always
 RestartSec=5

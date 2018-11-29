@@ -17,7 +17,7 @@
 ## 其它版本
 
 [v1.6.2](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.6.2)
-[v1.10.4](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.10.4)
+[v1.10.4](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.11.2)
 
 ## 步骤列表
 

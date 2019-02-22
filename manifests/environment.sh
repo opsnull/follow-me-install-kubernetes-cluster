@@ -6,19 +6,11 @@ export ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
 # 集群各机器 IP 数组
 export NODE_IPS=(172.27.128.179 172.27.128.101 172.27.128.102)
 
-<<<<<<< HEAD
-# 服务网段，部署前路由不可达，部署后集群内路由可达(kube-proxy 和 ipvs 保证)
-export SERVICE_CIDR="10.254.0.0/16"
-
-# Pod 网段，建议 /16 段地址，部署前路由不可达，部署后集群内路由可达(flanneld 保证)
-export CLUSTER_CIDR="172.30.0.0/16"
-=======
 # 集群各 IP 对应的 主机名数组
 export NODE_NAMES=(m7-inf-prod01 m7-common-dfs03 m7-common-dfs02 )
 
 # etcd 集群服务地址列表
 export ETCD_ENDPOINTS="https://172.27.128.179:2379,https://172.27.128.101:2379,https://172.27.128.102:2379"
->>>>>>> v.1.12
 
 # etcd 集群间通信的 IP 和端口
 export ETCD_NODES="m7-inf-prod01=https://172.27.128.179:2380,m7-common-dfs03=https://172.27.128.101:2380,m7-common-dfs02=https://172.27.128.102:2380"

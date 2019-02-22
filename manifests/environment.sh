@@ -4,16 +4,16 @@
 export ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
 
 # 集群各机器 IP 数组
-export NODE_IPS=(172.27.128.179 172.27.128.101 172.27.128.102)
+export NODE_IPS=(172.27.128.150 172.27.128.149 172.27.128.148)
 
 # 集群各 IP 对应的 主机名数组
-export NODE_NAMES=(m7-inf-prod01 m7-common-dfs03 m7-common-dfs02 )
+export NODE_NAMES=(m7-autocv-gpu01 m7-autocv-gpu02 m7-autocv-gpu03 )
 
 # etcd 集群服务地址列表
-export ETCD_ENDPOINTS="https://172.27.128.179:2379,https://172.27.128.101:2379,https://172.27.128.102:2379"
+export ETCD_ENDPOINTS="https://172.27.128.150:2379,https://172.27.128.149:2379,https://172.27.128.148:2379"
 
 # etcd 集群间通信的 IP 和端口
-export ETCD_NODES="m7-inf-prod01=https://172.27.128.179:2380,m7-common-dfs03=https://172.27.128.101:2380,m7-common-dfs02=https://172.27.128.102:2380"
+export ETCD_NODES="m7-autocv-gpu01=https://172.27.128.150:2380,m7-autocv-gpu02=https://172.27.128.149:2380,m7-autocv-gpu03=https://172.27.128.148:2380"
 
 # kube-apiserver 的反向代理(kube-nginx)地址端口
 export KUBE_APISERVER="https://127.0.0.1:8443"

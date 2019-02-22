@@ -11,7 +11,7 @@
 keytool -import -v -trustcacerts -alias appmanagement -file "PATH...\\ca.pem" -storepass password -keystore cacerts
 ```
 
-再次访问 https://172.27.129.105:6443/，已信任，但提示 401，未授权的访问：
+再次访问 https://172.27.128.150:6443/，已信任，但提示 401，未授权的访问：
 
 ![ssl-success](images/ssl-success.png)
 
@@ -20,14 +20,14 @@ keytool -import -v -trustcacerts -alias appmanagement -file "PATH...\\ca.pem" -s
 这里使用部署 kubectl 命令行工具时创建的 admin 证书、私钥和上面的 ca 证书，创建一个浏览器可以使用 PKCS#12/PFX 格式的证书：
 
 ``` bash
-[k8s@kube-node1 ~]$ openssl pkcs12 -export -out admin.pfx -inkey admin-key.pem -in admin.pem -certfile ca.pem
+[k8s@m7-autocv-gpu01 ~]$ openssl pkcs12 -export -out admin.pfx -inkey admin-key.pem -in admin.pem -certfile ca.pem
 ```
 
 将创建的 admin.pfx 导入到系统的证书中。对于 Mac，操作如下：
 
 ![admin-cert](images/admin-cert.png)
 
-**重启浏览器**，再次访问 https://172.27.129.105:6443/，提示选择一个浏览器证书，这里选中上面导入的 admin.pfx：
+**重启浏览器**，再次访问 https://172.27.128.150:6443/，提示选择一个浏览器证书，这里选中上面导入的 admin.pfx：
 
 ![select-cert](images/select-cert.png)
 

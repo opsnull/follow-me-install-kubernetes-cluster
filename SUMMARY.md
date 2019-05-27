@@ -9,7 +9,7 @@
 * [04.部署etcd集群](04.部署etcd集群.md)				
 * [05.部署flannel网络](05.部署flannel网络.md)			
 * [06.apiserver高可用之nginx代理.md](06-0.apiserver高可用之nginx代理.md)
-    * [06-1.部署master节点](06-1.部署master节点.md)
+* [06-1.部署master节点](06-1.部署master节点.md)
     * [06-2.apiserver集群](06-2.apiserver集群.md)	
     * [06-3.controller-manager集群](06-3.controller-manager集群.md)
     * [06-4.scheduler集群](06-4.scheduler集群.md)			

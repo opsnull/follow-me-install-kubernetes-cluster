@@ -68,6 +68,95 @@
   <img src="https://github.com/opsnull/follow-me-install-kubernetes-cluster/blob/master/images/weixin_qr.jpg?raw=true" alt="weixin_qr.jpg"/>
 </p>
 
+## 广告
+
+维护一个开源项目需要很多时间和精力，请点击下面的赞助商广告，给 opsnull 加杯 coffee 吧，谢谢！
+
+***
+
+### Kubernetes 微服务管理面板之 Kuboard （赞助推广）
+
+相较于 Kubernetes Dashboard，Kuboard 是一款操作型（可以直接在界面中编辑工作负载，无需编写 YAML 文件）的管理面板。同时，Kuboard 依据微服务参考架构对名称空间的工作负载进行分层显示，是一款基于 Kubernetes 的微服务管理面板。
+
+<div style="border-top: 1px solid #eaecef;
+    padding: 1.2rem 0;
+    margin-top: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: stretch;
+    justify-content: space-between;">
+<div style="flex-grow: 1; flex-basis: 25%; min-width: 200px;">
+  <h2 style="font-size: 1.1rem; font-weight: 500; border-bottom: none; padding-bottom: 0; color: #3a5169;">
+  快速落地 Kubernetes
+  </h2>
+  <li style="color: #4e6e8e;">
+  快速安装
+  </li>
+  <li style="color: #4e6e8e;">
+  图形化界面
+  </li>
+  <li style="color: #4e6e8e;">
+  场景化设计
+  </li>
+</div>
+
+<div style="flex-grow: 1; flex-basis: 25%; min-width: 200px;">
+  <h2 style="font-size: 1.1rem; font-weight: 500; border-bottom: none; padding-bottom: 0; color: #3a5169;">
+  微服务架构
+  </h2>
+  <li style="color: #4e6e8e;">
+  经典微服务参考架构
+  </li>
+  <li style="color: #4e6e8e;">
+  Spring Cloud 实战案例
+  </li>
+</div>
+
+<div style="flex-grow: 1; flex-basis: 25%; min-width: 200px;">
+  <h2 style="font-size: 1.1rem; font-weight: 500; border-bottom: none; padding-bottom: 0; color: #3a5169;">
+  多层次监控
+  </h2>
+  <li style="color: #4e6e8e;">
+  资源层监控
+  </li>
+  <li style="color: #4e6e8e;">
+  中间件层监控
+  </li>
+  <li style="color: #4e6e8e;">
+  链路层监控
+  </li>
+</div>
+
+<div style="flex-grow: 1; flex-basis: 25%; min-width: 180px;">
+  <h2 style="font-size: 1.1rem; font-weight: 500; border-bottom: none; padding-bottom: 0; color: #3a5169;">
+  适用范围
+  </h2>
+  <li style="color: #4e6e8e;">
+  物理机/虚拟机
+  </li>
+  <li style="color: #4e6e8e;">
+  私有云
+  </li>
+  <li style="color: #4e6e8e;">
+  阿里云、腾讯云、亚马逊云 ...
+  </li>
+</div>
+
+</div>
+
+<p>
+<a target="_blank" :href="http://demo.kuboard.cn/#/dashboard?k8sToken=eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJvYXJkLXZpZXdlci10b2tlbi1mdGw0diIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJvYXJkLXZpZXdlciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImE1YWFiMmQxLTQxMjYtNDU5Yi1hZmNhLTkyYzMwZDk0NTQzNSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJvYXJkLXZpZXdlciJ9.eYqN3FLIT6xs0-lm8AidZtaiuHeX70QTn9FhJglhEyh5dlyMU5lo8UtR-h1OY8sTSeYdYKJAS83-9SUObKQhp6XNmRgOYAfZblKUy4mvbGVQ3dn_qnzxYxt6zdGCwIY7E34eNNd9IjMF7G_Y4eJLWE7NvkSB1O8zbdn8En9rQXv_xJ9-ugCyr4CYB1lDGuZl3CIXgQ1FWcQdUBrxTT95tzcNTB0l6OUOGhRxOfw-RyIOST83GV5U0iVzxnD4sjgSaJefvCU-BmwXgpxAwRVhFyHEziXXa0CuZfBfJbmnQW308B4wocr4QDm6Nvmli1P3B6Yo9-HNF__d2hCwZEr7eg">
+  Kuboard 在线体验（只读，请在 PC 浏览器打开）
+</a>
+</p>
+
+<a target="_blank" :href="http://demo.kuboard.cn/#/dashboard?k8sToken=eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJvYXJkLXZpZXdlci10b2tlbi1mdGw0diIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJvYXJkLXZpZXdlciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImE1YWFiMmQxLTQxMjYtNDU5Yi1hZmNhLTkyYzMwZDk0NTQzNSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJvYXJkLXZpZXdlciJ9.eYqN3FLIT6xs0-lm8AidZtaiuHeX70QTn9FhJglhEyh5dlyMU5lo8UtR-h1OY8sTSeYdYKJAS83-9SUObKQhp6XNmRgOYAfZblKUy4mvbGVQ3dn_qnzxYxt6zdGCwIY7E34eNNd9IjMF7G_Y4eJLWE7NvkSB1O8zbdn8En9rQXv_xJ9-ugCyr4CYB1lDGuZl3CIXgQ1FWcQdUBrxTT95tzcNTB0l6OUOGhRxOfw-RyIOST83GV5U0iVzxnD4sjgSaJefvCU-BmwXgpxAwRVhFyHEziXXa0CuZfBfJbmnQW308B4wocr4QDm6Nvmli1P3B6Yo9-HNF__d2hCwZEr7eg">
+  <img src="./images/kuboard.png" style="border: 1px solid #d7dae2;"></img>
+</a>
+
+***
+
 ## 版权
 
 Copyright 2017-2019 zhangjun (geekard@qq.com)

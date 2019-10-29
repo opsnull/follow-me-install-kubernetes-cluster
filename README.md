@@ -70,6 +70,21 @@
 
 ## 广告位
 
+维护一个开源项目需要很多时间和精力，请点击下面的赞助商广告，给 opsnull 加杯 coffee 吧，谢谢！	
+
+***
+
+### KubeOperator - K8s 集群规划、部署及管理平台 （赞助推广）
+
+[KubeOperator](https://kubeoperator.io/) 是一个开源项目，通过 Web UI 在 VMware、OpenStack、物理机上一键部署和管理生产级别的 Kubernetes 集群。
+
+-  [:tv:8 分钟演示视频]( https://kubeoperator-1256577600.file.myqcloud.com/video/KubeOperator2.1.mp4)：详细演示 KubeOperator 的功能。
+-  [:books:安装及使用文档](https://docs.kubeoperator.io/)：包括 KubeOperator 安装文档、使用文档、功能截屏、常见问题等。
+
+![kubeoperator-ui](https://raw.githubusercontent.com/KubeOperator/website/master/images/kubeoperator-ui.jpg)
+
+***
+
 ## 版权
 
 Copyright 2017-2019 zhangjun (geekard@qq.com)

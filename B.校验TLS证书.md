@@ -1,4 +1,4 @@
-# 校验证书
+# B. 校验 TLS 证书
 
 以校验 kubernetes 证书(后续部署 master 节点时生成的)为例：
 

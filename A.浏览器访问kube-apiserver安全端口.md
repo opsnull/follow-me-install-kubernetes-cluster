@@ -1,4 +1,4 @@
-# A.浏览器访问 kube-apiserver 安全端口
+# A. 浏览器访问 kube-apiserver 安全端口
 
 浏览器访问 kube-apiserver 的安全端口 6443 时，提示证书不被信任：
 
@@ -16,7 +16,7 @@
 keytool -import -v -trustcacerts -alias appmanagement -file "PATH...\\ca.pem" -storepass password -keystore cacerts
 ```
 
-再次访问 [apiserver 地址](https://172.27.137.240:6443/)，已信任，但提示 401，未授权的访问：
+再次访问 [apiserver 地址](https://172.27.138.251:6443/)，已信任，但提示 401，未授权的访问：
 
 ![ssl-success](images/ssl-success.png)
 
@@ -32,7 +32,7 @@ $ openssl pkcs12 -export -out admin.pfx -inkey admin-key.pem -in admin.pem -cert
 
 ![admin-cert](images/admin-cert.png)
 
-**重启浏览器**，再次访问 [apiserver 地址](https://172.27.137.240:6443/)，提示选择一个浏览器证书，这里选中上面导入的 admin.pfx：
+**重启浏览器**，再次访问 [apiserver 地址](https://172.27.138.251:6443/)，提示选择一个浏览器证书，这里选中上面导入的 admin.pfx：
 
 ![select-cert](images/select-cert.png)
 

@@ -1,10 +1,10 @@
 tags: registry, harbor
 
-# 11.部署 harbor 私有仓库
+# D. 部署 harbor 私有仓库
 
 <!-- TOC -->
 
-- [11.部署 harbor 私有仓库](#11部署-harbor-私有仓库)
+- [D. 部署 harbor 私有仓库](#d-部署-harbor-私有仓库)
     - [使用的变量](#使用的变量)
     - [下载文件](#下载文件)
     - [导入 docker images](#导入-docker-images)
@@ -81,7 +81,7 @@ $ cat > harbor-csr.json <<EOF
       "ST": "BeiJing",
       "L": "BeiJing",
       "O": "k8s",
-      "OU": "4Paradigm"
+      "OU": "opsnull"
     }
   ]
 }
@@ -232,7 +232,7 @@ registry             /entrypoint.sh serve /etc/ ...   Up (healthy)   5000/tcp
 
 浏览器访问 `https://${NODE_IP}`，示例的是 `https://172.27.129.81`；
 
-由于是在 virtualbox 虚机 zhangjun-k8s02 中运行，所以需要做下端口转发，Vagrant 文件中已经指定 host 端口为 4443，也可以在 virtualbox 的 GUI 中直接添加端口转发：
+由于是在 virtualbox 虚机 zhangjun-k8s-02 中运行，所以需要做下端口转发，Vagrant 文件中已经指定 host 端口为 4443，也可以在 virtualbox 的 GUI 中直接添加端口转发：
 
 ![virtualbox-harbor](./images/virtualbox-harbor.png)
 

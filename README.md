@@ -2,7 +2,7 @@
 
 ![dashboard-home](./images/dashboard-home.png)
 
-本系列文档介绍使用二进制部署最新 `kubernetes v1.14.2` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群。
+本系列文档介绍使用二进制部署最新 `kubernetes v1.16.6` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群。
 
 在部署的过程中，将详细列出各组件的启动参数，它们的含义和可能遇到的问题。
 
@@ -10,45 +10,53 @@
 
 所以本文档主要适合于那些有一定 kubernetes 基础，想通过一步步部署的方式来学习和了解系统配置、运行原理的人。
 
-本系列系文档适用于 `CentOS 7`、`Ubuntu 16.04` 及以上版本系统，**随着各组件的更新而更新**，有任何问题欢迎提 issue！
+本系列系文档适用于 `CentOS 7` 及以上版本系统，**随着各组件的更新而更新**，有任何问题欢迎提 issue！
 
 由于启用了 `x509` 证书双向认证、`RBAC` 授权等严格的安全机制，建议**从头开始部署**，否则可能会认证、授权等失败！
+
+从 v1.16.x 版本开始，本文档做了如下调整：
+1. 用 containerd 替换 docker 容器运行时，更加简单、健壮；
+2. 用 calico 替换 flannel 实现 Pod 网络互通，支持更大规模的集群；
+
+如果想继续使用 docker 和 flannel，请参考附件文档。
 
 ## 历史版本
 
 + [v1.6.2](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.6.2)：已停止更新；
-+ [v1.8.x](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.8.x)：继续更新；
-+ [v1.10.x](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.10.x)：继续更新；
-+ [v1.12.x](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.12.x)：继续更新；
++ [v1.8.x](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.8.x)：已停止更新；
++ [v1.10.x](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.10.x)：已停止更新；
++ [v1.12.x](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.12.x)：已停止更新；
++ [v1.14.x](https://github.com/opsnull/follow-me-install-kubernetes-cluster/tree/v1.14.x)：继续更新；
 
 ## 步骤列表
 
 1. [00.组件版本和配置策略](00.组件版本和配置策略.md)
-1. [01.系统初始化和全局变量](01.系统初始化和全局变量.md)
-1. [02.创建CA证书和秘钥](02.创建CA证书和秘钥.md)			
-1. [03.部署kubectl命令行工具](03.部署kubectl命令行工具.md)			
-1. [04.部署etcd集群](04.部署etcd集群.md)				
-1. [05.部署flannel网络](05.部署flannel网络.md)		
-1. [06.apiserver高可用之nginx代理.md](06-0.apiserver高可用之nginx代理.md)
-1. [06-1.部署master节点](06-1.部署master节点.md)
-    1. [06-2.apiserver集群](06-2.apiserver集群.md)	
-    1. [06-3.controller-manager集群](06-3.controller-manager集群.md)
-    1. [06-4.scheduler集群](06-4.scheduler集群.md)		
-1. [07.部署worker节点](07-0.部署worker节点.md)
-    1. [07-1.docker](07-1.docker.md)					
-    1. [07-2.kubelet](07-2.kubelet.md)				
-    1. [07-3.kube-proxy](07-3.kube-proxy.md)			
-1. [08.验证集群功能](08.验证集群功能.md)			
-1. [09.部署集群插件](09-0.部署集群插件.md)
-    1. [09-1.dns插件](09-1.dns插件.md)
-    1. [09-2.dashboard插件](09-2.dashboard插件.md)
-    1. [09-3.metrics-server插件](09-3.metrics-server插件.md)
-    1. [09-4.EFK插件](09-4.EFK插件.md)			
-1. [10.部署Docker-Registry](10.部署Docker-Registry.md)	
-1. [11.部署Harbor-Registry](11.部署Harbor-Registry.md)	
-1. [12.清理集群](12.清理集群.md)
+1. [01.初始化系统和全局变量](01.初始化系统和全局变量.md)
+1. [02.创建CA根证书和秘钥](02.创建CA根证书和秘钥.md)			
+1. [03.部署kubectl命令行工具](03.kubectl.md)			
+1. [04.部署etcd集群](04.etcd集群.md)				
+1. [05-1.部署master节点.md](05-1.master节点.md)
+    1. [05-2.apiserver集群](05-2.apiserver集群.md)
+    1. [05-3.controller-manager集群](05-3.controller-manager集群.md)	
+    1. [05-4.scheduler集群](05-4.scheduler集群.md)
+1. [06-1.部署woker节点](06-1.worker节点.md)			
+    1. [06-2.apiserver高可用之nginx代理](06-2.apiserver高可用.md)
+    1. [06-3.containerd](06-3.containerd.md)					
+    1. [06-4.kubelet](06-4.kubelet.md)				
+    1. [06-5.kube-proxy](06-5.kube-proxy.md)
+    1. [06-6.部署calico网络](06-6.calico.md)	
+1. [07.验证集群功能](07.验证集群功能.md)			
+1. [08-1.部署集群插件](08-1.部署集群插件.md)
+    1. [08-2.coredns插件](08-2.coredns插件.md)
+    1. [08-3.dashboard插件](08-3.dashboard插件.md)
+    1. [08-4.kube-prometheus插件](08-4.kube-prometheus插件.md)
+	1. [08-5.EFK插件](08-5.EFK插件.md)			
+1. [09.部署Docker-Registry](09.Registry.md)	
+1. [10.清理集群](10.清理集群.md)	
 1. [A.浏览器访问apiserver安全端口](A.浏览器访问kube-apiserver安全端口.md)
 1. [B.校验TLS证书](B.校验TLS证书.md)
+1. [C.部署metrics-server插件](C.metrics-server插件.md)
+1. [D.部署Harbor-Registry](D.部署Harbor-Registry.md)	
 
 ## 在线阅读
 
@@ -69,21 +77,6 @@
 </p>
 
 ## 广告位
-
-维护一个开源项目需要很多时间和精力，请点击下面的赞助商广告，给 opsnull 加杯 coffee 吧，谢谢！	
-
-***
-
-### KubeOperator - K8s 集群规划、部署及管理平台 （赞助推广）
-
-[KubeOperator](https://kubeoperator.io/) 是一个开源项目，通过 Web UI 在 VMware、OpenStack、物理机上一键部署和管理生产级别的 Kubernetes 集群。
-
--  [:tv:8 分钟演示视频]( https://kubeoperator-1256577600.file.myqcloud.com/video/KubeOperator2.1.mp4)：详细演示 KubeOperator 的功能。
--  [:books:安装及使用文档](https://docs.kubeoperator.io/)：包括 KubeOperator 安装文档、使用文档、功能截屏、常见问题等。
-
-![kubeoperator-ui](https://raw.githubusercontent.com/KubeOperator/website/master/images/kubeoperator-ui.jpg)
-
-***
 
 ## 版权
 

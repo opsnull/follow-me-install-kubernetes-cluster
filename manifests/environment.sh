@@ -4,16 +4,16 @@
 export ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
 
 # 集群各机器 IP 数组
-export NODE_IPS=(172.27.137.240 172.27.137.239 172.27.137.238)
+export NODE_IPS=(172.27.138.251 172.27.137.229 172.27.138.239)
 
 # 集群各 IP 对应的主机名数组
-export NODE_NAMES=(zhangjun-k8s01 zhangjun-k8s02 zhangjun-k8s03)
+export NODE_NAMES=(zhangjun-k8s-01 zhangjun-k8s-02 zhangjun-k8s-03)
 
 # etcd 集群服务地址列表
-export ETCD_ENDPOINTS="https://172.27.137.240:2379,https://172.27.137.239:2379,https://172.27.137.238:2379"
+export ETCD_ENDPOINTS="https://172.27.138.251:2379,https://172.27.137.229:2379,https://172.27.138.239:2379"
 
 # etcd 集群间通信的 IP 和端口
-export ETCD_NODES="zhangjun-k8s01=https://172.27.137.240:2380,zhangjun-k8s02=https://172.27.137.239:2380,zhangjun-k8s03=https://172.27.137.238:2380"
+export ETCD_NODES="zhangjun-k8s-01=https://172.27.138.251:2380,zhangjun-k8s-02=https://172.27.137.229:2380,zhangjun-k8s-03=https://172.27.138.239:2380"
 
 # kube-apiserver 的反向代理(kube-nginx)地址端口
 export KUBE_APISERVER="https://127.0.0.1:8443"
@@ -30,8 +30,12 @@ export ETCD_WAL_DIR="/data/k8s/etcd/wal"
 # k8s 各组件数据目录
 export K8S_DIR="/data/k8s/k8s"
 
+## DOCKER_DIR 和 CONTAINERD_DIR 二选一
 # docker 数据目录
 export DOCKER_DIR="/data/k8s/docker"
+
+# containerd 数据目录
+export CONTAINERD_DIR="/data/k8s/containerd"
 
 ## 以下参数一般不需要修改
 
@@ -48,9 +52,6 @@ CLUSTER_CIDR="172.30.0.0/16"
 
 # 服务端口范围 (NodePort Range)
 export NODE_PORT_RANGE="30000-32767"
-
-# flanneld 网络配置前缀
-export FLANNEL_ETCD_PREFIX="/kubernetes/network"
 
 # kubernetes 服务 IP (一般是 SERVICE_CIDR 中第一个IP)
 export CLUSTER_KUBERNETES_SVC_IP="10.254.0.1"

@@ -1,10 +1,10 @@
 tags: worker, docker
 
-# 07-1.部署 docker 组件
+# F. 部署 docker 组件
 
 <!-- TOC -->
 
-- [07-1.部署 docker 组件](#07-1部署-docker-组件)
+- [F. 部署 docker 组件](#f-部署-docker-组件)
     - [安装依赖包](#安装依赖包)
     - [下载和分发 docker 二进制文件](#下载和分发-docker-二进制文件)
     - [创建和分发 systemd unit 文件](#创建和分发-systemd-unit-文件)
@@ -12,13 +12,16 @@ tags: worker, docker
     - [启动 docker 服务](#启动-docker-服务)
     - [检查服务运行状态](#检查服务运行状态)
     - [检查 docker0 网桥](#检查-docker0-网桥)
-- [查看 docker 的状态信息](#查看-docker-的状态信息)
+    - [查看 docker 的状态信息](#查看-docker-的状态信息)
+    - [更新 kubelet 配置并重启服务（每个节点上都操作）](#更新-kubelet-配置并重启服务每个节点上都操作)
 
 <!-- /TOC -->
 
 docker 运行和管理容器，kubelet 通过 Container Runtime Interface (CRI) 与它进行交互。
 
-注意：如果没有特殊指明，本文档的所有操作**均在 zhangjun-k8s01 节点上执行**，然后远程分发文件和执行命令。
+注意：
+1. 如果没有特殊指明，本文档的所有操作**均在 zhangjun-k8s01 节点上执行**，然后远程分发文件和执行命令；
+2. 需要先安装 flannel，请参考附件 [E.部署flannel网络.md](E.部署flannel网络.md)；
 
 ## 安装依赖包
 
@@ -204,7 +207,7 @@ ip link delete docker0
 systemctl start docker
 ```
 
-# 查看 docker 的状态信息
+## 查看 docker 的状态信息
 
 ``` bash
 $ ps -elfH|grep docker
@@ -269,4 +272,21 @@ Live Restore Enabled: true
 Product License: Community Engine
 
 WARNING: No swap limit support
+```
+
+## 更新 kubelet 配置并重启服务（每个节点上都操作）
+
+需要删除 kubelet 的 systemd unit 文件(/etc/systemd/system/kubelet.service)，删除下面 4 行：
+
+``` bash
+  --network-plugin=cni \\
+  --cni-conf-dir=/etc/cni/net.d \\
+  --container-runtime=remote \\
+  --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
+```
+
+然后重启 kubelet 服务：
+
+``` bash
+systemctl restart kubelet
 ```

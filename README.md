@@ -2,7 +2,7 @@
 
 ![dashboard-home](./images/dashboard-home.png)
 
-本系列文档介绍使用二进制部署最新 `kubernetes v1.16.6` 集群的所有步骤，而不是使用 `kubeadm` 等自动化方式来部署集群。
+本系列文档介绍使用二进制部署 `kubernetes v1.16.6` 集群的所有步骤（Hard-Way 模式）。
 
 在部署的过程中，将详细列出各组件的启动参数，它们的含义和可能遇到的问题。
 
@@ -15,8 +15,10 @@
 由于启用了 `x509` 证书双向认证、`RBAC` 授权等严格的安全机制，建议**从头开始部署**，否则可能会认证、授权等失败！
 
 从 v1.16.x 版本开始，本文档做了如下调整：
-1. 用 containerd 替换 docker 容器运行时，更加简单、健壮；
-2. 用 calico 替换 flannel 实现 Pod 网络互通，支持更大规模的集群；
+1. 容器运行时：用 containerd 替换 docker，更加简单、健壮；相应的命令行工具为 crictl；
+2. Pod 网络：用 calico 替换 flannel 实现 Pod 互通，支持更大规模的集群；
+
+新增指标监控系统：使用主流的 Prometheus、Grafana 技术栈实现集群指标采集和监控；
 
 如果想继续使用 docker 和 flannel，请参考附件文档。
 
@@ -80,6 +82,6 @@
 
 ## 版权
 
-Copyright 2017-2019 zhangjun (geekard@qq.com)
+Copyright 2017-2020 zhangjun (geekard@qq.com)
 
 知识共享 署名-非商业性使用-相同方式共享 4.0（CC BY-NC-SA 4.0），详情见 [LICENSE](LICENSE) 文件。

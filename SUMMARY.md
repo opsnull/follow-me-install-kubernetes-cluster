@@ -29,6 +29,8 @@
 * [B.校验TLS证书](B.校验TLS证书.md)
 * [C.部署metrics-server插件](C.metrics-server插件.md)
 * [D.部署Harbor-Registry](D.部署Harbor-Registry.md)	
+* [E.部署flannel网络](E.部署flannel网络.md)	
+* [F.部署docker](F.部署docker.md)	
 
 ## 标签集合
 
